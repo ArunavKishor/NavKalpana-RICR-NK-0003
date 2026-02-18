@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext } from "react";
+import { useStackApp, useUser } from "@stackframe/react";
 
 const AuthContext = createContext();
 
@@ -10,41 +11,35 @@ export const useAuth = () => {
   return context;
 };
 
+
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isLogin, setIsLogin] = useState(false);
-  const [role, setRole] = useState(null);
+  const user = useUser();
+  const app = useStackApp();
 
-  useEffect(() => {
-    try {
-      const storedUser = sessionStorage.getItem("CravingUser");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
-        setIsLogin(true);
-        setRole(parsed.role);
-      }
-    } catch (error) {
-      console.error("Failed to parse stored user", error);
-    }
-  }, []);
+  // Map Stack user to app user shape
+  const appUser = user ? {
+    ...user,
+    fullName: user.displayName || user.primaryEmail,
+    role: "customer", // Default role, can be enhanced later with metadata
+  } : null;
 
-  const logout = () => {
-    setUser(null);
-    setIsLogin(false);
-    setRole(null);
+  const isLogin = !!user;
+
+  const logout = async () => {
+    await app.signOut();
     sessionStorage.removeItem("CravingUser");
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        setUser,
+        user: appUser,
+        setUser: () => { }, // No-op as state is managed by Stack
         isLogin,
-        setIsLogin,
-        role,
-        setRole,
+        setIsLogin: () => { }, // No-op
+        role: appUser?.role,
+        setRole: () => { }, // No-op
         logout,
       }}
     >
