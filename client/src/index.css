@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  /* primary */
+  --primary: #71C9CE;          /* Strong teal */
+  --primary-hover: #A6E3E9;    /* Soft teal */
+
+  /* secondary */
+  --secondary: #A6E3E9;        /* Light teal */
+  --secondary-hover: #CBF1F5;  /* Very light aqua */
+
+  /* text */
+  --text: #1C1C1C;             /* Dark readable text */
+
+  /* background */
+  --background: #E3FDFD;       /* Soft aqua background */
+  --accent: #CBF1F5;           /* Light accent shade */
+}
