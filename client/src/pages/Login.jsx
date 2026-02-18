@@ -66,7 +66,7 @@ const Login = () => {
         toast.error("Unknown role. Please contact support.");
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Unknown Error");
+      toast.error(error?.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -74,15 +74,19 @@ const Login = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center  from-indigo-600 via-purple-600 to-pink-500 px-4">
-
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div className="w-full max-w-md">
-          {/* Glass Card */}
-          <div className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl rounded-2xl p-8">
-
-            <h1 className="text-3xl font-bold text-white text-center mb-6">
-              Welcome Back 👋
+          
+          {/* Professional Card */}
+          <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+            
+            <h1 className="text-2xl font-semibold text-gray-800 text-center">
+              Education Portal Login
             </h1>
+
+            <p className="text-center text-gray-500 text-sm mt-2 mb-6">
+              Please sign in to access your dashboard
+            </p>
 
             <form
               onSubmit={handleSubmit}
@@ -90,7 +94,10 @@ const Login = () => {
               className="space-y-5"
             >
               {/* Email */}
-              <div className="relative">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -98,22 +105,15 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
-                  placeholder=" "
-                  className="peer w-full px-4 pt-5 pb-2 rounded-lg bg-white/90 text-gray-900 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:bg-gray-200"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none disabled:bg-gray-100"
                 />
-                <label className="absolute left-4 top-2 text-gray-500 text-sm transition-all 
-                  peer-placeholder-shown:top-4 
-                  peer-placeholder-shown:text-base 
-                  peer-placeholder-shown:text-gray-400 
-                  peer-focus:top-2 
-                  peer-focus:text-sm 
-                  peer-focus:text-indigo-600">
-                  Email Address
-                </label>
               </div>
 
               {/* Password */}
               <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -121,23 +121,12 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
-                  placeholder=" "
-                  className="peer w-full px-4 pt-5 pb-2 rounded-lg bg-white/90 text-gray-900 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:bg-gray-200"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none disabled:bg-gray-100"
                 />
-                <label className="absolute left-4 top-2 text-gray-500 text-sm transition-all 
-                  peer-placeholder-shown:top-4 
-                  peer-placeholder-shown:text-base 
-                  peer-placeholder-shown:text-gray-400 
-                  peer-focus:top-2 
-                  peer-focus:text-sm 
-                  peer-focus:text-indigo-600">
-                  Password
-                </label>
 
-                {/* Eye Toggle */}
                 <div
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-4 top-4 cursor-pointer text-gray-500 hover:text-indigo-600 transition"
+                  className="absolute right-3 top-[38px] cursor-pointer text-gray-500 hover:text-blue-600"
                 >
                   {showPassword ? (
                     <FaEyeSlash size={18} />
@@ -147,10 +136,10 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Forget Password */}
+              {/* Forgot Password */}
               <div className="text-right">
                 <button
-                  className="text-sm text-white hover:text-yellow-200 transition"
+                  className="text-sm text-blue-600 hover:underline"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsForgetPasswordModelOpen(true);
@@ -161,11 +150,11 @@ const Login = () => {
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="reset"
                   disabled={isLoading}
-                  className="flex-1 bg-white/30 hover:bg-white/40 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50"
+                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-md hover:bg-gray-100 transition disabled:opacity-50"
                 >
                   Clear
                 </button>
@@ -173,7 +162,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition shadow-lg flex items-center justify-center gap-2 disabled:bg-gray-400"
+                  className="flex-1 bg-blue-700 text-white py-2.5 rounded-md hover:bg-blue-800 transition flex items-center justify-center disabled:bg-gray-400"
                 >
                   {isLoading ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -185,8 +174,8 @@ const Login = () => {
             </form>
           </div>
 
-          <p className="text-center text-white/80 mt-6 text-sm">
-            We respect your privacy 🔒
+          <p className="text-center text-gray-500 mt-6 text-xs">
+            © 2026 Education Center. All rights reserved.
           </p>
         </div>
       </div>

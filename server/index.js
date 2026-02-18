@@ -2,9 +2,14 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
 import connectDB from "./src/config/db.js";
-import ContactRouter from "./src/routers/contactRouter.js"; // ✅ Added
+import ContactRouter from "./src/routers/contactRouter.js";
+import AuthRouter from "./src/routers/authRouter.js";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 
@@ -15,7 +20,8 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 
 // Routes
-app.use("/contact", ContactRouter); // ✅ Added
+app.use("/api/auth", AuthRouter);
+app.use("/contact", ContactRouter);
 
 // Default Route
 app.get("/", (req, res) => {
