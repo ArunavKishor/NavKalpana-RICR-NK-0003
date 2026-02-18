@@ -5,25 +5,32 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
 import connectDB from "./src/config/db.js";
-import ContactRouter from "./src/routers/contactRouter.js";
 import AuthRouter from "./src/routers/authRouter.js";
+// ❗ If contactRouter file does NOT exist, comment next line
+// import ContactRouter from "./src/routers/contactRouter.js";
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
 // Routes
 app.use("/api/auth", AuthRouter);
-app.use("/contact", ContactRouter);
 
-// Default Route
+// ❗ Uncomment ONLY if file exists
+// app.use("/api/contact", ContactRouter);
+
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Server is working" });
 });
@@ -33,13 +40,22 @@ app.use((err, req, res, next) => {
   const errorMessage = err.message || "Internal Server Error";
   const statusCode = err.statusCode || 500;
 
-  console.error("Error Found", { errorMessage, statusCode });
+  console.error("Error Found:", errorMessage);
   res.status(statusCode).json({ message: errorMessage });
 });
 
 const port = process.env.PORT || 5000;
 
-app.listen(port, async () => {
-  console.log("Server Started at Port:", port);
-  connectDB();
-});
+// ✅ Connect DB first, then start server
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      console.log(`🚀 Server Started at Port: ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server ❌", error);
+  }
+};
+
+startServer();

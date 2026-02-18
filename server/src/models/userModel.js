@@ -25,14 +25,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // Don't return password by default in queries
+      select: false, // Do not return password in queries
     },
     role: {
       type: String,
-      enum: {
-        values: ["admin", "student", "manager", "customer", "partner"],
-        message: "{VALUE} is not a valid role",
-      },
+      enum: ["admin", "student", "manager", "customer", "partner"],
       default: "student",
     },
     isActive: {
@@ -41,32 +38,24 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt
-  },
+    timestamps: true,
+  }
 );
 
-// Hash password before saving
-userSchema.pre("save", async function (next) {
-  // Only hash the password if it has been modified (or is new)
-  if (!this.isModified("password")) {
-    return next();
-  }
+// 🔐 Hash password before saving (Mongoose v7+ compatible)
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Method to compare password
+// 🔑 Compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to get public profile (without sensitive data)
+// 🧹 Remove sensitive fields when returning user
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;
