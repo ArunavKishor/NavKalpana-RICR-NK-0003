@@ -40,9 +40,9 @@ const Header = () => {
             alt="NavKalpana Logo"
             className="h-12 w-20 object-cover"
           />
-          <span className="text-white font-semibold text-lg hidden sm:block">
+          {/* <span className="text-white font-semibold text-lg hidden sm:block">
             NavKalpana
-          </span>
+          </span> */}
         </Link>
 
         {/* Navigation */}
@@ -90,4 +90,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 
