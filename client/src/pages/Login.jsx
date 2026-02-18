@@ -3,7 +3,9 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import api from "../config/Api";
 import { useAuth } from "../context/AuthContext";
-import ForgetPasswordModal from "../components/publicModals/ForgetPasswoardModal";
+import ForgetPasswordModal from "../components/publicModals/ForgetPasswordModal";
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa6";
 
 const roleRoutes = {
   admin: "/admin-dashboard",
@@ -25,6 +27,7 @@ const Login = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,12 +54,13 @@ const Login = () => {
 
       setUser(user);
       setIsLogin(true);
+      setRole(role);
       sessionStorage.setItem("CravingUser", JSON.stringify(user));
+
       handleClearForm();
 
       const nextRoute = roleRoutes[role];
       if (nextRoute) {
-        setRole(role);
         navigate(nextRoute);
       } else {
         toast.error("Unknown role. Please contact support.");
@@ -70,78 +74,119 @@ const Login = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-6 px-4">
-        <div className="max-w-xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Welcome Back
-            </h1>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
 
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div className="w-full max-w-md">
+          {/* Glass Card */}
+          <div className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl rounded-2xl p-8">
+
+            <h1 className="text-3xl font-bold text-white text-center mb-6">
+              Welcome Back 👋
+            </h1>
+
             <form
               onSubmit={handleSubmit}
               onReset={handleClearForm}
-              className="p-8"
+              className="space-y-5"
             >
-              <div className="mb-5">
-                <div className="space-y-4">
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email Address"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="w-full h-fit px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition disabled:cursor-not-allowed disabled:bg-gray-200"
-                  />
+              {/* Email */}
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  placeholder=" "
+                  className="peer w-full px-4 pt-5 pb-2 rounded-lg bg-white/90 text-gray-900 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:bg-gray-200"
+                />
+                <label className="absolute left-4 top-2 text-gray-500 text-sm transition-all 
+                  peer-placeholder-shown:top-4 
+                  peer-placeholder-shown:text-base 
+                  peer-placeholder-shown:text-gray-400 
+                  peer-focus:top-2 
+                  peer-focus:text-sm 
+                  peer-focus:text-indigo-600">
+                  Email Address
+                </label>
+              </div>
 
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    placeholder="Password"
-                    onChange={handleChange}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition disabled:cursor-not-allowed disabled:bg-gray-200"
-                  />
-                </div>
-                <div className="w-full flex justify-end">
-                  <button
-                    className="text-(--primary) hover:text-(--secondary) cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsForgetPasswordModelOpen(true);
-                    }}
-                  >
-                    Forget Password?
-                  </button>
+              {/* Password */}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  placeholder=" "
+                  className="peer w-full px-4 pt-5 pb-2 rounded-lg bg-white/90 text-gray-900 outline-none focus:ring-2 focus:ring-indigo-400 transition disabled:bg-gray-200"
+                />
+                <label className="absolute left-4 top-2 text-gray-500 text-sm transition-all 
+                  peer-placeholder-shown:top-4 
+                  peer-placeholder-shown:text-base 
+                  peer-placeholder-shown:text-gray-400 
+                  peer-focus:top-2 
+                  peer-focus:text-sm 
+                  peer-focus:text-indigo-600">
+                  Password
+                </label>
+
+                {/* Eye Toggle */}
+                <div
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-4 top-4 cursor-pointer text-gray-500 hover:text-indigo-600 transition"
+                >
+                  {showPassword ? (
+                    <FaEyeSlash size={18} />
+                  ) : (
+                    <FaEye size={18} />
+                  )}
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-8 border-t-2 border-gray-200">
+              {/* Forget Password */}
+              <div className="text-right">
+                <button
+                  className="text-sm text-white hover:text-yellow-200 transition"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsForgetPasswordModelOpen(true);
+                  }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-4 pt-4">
                 <button
                   type="reset"
                   disabled={isLoading}
-                  className="flex-1 bg-gray-300 text-gray-800 font-bold py-4 px-6 rounded-lg hover:bg-gray-400 transition duration-300 transform hover:scale-105 disabled:scale-100 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-white/30 hover:bg-white/40 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50"
                 >
-                  Clear Form
+                  Clear
                 </button>
+
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-linear-to-r from-indigo-600 to-indigo-700 text-white font-bold py-4 px-6 rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition duration-300 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:bg-gray-300  disabled:cursor-not-allowed"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition shadow-lg flex items-center justify-center gap-2 disabled:bg-gray-400"
                 >
-                  {isLoading ? "loading.." : "Login"}
+                  {isLoading ? (
+                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  ) : (
+                    "Login"
+                  )}
                 </button>
               </div>
             </form>
           </div>
 
-          <p className="text-center text-gray-600 mt-8 text-sm">
-            All fields marked are mandatory. We respect your privacy.
+          <p className="text-center text-white/80 mt-6 text-sm">
+            We respect your privacy 🔒
           </p>
         </div>
       </div>
