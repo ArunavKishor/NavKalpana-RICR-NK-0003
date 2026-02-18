@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import { AuthProvider } from "./context/AuthContext";
+import Courses from "./pages/Courses";
+
 
 const App = () => {
   return (
@@ -20,6 +22,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/courses" element={<Courses />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
