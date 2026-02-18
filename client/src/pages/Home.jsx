@@ -162,7 +162,7 @@ const Home = () => {
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100">
+                <div className="mt-6 p-4 rounded-2xl from-orange-50 to-amber-50 border border-orange-100">
                   <p className="text-sm text-slate-600">
                     Also includes{" "}
                     <span className="font-semibold">Power BI</span>, career
