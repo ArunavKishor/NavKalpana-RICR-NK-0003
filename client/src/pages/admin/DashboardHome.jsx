@@ -118,7 +118,7 @@ const DashboardHome = () => {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[300px] w-full mt-4">
+                            <div className="h-75 w-full mt-4">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={data}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
