@@ -4,14 +4,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
+import AdminLogin from "./pages/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
-import Courses from "./pages/Courses";
-import CourseDetail from "./pages/CourseDetail";
-
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 const App = () => {
   return (
@@ -26,6 +24,7 @@ const App = () => {
           <Route path="/courses" element={<Courses />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/course/:title" element={<CourseDetail />} />
         </Routes>

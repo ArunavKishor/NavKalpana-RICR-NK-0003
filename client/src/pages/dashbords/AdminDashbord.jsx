@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 const getStoredUser = () => {
   try {
-    const raw = sessionStorage.getItem("Token");
+    const raw = sessionStorage.getItem("AdminUser"); // Expecting stored user data here
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
     return null;
@@ -17,7 +19,25 @@ const emptyTeacherForm = {
 };
 
 const AdminDashbord = () => {
+  const navigate = useNavigate();
   const [admin, setAdmin] = useState(getStoredUser());
+
+  // Check Auth on Mount
+  React.useEffect(() => {
+    const token = sessionStorage.getItem("AdminToken");
+    const user = getStoredUser();
+
+    if (!token || !user) {
+      // Not authenticated as Admin
+      navigate("/admin");
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("AdminUser");
+    sessionStorage.removeItem("AdminToken");
+    navigate("/admin");
+  };
   const [teachers, setTeachers] = useState([]);
   const [formData, setFormData] = useState(emptyTeacherForm);
   const [editingId, setEditingId] = useState(null);
@@ -85,16 +105,24 @@ const AdminDashbord = () => {
               Manage your profile and teachers in one place.
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow px-6 py-4">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
-              Logged in as
-            </p>
-            <p className="text-lg font-semibold text-slate-900">
-              {admin?.name || "Admin User"}
-            </p>
-            <p className="text-sm text-slate-600">
-              {admin?.email || "admin@example.com"}
-            </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium text-red-600 hover:text-red-800 transition"
+            >
+              Sign Out
+            </button>
+            <div className="bg-white rounded-xl shadow px-6 py-4">
+              <p className="text-xs uppercase tracking-wide text-slate-400">
+                Logged in as
+              </p>
+              <p className="text-lg font-semibold text-slate-900">
+                {admin?.fullName || admin?.name || "Admin User"}
+              </p>
+              <p className="text-sm text-slate-600">
+                {admin?.email || "admin@example.com"}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -109,7 +137,7 @@ const AdminDashbord = () => {
                   Name
                 </p>
                 <p className="text-base text-slate-900">
-                  {admin?.name || "Admin User"}
+                  {admin?.fullName || admin?.name || "Admin User"}
                 </p>
               </div>
               <div>

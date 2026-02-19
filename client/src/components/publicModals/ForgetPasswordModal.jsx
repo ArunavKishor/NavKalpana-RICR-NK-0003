@@ -44,9 +44,19 @@ const ForgetPasswordModal = ({ onClose }) => {
 
     try {
       let res;
-
-      if (!isOtpSent) {
-        res = await api.post("/auth/genOtp", formData);
+      if (isOtpSent) {
+        if (isOtpVerified) {
+          res = await api.post("/api/auth/forgetPasword", formData);
+          toast.success(res.data.message);
+          onClose();
+        } else {
+          res = await api.post("/api/auth/verifyOtp", formData);
+          toast.success(res.data.message);
+          setIsOtpSent(true);
+          setIsOtpVerified(true);
+        }
+      } else {
+        res = await api.post("/api/auth/genOtp", formData);
         toast.success(res.data.message);
         setIsOtpSent(true);
       } else if (!isOtpVerified) {
@@ -113,35 +123,45 @@ const ForgetPasswordModal = ({ onClose }) => {
               </button>
             </div>
 
-            {/* Stepper */}
-            <div className="px-10 pb-6">
-              <div className="flex items-center justify-center gap-3">
-                {[1, 2, 3].map((s) => (
-                  <div key={s} className="flex items-center">
-                    <div
-                      className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition
-                      ${
-                        step === s
-                          ? "bg-orange-500 text-white shadow-md"
-                          : step > s
-                          ? "bg-orange-100 text-orange-600"
-                          : "bg-slate-100 text-slate-400"
-                      }`}
-                    >
-                      {s}
-                    </div>
-
-                    {s !== 3 && (
-                      <div
-                        className={`w-10 h-[2px] mx-2 rounded transition ${
-                          step > s ? "bg-orange-400" : "bg-slate-200"
-                        }`}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+        {/* Progress Indicator */}
+        <div className="px-6 py-4 bg-slate-50">
+          <div className="flex items-center justify-center gap-2">
+            <div
+              className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold ${!isOtpSent
+                  ? "bg-orange-500 text-white"
+                  : "bg-orange-100 text-orange-600"
+                }`}
+            >
+              1
             </div>
+            <div
+              className={`h-1 w-12 rounded ${isOtpSent ? "bg-orange-500" : "bg-slate-200"
+                }`}
+            />
+            <div
+              className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold ${isOtpSent && !isOtpVerified
+                  ? "bg-orange-500 text-white"
+                  : isOtpVerified
+                    ? "bg-orange-100 text-orange-600"
+                    : "bg-slate-200 text-slate-400"
+                }`}
+            >
+              2
+            </div>
+            <div
+              className={`h-1 w-12 rounded ${isOtpVerified ? "bg-orange-500" : "bg-slate-200"
+                }`}
+            />
+            <div
+              className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold ${isOtpVerified
+                  ? "bg-orange-500 text-white"
+                  : "bg-slate-200 text-slate-400"
+                }`}
+            >
+              3
+            </div>
+          </div>
+        </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-5">

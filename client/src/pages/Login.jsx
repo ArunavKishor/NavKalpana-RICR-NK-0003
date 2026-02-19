@@ -7,7 +7,11 @@ import { useAuth } from "../context/AuthContext";
 import ForgetPasswordModal from "../components/publicModals/ForgetPasswordModal";
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
-import { GraduationCap } from "lucide-react";
+
+const roleRoutes = {
+  admin: "/admin-dashboard",
+  student: "/student-dashboard",
+};
 
 const Login = () => {
   const { setUser, setIsLogin, setRole } = useAuth();
@@ -47,7 +51,8 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const res = await api.post("/auth/login", formData);
+      const res = await api.post("/api/auth/login", formData);
+      toast.success(res.data.message);
 
       const user = res?.data?.data;
       const role = user?.role;
@@ -84,35 +89,15 @@ const Login = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-white relative overflow-hidden">
-        
-        {/* 🌈 Soft Ambient Background */}
-        <div className="absolute w-[500px] h-[500px] bg-indigo-100 rounded-full blur-[140px] top-[-120px] left-[-120px]" />
-        <div className="absolute w-[400px] h-[400px] bg-blue-100 rounded-full blur-[120px] bottom-[-100px] right-[-100px]" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+        <div className="w-full max-w-md">
 
-        {/* 🧊 Glass Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.55 }}
-          className="relative z-10 w-full max-w-md"
-        >
-          <div
-            className="backdrop-blur-xl bg-white/80 border border-slate-200
-                       shadow-[0_10px_40px_rgba(0,0,0,0.08)]
-                       rounded-3xl p-10"
-          >
-            {/* Header */}
-            <div className="text-center mb-10">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 rounded-2xl bg-indigo-600 text-white shadow-lg">
-                  <GraduationCap size={28} />
-                </div>
-              </div>
+          {/* Professional Card */}
+          <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
 
-              <h1 className="text-2xl font-semibold text-slate-800">
-                Admin Login
-              </h1>
+            <h1 className="text-2xl font-semibold text-gray-800 text-center">
+              Education Portal Login
+            </h1>
 
               <p className="text-slate-500 text-sm mt-2">
                 Sign in to access the administration panel

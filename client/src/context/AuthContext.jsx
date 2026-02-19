@@ -14,20 +14,30 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
   const [role, setRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedUser = sessionStorage.getItem("Token");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
+    const storedUser = sessionStorage.getItem("CravingUser");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
         setIsLogin(true);
-        setRole(parsed.role);
+        setRole(parsedUser.role || "student");
+      } catch (error) {
+        console.error("Failed to parse stored user", error);
+        sessionStorage.removeItem("CravingUser");
       }
-    } catch (error) {
-      console.error("Failed to parse stored user", error);
     }
+    setIsLoading(false);
   }, []);
+
+  const login = (userData) => {
+    setUser(userData);
+    setIsLogin(true);
+    setRole(userData.role || "student");
+    sessionStorage.setItem("CravingUser", JSON.stringify(userData));
+  };
 
   const logout = () => {
     setUser(null);
@@ -45,10 +55,12 @@ export const AuthProvider = ({ children }) => {
         setIsLogin,
         role,
         setRole,
+        login,
         logout,
+        isLoading
       }}
     >
-      {children}
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };

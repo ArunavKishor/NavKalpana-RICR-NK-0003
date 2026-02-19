@@ -10,14 +10,8 @@ const Header = () => {
 
   const handleNavigate = () => {
     switch (role) {
-      case "manager":
-        navigate("/resturant-dashboard");
-        break;
       case "partner":
         navigate("/rider-dashboard");
-        break;
-      case "customer":
-        navigate("/user-dashboard");
         break;
       case "admin":
         navigate("/admin-dashboard");

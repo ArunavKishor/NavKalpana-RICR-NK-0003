@@ -1,4 +1,4 @@
-import Contact from "../models/contactModel.js";
+import Contact from "../models/contactModels.js";
 
 /**
  * @desc    Create New Contact Message
