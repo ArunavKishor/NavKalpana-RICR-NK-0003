@@ -1,260 +1,169 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 const courses = [
-  {
-    title: "Java",
-    detail: "Core Java to advanced enterprise patterns.",
-  },
-  {
-    title: "Python",
-    detail: "From fundamentals to automation and APIs.",
-  },
-  {
-    title: "DSA",
-    detail: "Data structures and algorithms for interviews.",
-  },
-  {
-    title: "Web Development",
-    detail: "Frontend, backend, and full-stack projects.",
-  },
-  {
-    title: "Data Science",
-    detail: "Statistics, analytics, and real datasets.",
-  },
-  {
-    title: "Machine Learning",
-    detail: "Models, evaluation, and deployment basics.",
-  },
-  {
-    title: "Power BI",
-    detail: "Dashboards, reports, and business insights.",
-  },
+  { title: "Java", detail: "Core to advanced enterprise backend development." },
+  { title: "Python", detail: "Automation, APIs, and scripting fundamentals." },
+  { title: "DSA", detail: "Data structures and interview preparation." },
+  { title: "Web Development", detail: "Frontend, backend & full-stack projects." },
+  { title: "Data Science", detail: "Statistics and real-world datasets." },
+  { title: "Machine Learning", detail: "Model building and deployment basics." },
 ];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6 },
+  },
+};
 
 const Home = () => {
   return (
-    <div className="home-shell text-slate-900">
-      <style>{`
-				@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+    <div className="bg-slate-50 text-slate-900 overflow-hidden">
 
-				.home-shell {
-					--home-ink: #0f172a;
-					--home-accent: #f97316;
-					--home-accent-soft: #fde68a;
-					--home-sky: #38bdf8;
-					--home-sand: #fff7ed;
-					--home-slate: #e2e8f0;
-					font-family: "Space Grotesk", sans-serif;
-					background: radial-gradient(circle at top left, #fef3c7, #ffffff 55%),
-						radial-gradient(circle at 30% 20%, #e0f2fe, transparent 45%),
-						linear-gradient(135deg, #fef3c7 0%, #ffffff 50%, #e0f2fe 100%);
-				}
+      {/* HERO */}
+      <section className="relative py-28 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-14 items-center">
 
-				.home-title {
-					font-family: "DM Serif Display", serif;
-				}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeUp}
+          >
+            <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
+              Practical Learning
+              <br />
+              <span className="text-indigo-600">For Real Careers</span>
+            </h1>
 
-				.float-shape {
-					animation: float 8s ease-in-out infinite;
-				}
+            <p className="mt-6 text-lg text-slate-600 max-w-xl">
+              Learn through structured courses, real projects, and guided
+              mentorship designed to help you build strong technical skills.
+            </p>
 
-				.float-shape.delay {
-					animation-delay: 1.5s;
-				}
+            <div className="mt-8 flex gap-5 flex-wrap">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-3 rounded-xl bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 transition"
+              >
+                Choose Courses
+              </motion.button>
 
-				@keyframes float {
-					0%,
-					100% {
-						transform: translateY(0px);
-					}
-					50% {
-						transform: translateY(-12px);
-					}
-				}
-
-				.fade-up {
-					animation: fadeUp 0.9s ease both;
-				}
-
-				@keyframes fadeUp {
-					from {
-						opacity: 0;
-						transform: translateY(18px);
-					}
-					to {
-						opacity: 1;
-						transform: translateY(0);
-					}
-				}
-			`}</style>
-
-      <section className="relative overflow-hidden">
-        <div className="absolute -top-20 -left-20 w-64 h-64 bg-orange-200/60 rounded-full blur-3xl float-shape" />
-        <div className="absolute top-24 -right-16 w-72 h-72 bg-sky-200/60 rounded-full blur-3xl float-shape delay" />
-
-        <div className="max-w-6xl mx-auto px-6 pt-16 pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
-            <div className="fade-up">
-              <p className="uppercase tracking-[0.3em] text-xs text-slate-500">
-                NavKalpana Institute
-              </p>
-              <h1 className="home-title text-4xl sm:text-5xl lg:text-6xl mt-4 leading-tight">
-                An edtech institute built to turn learners into creators.
-              </h1>
-              <p className="text-lg text-slate-600 mt-5 max-w-xl">
-                We are an edtech company focused on job-ready skills,
-                mentorship, and hands-on projects. Our programs combine modern
-                curriculum, expert instructors, and real-world outcomes.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <button className="bg-orange-500 text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-orange-600 transition">
-                  Explore Courses
-                </button>
-                <button className="px-6 py-3 rounded-full font-semibold border border-slate-200 bg-white/70 backdrop-blur hover:border-slate-300 transition">
-                  Talk to an Advisor
-                </button>
-              </div>
-              <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {[
-                  { label: "Learners", value: "4,500+" },
-                  { label: "Placement Focus", value: "98%" },
-                  { label: "Mentors", value: "35+" },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="bg-white/80 rounded-2xl px-4 py-3 border border-white/60 shadow-sm"
-                  >
-                    <p className="text-2xl font-semibold text-slate-900">
-                      {stat.value}
-                    </p>
-                    <p className="text-xs uppercase tracking-widest text-slate-500">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                className="px-8 py-3 rounded-xl bg-white border border-slate-300 font-semibold"
+              >
+                Contact Us
+              </motion.button>
             </div>
+          </motion.div>
 
-            <div className="fade-up">
-              <div className="bg-white/80 rounded-3xl shadow-2xl border border-white/60 p-6 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
-                  What we teach
-                </p>
-                <h2 className="text-2xl font-semibold text-slate-900 mt-2">
-                  Career-forward programs
-                </h2>
+          {/* Right Side Card */}
+          <motion.div
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+            className="bg-white rounded-3xl shadow-xl p-10 border border-slate-200"
+          >
+            <h2 className="text-2xl font-bold mb-6">
+              What You Get
+            </h2>
+
+            <ul className="space-y-4 text-slate-600">
+              <li className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                Structured curriculum
+              </li>
+              <li className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                Project-based assignments
+              </li>
+              <li className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                Doubt-solving sessions
+              </li>
+              <li className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                Career guidance support
+              </li>
+            </ul>
+          </motion.div>
+
+        </div>
+      </section>
+
+      {/* COURSES */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold text-center"
+          >
+            Our Courses
+          </motion.h2>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 mt-16">
+            {courses.map((course, index) => (
+              <motion.div
+                key={course.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -8 }}
+                className="bg-slate-50 rounded-3xl p-8 shadow-sm border border-slate-200 hover:shadow-lg transition"
+              >
+                <div className="w-14 h-14 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow">
+                  {course.title[0]}
+                </div>
+
+                <h3 className="text-xl font-semibold mt-6">
+                  {course.title}
+                </h3>
+
                 <p className="text-slate-600 mt-3">
-                  Structured tracks with live classes, labs, and mock
-                  interviews.
+                  {course.detail}
                 </p>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  {courses.slice(0, 6).map((course) => (
-                    <div
-                      key={course.title}
-                      className="rounded-2xl p-4 bg-slate-50 border border-slate-100"
-                    >
-                      <p className="font-semibold text-slate-900">
-                        {course.title}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-2">
-                        {course.detail}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 p-4 rounded-2xl from-orange-50 to-amber-50 border border-orange-100">
-                  <p className="text-sm text-slate-600">
-                    Also includes{" "}
-                    <span className="font-semibold">Power BI</span>, career
-                    counseling, and resume clinics.
-                  </p>
-                </div>
-              </div>
-            </div>
+
+                <button className="mt-6 text-indigo-600 font-semibold hover:underline">
+                  Learn More →
+                </button>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              title: "Learn by Doing",
-              body: "Capstone projects and real datasets for every course.",
-            },
-            {
-              title: "Mentorship-Driven",
-              body: "Small batches with personalized guidance.",
-            },
-            {
-              title: "Placement Support",
-              body: "Mock interviews, referrals, and portfolio reviews.",
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="bg-white rounded-2xl border border-slate-100 shadow-md p-6"
-            >
-              <h3 className="text-xl font-semibold text-slate-900">
-                {item.title}
-              </h3>
-              <p className="text-slate-600 mt-3">{item.body}</p>
-            </div>
-          ))}
+      {/* CTA */}
+      <section className="py-24 bg-indigo-600 text-white text-center">
+        <div className="max-w-4xl mx-auto px-6">
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold"
+          >
+            Ready to Start Learning?
+          </motion.h2>
+
+          <p className="mt-6 text-indigo-100 text-lg">
+            Explore our programs and begin your learning journey today.
+          </p>
+
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-10 px-10 py-4 rounded-xl bg-white text-indigo-600 font-bold shadow-lg"
+          >
+            Get Started
+          </motion.button>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="uppercase tracking-[0.2em] text-xs text-slate-500">
-              Courses
-            </p>
-            <h2 className="text-3xl font-semibold text-slate-900">
-              Choose your learning path
-            </h2>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course, index) => (
-            <div
-              key={course.title}
-              className="rounded-3xl p-6 bg-white shadow-lg border border-slate-100 hover:-translate-y-1 transition"
-              style={{ animationDelay: `${index * 80}ms` }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center font-semibold">
-                {course.title[0]}
-              </div>
-              <h3 className="text-xl font-semibold mt-4 text-slate-900">
-                {course.title}
-              </h3>
-              <p className="text-slate-600 mt-3">{course.detail}</p>
-              <button className="mt-5 text-sm font-semibold text-orange-600">
-                View curriculum →
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="rounded-3xl bg-slate-900 text-white p-10 sm:p-12 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-          <div>
-            <h2 className="home-title text-3xl sm:text-4xl">
-              Ready to join the next cohort?
-            </h2>
-            <p className="text-slate-200 mt-3 max-w-2xl">
-              Start with a counseling session and get a personalized roadmap for
-              Java, Python, DSA, Web Development, Data Science, Machine
-              Learning, or Power BI.
-            </p>
-          </div>
-          <button className="bg-white text-slate-900 px-6 py-3 rounded-full font-semibold hover:bg-slate-100 transition">
-            Book a free call
-          </button>
-        </div>
-      </section>
     </div>
   );
 };

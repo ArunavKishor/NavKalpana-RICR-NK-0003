@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 import api from "../config/Api";
 
 const STORAGE_KEY = "ContactFormDraft";
@@ -9,6 +10,11 @@ const Contact = () => {
     fullName: "",
     email: "",
     mobileNumber: "",
+    courseInterested: "",
+    qualification: "",
+    experienceLevel: "",
+    preferredMode: "",
+    city: "",
     message: "",
   });
 
@@ -45,6 +51,11 @@ const Contact = () => {
       fullName: "",
       email: "",
       mobileNumber: "",
+      courseInterested: "",
+      qualification: "",
+      experienceLevel: "",
+      preferredMode: "",
+      city: "",
       message: "",
     };
 
@@ -118,6 +129,116 @@ const Contact = () => {
               className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500 transition"
             />
 
+              <motion.input
+                custom={1}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                type="text"
+                name="fullName"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={handleChange}
+                required
+                className="inputStyle"
+              />
+
+              <motion.input
+                custom={2}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="inputStyle"
+              />
+
+              <motion.input
+                custom={3}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                type="text"
+                name="mobileNumber"
+                placeholder="Mobile Number"
+                value={formData.mobileNumber}
+                onChange={handleChange}
+                required
+                className="inputStyle"
+              />
+
+              <motion.input
+                custom={4}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                type="text"
+                name="city"
+                placeholder="City"
+                value={formData.city}
+                onChange={handleChange}
+                className="inputStyle"
+              />
+
+            </div>
+
+            {/* Academic Info */}
+            <div className="grid md:grid-cols-2 gap-6">
+
+              <select
+                name="courseInterested"
+                value={formData.courseInterested}
+                onChange={handleChange}
+                required
+                className="inputStyle"
+              >
+                <option value="">Course Interested In</option>
+                <option>Java</option>
+                <option>Python</option>
+                <option>Web Development</option>
+                <option>Data Science</option>
+                <option>Machine Learning</option>
+              </select>
+
+              <input
+                type="text"
+                name="qualification"
+                placeholder="Current Qualification"
+                value={formData.qualification}
+                onChange={handleChange}
+                className="inputStyle"
+              />
+
+              <select
+                name="experienceLevel"
+                value={formData.experienceLevel}
+                onChange={handleChange}
+                className="inputStyle"
+              >
+                <option value="">Experience Level</option>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+
+              <select
+                name="preferredMode"
+                value={formData.preferredMode}
+                onChange={handleChange}
+                className="inputStyle"
+              >
+                <option value="">Preferred Mode</option>
+                <option>Online</option>
+                <option>Offline</option>
+              </select>
+
+            </div>
+
+            {/* Message */}
             <textarea
               name="message"
               placeholder="Your Message"
@@ -159,8 +280,26 @@ const Contact = () => {
             ) : null}
 
           </form>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Tailwind Reusable Input Style */}
+      <style>
+        {`
+          .inputStyle {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            outline: none;
+            transition: all 0.3s ease;
+          }
+          .inputStyle:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.2);
+          }
+        `}
+      </style>
     </div>
   );
 };
