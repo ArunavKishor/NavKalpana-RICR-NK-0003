@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Edit3,
@@ -15,25 +15,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
-
-/* ---------------- Dummy Data ---------------- */
-
-const studentsData = [
-  { id: "S001", name: "James Wilson", avatar: "https://i.pravatar.cc/150?img=12", status: null },
-  { id: "S002", name: "Elena Rodriguez", avatar: "https://i.pravatar.cc/150?img=5", status: null },
-  { id: "S003", name: "Marcus Chen", avatar: "https://i.pravatar.cc/150?img=13", status: null },
-  { id: "S004", name: "Sarah Miller", avatar: "https://i.pravatar.cc/150?img=9", status: null },
-  { id: "S005", name: "Devin Page", avatar: "https://i.pravatar.cc/150?img=15", status: null },
-  { id: "S006", name: "Sophia Lane", avatar: "https://i.pravatar.cc/150?img=10", status: null },
-];
+import api from "@/config/Api";
 
 const AttendanceManagement = () => {
   const navigate = useNavigate();
   const { batchId } = useParams();
 
-  const [students, setStudents] = useState(studentsData);
+  const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sessionRemarks, setSessionRemarks] = useState("");
+  const [batchName, setBatchName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -62,16 +55,79 @@ const AttendanceManagement = () => {
   const attendancePercentage =
     markedCount > 0 ? ((presentCount / markedCount) * 100).toFixed(1) : 0;
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    const loadBatchStudents = async () => {
+      try {
+        setLoading(true);
+        const [batchRes, studentsRes] = await Promise.all([
+          api.get(`/api/batches/${batchId}`),
+          api.get(`/api/batches/${batchId}/students`),
+        ]);
+
+        setBatchName(batchRes?.data?.data?.name || "");
+
+        const list = studentsRes?.data?.data?.students || [];
+        setStudents(
+          list.map((student) => ({
+            id: student._id,
+            name: student.user?.fullName || "Unknown",
+            avatar: `https://i.pravatar.cc/150?u=${student.user?.email || student._id}`,
+            status: null,
+          })),
+        );
+        setError("");
+      } catch (err) {
+        console.error("Load attendance data failed:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load batch attendance data.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (batchId) {
+      loadBatchStudents();
+    }
+  }, [batchId]);
+
+  const handleSubmit = async () => {
     if (markedCount !== totalStudents) {
       alert(`Mark all students first (${markedCount}/${totalStudents})`);
       return;
     }
-    alert("Attendance Submitted Successfully ✅");
+    try {
+      const records = students.map((student) => ({
+        student: student.id,
+        batch: batchId,
+        date: new Date().toISOString(),
+        status: student.status,
+        notes: sessionRemarks,
+      }));
+
+      await api.post("/api/attendance", { records });
+      alert("Attendance Submitted Successfully");
+    } catch (err) {
+      console.error("Submit attendance failed:", err);
+      alert(
+        err.response?.data?.message ||
+          "Failed to submit attendance. Please try again.",
+      );
+    }
   };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+      {loading && (
+        <div className="text-sm text-slate-500">Loading attendance...</div>
+      )}
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          {error}
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
@@ -91,7 +147,7 @@ const AttendanceManagement = () => {
               </h1>
 
               <Badge className="bg-blue-100 text-blue-700 border px-3 py-1 text-xs font-semibold">
-                BATCH: B{batchId || "001"}
+                BATCH: {batchName || batchId || "N/A"}
               </Badge>
             </div>
 

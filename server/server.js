@@ -7,6 +7,12 @@ import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import ContactRouter from "./src/routers/contactRoutes.js";
 import AuthRouter from "./src/routers/authRouter.js";
+import StudentRouter from "./src/routers/studentRoutes.js";
+import BatchRouter from "./src/routers/batchRoutes.js";
+import AttendanceRouter from "./src/routers/attendanceRoutes.js";
+import AssessmentRouter from "./src/routers/assessmentRoutes.js";
+import SupportRouter from "./src/routers/supportRoutes.js";
+import DashboardRouter from "./src/routers/dashboardRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +36,12 @@ app.use(morgan("dev"));
 // Routes
 app.use("/api/auth", AuthRouter);
 app.use("/api/contact", ContactRouter);
+app.use("/api/students", StudentRouter);
+app.use("/api/batches", BatchRouter);
+app.use("/api/attendance", AttendanceRouter);
+app.use("/api/assessments", AssessmentRouter);
+app.use("/api/support", SupportRouter);
+app.use("/api/dashboard", DashboardRouter);
 
 // Default Route
 app.get("/", (req, res) => {

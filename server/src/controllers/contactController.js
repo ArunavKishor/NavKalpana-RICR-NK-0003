@@ -64,7 +64,7 @@ export const DeleteContact = async (req, res, next) => {
     const contact = await Contact.findById(req.params.id);
 
     if (!contact) {
-      const error = new Error("Contact message not found");
+      const error = new Error("Resource not found");
       error.statusCode = 404;
       return next(error);
     }
