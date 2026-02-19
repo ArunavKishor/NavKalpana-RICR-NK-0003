@@ -12,7 +12,13 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/admin/DashboardHome";
-import { BatchManagement, AssessmentManagement, StudentManagement, SupportRequests } from "./pages/admin/AdminPages";
+import {
+  BatchManagement,
+  AssessmentManagement,
+  StudentManagement,
+  SupportRequests,
+} from "./pages/admin/AdminPages";
+import AttendanceManagement from "./pages/admin/AttendenceManagement";
 
 const App = () => {
   return (
@@ -37,6 +43,10 @@ const App = () => {
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="batches" element={<BatchManagement />} />
+            <Route
+              path="batches/:batchId/attendance"
+              element={<AttendanceManagement />}
+            />
             <Route path="assessments" element={<AssessmentManagement />} />
             <Route path="students" element={<StudentManagement />} />
             <Route path="support" element={<SupportRequests />} />
