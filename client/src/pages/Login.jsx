@@ -74,6 +74,8 @@ const Login = () => {
       setUser(user);
       setIsLogin(true);
       setRole(role);
+      sessionStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", user.token);
 
       sessionStorage.setItem("Token", JSON.stringify(user));
 

@@ -1,9 +1,19 @@
 import express from "express";
-import { NewContact } from "../controllers/contactController.js";
+import {
+  NewContact,
+  GetAllContacts,
+  DeleteContact,
+} from "../controllers/contactController.js";
 
 const router = express.Router();
 
 // Create New Contact Message
-router.post("/new-contact", NewContact);
+router.post("/", NewContact);
+
+// Get All Contact Messages (Admin)
+router.get("/", GetAllContacts);
+
+// Delete Contact Message
+router.delete("/:id", DeleteContact);
 
 export default router;

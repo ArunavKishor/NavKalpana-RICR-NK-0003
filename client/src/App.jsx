@@ -10,6 +10,9 @@ import AdminLogin from "./pages/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import DashboardLayout from "./components/dashboard/DashboardLayout";
+import DashboardHome from "./pages/admin/DashboardHome";
+import { BatchManagement, AssessmentManagement, StudentManagement, SupportRequests } from "./pages/admin/AdminPages";
 
 const App = () => {
   return (
@@ -25,8 +28,19 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/course/:title" element={<CourseDetail />} />
+
+          {/* Admin Dashboard Routes */}
+          <Route path="/admin-dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+          </Route>
+
+          <Route path="/admin" element={<DashboardLayout />}>
+            <Route path="dashboard" element={<DashboardHome />} />
+            <Route path="batches" element={<BatchManagement />} />
+            <Route path="assessments" element={<AssessmentManagement />} />
+            <Route path="students" element={<StudentManagement />} />
+            <Route path="support" element={<SupportRequests />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>

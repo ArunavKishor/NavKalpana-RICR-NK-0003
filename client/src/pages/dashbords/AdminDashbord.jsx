@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 const getStoredUser = () => {
   try {
-    const raw = sessionStorage.getItem("AdminUser"); // Expecting stored user data here
+    let raw = sessionStorage.getItem("AdminUser");
+    if (raw) return JSON.parse(raw);
+
+    raw = sessionStorage.getItem("user");
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
     return null;
@@ -24,19 +27,24 @@ const AdminDashbord = () => {
 
   // Check Auth on Mount
   React.useEffect(() => {
-    const token = sessionStorage.getItem("AdminToken");
+    let token = sessionStorage.getItem("AdminToken");
     const user = getStoredUser();
 
+    if (!token && user?.token) {
+      token = user.token;
+    }
+
     if (!token || !user) {
-      // Not authenticated as Admin
-      navigate("/admin");
+      navigate("/login");
     }
   }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem("AdminUser");
     sessionStorage.removeItem("AdminToken");
-    navigate("/admin");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    navigate("/login");
   };
   const [teachers, setTeachers] = useState([]);
   const [formData, setFormData] = useState(emptyTeacherForm);
