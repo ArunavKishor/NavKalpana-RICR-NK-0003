@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import api from "../config/Api";
 
 const AdminLogin = () => {
     const [email, setEmail] = useState("");
@@ -14,17 +14,11 @@ const AdminLogin = () => {
         setLoading(true);
 
         try {
-            const { data } = await axios.post(
-                "http://localhost:5000/api/auth/login",
+            const { data } = await api.post(
+                "/api/auth/login",
                 {
                     email,
                     password,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
                 }
             );
 

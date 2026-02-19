@@ -10,8 +10,6 @@ import { FaEyeSlash } from "react-icons/fa6";
 const roleRoutes = {
   admin: "/admin-dashboard",
   student: "/student-dashboard",
-  manager: "/resturant-dashboard",
-  customer: "/user-dashboard",
 };
 
 const Login = () => {
@@ -46,7 +44,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const res = await api.post("/auth/login", formData);
+      const res = await api.post("/api/auth/login", formData);
       toast.success(res.data.message);
 
       const user = res.data.data;
@@ -76,10 +74,10 @@ const Login = () => {
     <>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div className="w-full max-w-md">
-          
+
           {/* Professional Card */}
           <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-            
+
             <h1 className="text-2xl font-semibold text-gray-800 text-center">
               Education Portal Login
             </h1>

@@ -1,5 +1,4 @@
-import React, { createContext, useContext } from "react";
-import { useStackApp, useUser } from "@stackframe/react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
@@ -11,39 +10,57 @@ export const useAuth = () => {
   return context;
 };
 
-
-
 export const AuthProvider = ({ children }) => {
-  const user = useUser();
-  const app = useStackApp();
+  const [user, setUser] = useState(null);
+  const [isLogin, setIsLogin] = useState(false);
+  const [role, setRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Map Stack user to app user shape
-  const appUser = user ? {
-    ...user,
-    fullName: user.displayName || user.primaryEmail,
-    role: "customer", // Default role, can be enhanced later with metadata
-  } : null;
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("CravingUser");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsLogin(true);
+        setRole(parsedUser.role || "student");
+      } catch (error) {
+        console.error("Failed to parse stored user", error);
+        sessionStorage.removeItem("CravingUser");
+      }
+    }
+    setIsLoading(false);
+  }, []);
 
-  const isLogin = !!user;
+  const login = (userData) => {
+    setUser(userData);
+    setIsLogin(true);
+    setRole(userData.role || "student");
+    sessionStorage.setItem("CravingUser", JSON.stringify(userData));
+  };
 
-  const logout = async () => {
-    await app.signOut();
+  const logout = () => {
+    setUser(null);
+    setIsLogin(false);
+    setRole(null);
     sessionStorage.removeItem("CravingUser");
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user: appUser,
-        setUser: () => { }, // No-op as state is managed by Stack
+        user,
+        setUser,
         isLogin,
-        setIsLogin: () => { }, // No-op
-        role: appUser?.role,
-        setRole: () => { }, // No-op
+        setIsLogin,
+        role,
+        setRole,
+        login,
         logout,
+        isLoading
       }}
     >
-      {children}
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };
