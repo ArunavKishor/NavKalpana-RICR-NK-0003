@@ -1,12 +1,8 @@
 import React from "react";
-import PlaceholderPage from "@/components/dashboard/PlaceholderPage";
 import BatchManagement from "./BatchManagement";
-
-const AssessmentManagement = () => (
-  <PlaceholderPage title="Assessment Management" />
-);
-const StudentManagement = () => <PlaceholderPage title="Student Management" />;
-const SupportRequests = () => <PlaceholderPage title="Support Requests" />;
+import AssessmentManagement from "./AssessmentManagement";
+import StudentManagement from "./StudentManagement";
+import SupportRequests from "./SupportRequests";
 
 export {
   BatchManagement,
