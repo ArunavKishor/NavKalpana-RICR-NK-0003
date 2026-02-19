@@ -1,19 +1,23 @@
 import express from "express";
-import {
-  NewContact,
-  GetAllContacts,
-  DeleteContact,
-} from "../controllers/contactController.js";
+import Contact from "../models/Contact.js";
 
 const router = express.Router();
 
-// Create New Contact Message
-router.post("/", NewContact);
+router.post("/", async (req, res) => {
+  try {
+    const contact = await Contact.create(req.body);
 
-// Get All Contact Messages (Admin)
-router.get("/", GetAllContacts);
-
-// Delete Contact Message
-router.delete("/:id", DeleteContact);
+    res.status(201).json({
+      success: true,
+      message: "Message saved successfully!",
+      data: contact,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 export default router;
