@@ -44,27 +44,19 @@ const ForgetPasswordModal = ({ onClose }) => {
 
     try {
       let res;
-      if (isOtpSent) {
-        if (isOtpVerified) {
-          res = await api.post("/api/auth/forgetPasword", formData);
-          toast.success(res.data.message);
-          onClose();
-        } else {
-          res = await api.post("/api/auth/verifyOtp", formData);
-          toast.success(res.data.message);
-          setIsOtpSent(true);
-          setIsOtpVerified(true);
-        }
-      } else {
+      if (!isOtpSent) {
+        // Step 1: generate OTP
         res = await api.post("/api/auth/genOtp", formData);
         toast.success(res.data.message);
         setIsOtpSent(true);
       } else if (!isOtpVerified) {
-        res = await api.post("/auth/verifyOtp", formData);
+        // Step 2: verify OTP
+        res = await api.post("/api/auth/verifyOtp", formData);
         toast.success(res.data.message);
         setIsOtpVerified(true);
       } else {
-        res = await api.post("/auth/forgetPasword", formData);
+        // Step 3: update password
+        res = await api.post("/api/auth/forgetPasword", formData);
         toast.success(res.data.message);
         onClose();
       }

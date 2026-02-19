@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Courses from "./pages/Courses";
 import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import AdminLogin from "./pages/AdminLogin";

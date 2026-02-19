@@ -104,7 +104,6 @@ const Login = () => {
               <p className="text-slate-500 text-sm mt-2">
                 Sign in to access the administration panel
               </p>
-            </div>
 
             {/* Form */}
             <form
@@ -191,9 +190,7 @@ const Login = () => {
                   whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-3 rounded-xl bg-indigo-600 text-white
-                             font-medium shadow-lg hover:bg-indigo-700 transition
-                             flex items-center justify-center"
+                  className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-medium shadow-lg hover:bg-indigo-700 transition flex items-center justify-center"
                 >
                   {isLoading ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -208,7 +205,7 @@ const Login = () => {
           <p className="text-center text-slate-400 mt-6 text-xs">
             © 2026 Administration System
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Forget Password Modal */}
