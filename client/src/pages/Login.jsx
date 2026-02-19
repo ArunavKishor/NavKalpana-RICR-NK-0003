@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import api from "../config/Api";
 import { useAuth } from "../context/AuthContext";
 import ForgetPasswordModal from "../components/publicModals/ForgetPasswordModal";
@@ -29,26 +30,46 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleClearForm = () => {
+  const handleClearForm = () =>
     setFormData({
       email: "",
       password: "",
     });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isLoading) return;
+
     setIsLoading(true);
 
     try {
       const res = await api.post("/api/auth/login", formData);
       toast.success(res.data.message);
 
-      const user = res.data.data;
+      const user = res?.data?.data;
       const role = user?.role;
+
+      if (!user || !role) {
+        toast.error("Invalid server response");
+        return;
+      }
+
+      /* ✅ ADMIN-ONLY VALIDATION */
+      if (role !== "admin") {
+        toast.error("Access denied. Admins only.");
+        sessionStorage.removeItem("Token");
+        return;
+      }
+
+      toast.success("Welcome Admin");
 
       setUser(user);
       setIsLogin(true);
@@ -56,14 +77,11 @@ const Login = () => {
       sessionStorage.setItem("user", JSON.stringify(user));
       sessionStorage.setItem("token", user.token);
 
-      handleClearForm();
+      sessionStorage.setItem("Token", JSON.stringify(user));
 
-      const nextRoute = roleRoutes[role];
-      if (nextRoute) {
-        navigate(nextRoute);
-      } else {
-        toast.error("Unknown role. Please contact support.");
-      }
+      navigate("/admin-dashboard");
+
+      handleClearForm();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
     } finally {
@@ -83,20 +101,23 @@ const Login = () => {
               Education Portal Login
             </h1>
 
-            <p className="text-center text-gray-500 text-sm mt-2 mb-6">
-              Please sign in to access your dashboard
-            </p>
+              <p className="text-slate-500 text-sm mt-2">
+                Sign in to access the administration panel
+              </p>
+            </div>
 
+            {/* Form */}
             <form
               onSubmit={handleSubmit}
               onReset={handleClearForm}
-              className="space-y-5"
+              className="space-y-6"
             >
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="text-sm font-medium text-slate-700">
                   Email Address
                 </label>
+
                 <input
                   type="email"
                   name="email"
@@ -104,15 +125,19 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none disabled:bg-gray-100"
+                  placeholder="Enter admin email"
+                  className="w-full mt-2 px-4 py-3 rounded-xl border border-slate-200
+                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                             outline-none transition-all bg-white"
                 />
               </div>
 
               {/* Password */}
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="text-sm font-medium text-slate-700">
                   Password
                 </label>
+
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -120,25 +145,25 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:outline-none disabled:bg-gray-100"
+                  placeholder="Enter password"
+                  className="w-full mt-2 px-4 py-3 rounded-xl border border-slate-200
+                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                             outline-none transition-all bg-white"
                 />
 
                 <div
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-[38px] cursor-pointer text-gray-500 hover:text-blue-600"
+                  className="absolute right-4 top-[46px] cursor-pointer
+                             text-slate-400 hover:text-indigo-600 transition"
                 >
-                  {showPassword ? (
-                    <FaEyeSlash size={18} />
-                  ) : (
-                    <FaEye size={18} />
-                  )}
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </div>
               </div>
 
               {/* Forgot Password */}
               <div className="text-right">
                 <button
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-indigo-600 hover:text-indigo-800 transition"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsForgetPasswordModelOpen(true);
@@ -149,36 +174,44 @@ const Login = () => {
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
+              <div className="flex gap-4 pt-2">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="reset"
                   disabled={isLoading}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-md hover:bg-gray-100 transition disabled:opacity-50"
+                  className="flex-1 py-3 rounded-xl border border-slate-200
+                             text-slate-600 hover:bg-slate-50 transition"
                 >
                   Clear
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-blue-700 text-white py-2.5 rounded-md hover:bg-blue-800 transition flex items-center justify-center disabled:bg-gray-400"
+                  className="flex-1 py-3 rounded-xl bg-indigo-600 text-white
+                             font-medium shadow-lg hover:bg-indigo-700 transition
+                             flex items-center justify-center"
                 >
                   {isLoading ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   ) : (
                     "Login"
                   )}
-                </button>
+                </motion.button>
               </div>
             </form>
           </div>
 
-          <p className="text-center text-gray-500 mt-6 text-xs">
-            © 2026 Education Center. All rights reserved.
+          <p className="text-center text-slate-400 mt-6 text-xs">
+            © 2026 Administration System
           </p>
-        </div>
+        </motion.div>
       </div>
 
+      {/* Forget Password Modal */}
       {isForgetPasswordModelOpen && (
         <ForgetPasswordModal
           onClose={() => setIsForgetPasswordModelOpen(false)}
