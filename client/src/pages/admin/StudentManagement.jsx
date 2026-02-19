@@ -293,7 +293,7 @@ const StudentManagement = () => {
 /* ---------------- REUSABLE COMPONENTS ---------------- */
 
 const StatCard = ({ icon, label, value }) => (
-  <div className="bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-[140px]">
+  <div className="bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35">
     <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
     <div>
       <p className="text-xs text-slate-500">{label}</p>
