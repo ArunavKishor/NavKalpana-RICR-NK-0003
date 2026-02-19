@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   Search,
@@ -13,84 +13,90 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-// Sample support requests data
-const supportRequestsData = [
-  {
-    id: "SR-001",
-    student: "Emily Davis",
-    email: "emily.d@example.com",
-    subject: "Assignment submission deadline extension request",
-    description:
-      "I need an extension for the React hooks assignment due to personal circumstances.",
-    category: "Academic",
-    priority: "HIGH",
-    status: "OPEN",
-    createdDate: "2026-02-18",
-    updatedDate: "2026-02-19",
-    replies: 2,
-  },
-  {
-    id: "SR-002",
-    student: "Alex Johnson",
-    email: "alex.j@example.com",
-    subject: "Technical issue with quiz platform",
-    description: "Unable to submit quiz answers - browser compatibility issue.",
-    category: "Technical",
-    priority: "URGENT",
-    status: "IN_PROGRESS",
-    createdDate: "2026-02-17",
-    updatedDate: "2026-02-18",
-    replies: 5,
-  },
-  {
-    id: "SR-003",
-    student: "Michael Chen",
-    email: "michael.c@example.com",
-    subject: "Grade dispute for Data Science module",
-    description:
-      "I believe my evaluation score should be reconsidered based on the rubric.",
-    category: "Grading",
-    priority: "MEDIUM",
-    status: "RESOLVED",
-    createdDate: "2026-02-15",
-    updatedDate: "2026-02-19",
-    replies: 3,
-  },
-  {
-    id: "SR-004",
-    student: "Sarah Miller",
-    email: "sarah.m@example.com",
-    subject: "Request for additional learning resources",
-    description:
-      "Could you recommend more resources for advanced React patterns?",
-    category: "Resources",
-    priority: "LOW",
-    status: "OPEN",
-    createdDate: "2026-02-16",
-    updatedDate: "2026-02-16",
-    replies: 1,
-  },
-];
+import api from "@/config/Api";
 
 const SupportRequests = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("All");
+  const [requests, setRequests] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    urgent: 0,
+    inProgress: 0,
+    resolved: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const filters = ["All", "OPEN", "IN_PROGRESS", "RESOLVED"];
   const priorities = ["All", "URGENT", "HIGH", "MEDIUM", "LOW"];
 
+  const normalizeStatus = (status) =>
+    status ? status.toUpperCase().replace("-", "_") : "";
+
+  useEffect(() => {
+    const loadSupportRequests = async () => {
+      try {
+        setLoading(true);
+        const statusParam =
+          activeFilter === "All"
+            ? undefined
+            : activeFilter === "IN_PROGRESS"
+            ? "in-progress"
+            : activeFilter.toLowerCase();
+        const priorityParam =
+          selectedPriority === "All"
+            ? undefined
+            : selectedPriority.toLowerCase();
+
+        const { data: requestsRes } = await api.get("/api/support", {
+          params: {
+            status: statusParam,
+            priority: priorityParam,
+            search: searchQuery || undefined,
+          },
+        });
+
+        const list = requestsRes?.data?.requests || [];
+        setRequests(list);
+
+        setStats({
+          total: list.length,
+          urgent: list.filter((r) => r.priority === "urgent").length,
+          inProgress: list.filter((r) => r.status === "in-progress").length,
+          resolved: list.filter((r) => r.status === "resolved").length,
+        });
+        setError("");
+      } catch (err) {
+        console.error("Load support requests failed:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load support requests. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSupportRequests();
+  }, [activeFilter, selectedPriority, searchQuery]);
+
   // Filter requests
-  const filteredRequests = supportRequestsData.filter((request) => {
+  const filteredRequests = requests.filter((request) => {
     const matchesFilter =
-      activeFilter === "All" || request.status === activeFilter;
+      activeFilter === "All" || normalizeStatus(request.status) === activeFilter;
     const matchesSearch =
-      request.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.id.toLowerCase().includes(searchQuery.toLowerCase());
+      request.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.student?.user?.fullName
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      String(request._id || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
     const matchesPriority =
-      selectedPriority === "All" || request.priority === selectedPriority;
+      selectedPriority === "All" ||
+      request.priority?.toUpperCase() === selectedPriority;
     return matchesFilter && matchesSearch && matchesPriority;
   });
 
@@ -140,6 +146,16 @@ const SupportRequests = () => {
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-sm text-slate-500">Loading requests...</div>
+      )}
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
         <div>
@@ -161,28 +177,22 @@ const SupportRequests = () => {
         <StatsCard
           icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
           label="Total"
-          value={supportRequestsData.length}
+          value={stats.total}
         />
         <StatsCard
           icon={<AlertCircle className="w-5 h-5 text-red-600" />}
           label="Urgent"
-          value={
-            supportRequestsData.filter((r) => r.priority === "URGENT").length
-          }
+          value={stats.urgent}
         />
         <StatsCard
           icon={<Clock className="w-5 h-5 text-orange-600" />}
           label="In Progress"
-          value={
-            supportRequestsData.filter((r) => r.status === "IN_PROGRESS").length
-          }
+          value={stats.inProgress}
         />
         <StatsCard
           icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
           label="Resolved"
-          value={
-            supportRequestsData.filter((r) => r.status === "RESOLVED").length
-          }
+          value={stats.resolved}
         />
       </div>
 
@@ -252,34 +262,38 @@ const SupportRequests = () => {
         ) : (
           filteredRequests.map((request) => (
             <Card
-              key={request.id}
+              key={request._id}
               className="border-none shadow-sm hover:shadow-md transition-all duration-300"
             >
               <CardContent className="p-5 sm:p-6">
                 {/* Header Row */}
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className="bg-slate-200 text-slate-700 px-2 py-1 text-xs font-semibold">
-                        {request.id}
-                      </Badge>
-                      <Badge
-                        className={`${getPriorityColor(request.priority)} px-2.5 py-1 text-xs font-semibold`}
-                      >
-                        {request.priority}
-                      </Badge>
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">
-                      {request.subject}
-                    </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-slate-200 text-slate-700 px-2 py-1 text-xs font-semibold">
+                      {request._id}
+                    </Badge>
+                    <Badge
+                      className={`${getPriorityColor(
+                        request.priority?.toUpperCase(),
+                      )} px-2.5 py-1 text-xs font-semibold`}
+                    >
+                      {request.priority?.toUpperCase()}
+                    </Badge>
                   </div>
-                  <Badge
-                    className={`${getStatusColor(request.status)} border px-3 py-1 font-semibold text-xs flex items-center gap-1 shrink-0`}
-                  >
-                    {getStatusIcon(request.status)}
-                    {request.status}
-                  </Badge>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">
+                    {request.subject}
+                  </h3>
                 </div>
+                <Badge
+                  className={`${getStatusColor(
+                    normalizeStatus(request.status),
+                  )} border px-3 py-1 font-semibold text-xs flex items-center gap-1 shrink-0`}
+                >
+                  {getStatusIcon(normalizeStatus(request.status))}
+                  {normalizeStatus(request.status)}
+                </Badge>
+              </div>
 
                 {/* Student Info */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-4 pb-4 border-b border-slate-100">
@@ -289,16 +303,16 @@ const SupportRequests = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-slate-900 text-sm">
-                        {request.student}
+                        {request.student?.user?.fullName || "Unknown"}
                       </p>
                       <p className="text-xs text-slate-500 truncate">
-                        {request.email}
+                        {request.student?.user?.email || "N/A"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-slate-600 text-sm">
                     <MessageSquare className="w-4 h-4" />
-                    <span>{request.replies} replies</span>
+                    <span>{request.responses?.length || 0} replies</span>
                   </div>
                 </div>
 
@@ -312,10 +326,12 @@ const SupportRequests = () => {
                   <div className="flex items-center gap-4 text-xs text-slate-500">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      Created: {request.createdDate}
+                      Created:{" "}
+                      {new Date(request.createdAt).toLocaleDateString("en-US")}
                     </span>
                     <span className="hidden sm:flex items-center gap-1">
-                      Updated: {request.updatedDate}
+                      Updated:{" "}
+                      {new Date(request.updatedAt).toLocaleDateString("en-US")}
                     </span>
                   </div>
                   <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm group">

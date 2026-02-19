@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Users, BookOpen, ClipboardCheck, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import api from "@/config/Api";
 import {
   LineChart,
   Line,
@@ -11,74 +12,108 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-/* ------------------ DATA ------------------ */
-
-const data = [
-  { name: "Week 1", score: 65, attendance: 90 },
-  { name: "Week 2", score: 72, attendance: 88 },
-  { name: "Week 3", score: 68, attendance: 92 },
-  { name: "Week 4", score: 78, attendance: 95 },
-  { name: "Week 5", score: 85, attendance: 94 },
-  { name: "Week 6", score: 82, attendance: 91 },
-];
-
-const stats = [
-  {
-    title: "Total Students",
-    value: "452",
-    change: "+12 from last month",
-    icon: Users,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-  },
-  {
-    title: "Active Courses",
-    value: "8",
-    change: "2 ending this week",
-    icon: BookOpen,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
-  },
-  {
-    title: "Pending Evaluation",
-    value: "24",
-    change: "Across 3 batches",
-    icon: ClipboardCheck,
-    color: "text-orange-600",
-    bgColor: "bg-orange-100",
-  },
-];
-
-const upcomingDeadlines = [
-  {
-    title: "React Mid-Term Evaluation",
-    date: "Oct 24, 2026",
-    type: "Assignment",
-    icon: Calendar,
-    color: "bg-rose-100 text-rose-600",
-  },
-  {
-    title: "Python Weekly Quiz #4",
-    date: "Oct 26, 2026",
-    type: "Quiz",
-    icon: Calendar,
-    color: "bg-orange-100 text-orange-600",
-  },
-  {
-    title: "Data Structures Project",
-    date: "Nov 02, 2026",
-    type: "Project",
-    icon: Calendar,
-    color: "bg-blue-100 text-blue-600",
-  },
-];
-
 /* ------------------ COMPONENT ------------------ */
 
 const DashboardHome = () => {
+  const [stats, setStats] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [deadlines, setDeadlines] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        setLoading(true);
+        const [statsRes, trendsRes, deadlinesRes] = await Promise.all([
+          api.get("/api/dashboard/stats"),
+          api.get("/api/dashboard/trends"),
+          api.get("/api/dashboard/deadlines"),
+        ]);
+
+        const statsData = statsRes?.data?.data || {};
+        setStats([
+          {
+            title: "Total Students",
+            value: statsData.totalStudents ?? 0,
+            change: "Active student profiles",
+            icon: Users,
+            color: "text-blue-600",
+            bgColor: "bg-blue-100",
+          },
+          {
+            title: "Active Batches",
+            value: statsData.activeBatches ?? 0,
+            change: "Ongoing cohorts",
+            icon: BookOpen,
+            color: "text-purple-600",
+            bgColor: "bg-purple-100",
+          },
+          {
+            title: "Pending Assessments",
+            value: statsData.pendingAssessments ?? 0,
+            change: "Due soon",
+            icon: ClipboardCheck,
+            color: "text-orange-600",
+            bgColor: "bg-orange-100",
+          },
+        ]);
+
+        const trends = trendsRes?.data?.data?.trends || [];
+        setChartData(
+          trends.map((trend, index) => ({
+            name: trend.week || `Week ${index + 1}`,
+            score: Number(Number(trend.averageScore || 0).toFixed(1)),
+            attendance: Number(
+              Number(trend.attendancePercentage || 0).toFixed(1),
+            ),
+          })),
+        );
+
+        const deadlineItems = deadlinesRes?.data?.data?.assessments || [];
+        setDeadlines(
+          deadlineItems.map((item) => ({
+            title: item.title,
+            date: new Date(item.dueDate).toLocaleDateString("en-US", {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            }),
+            type: item.type === "quiz" ? "Quiz" : "Assignment",
+            icon: Calendar,
+            color:
+              item.type === "quiz"
+                ? "bg-orange-100 text-orange-600"
+                : "bg-rose-100 text-rose-600",
+          })),
+        );
+        setError("");
+      } catch (err) {
+        console.error("Dashboard load failed:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load dashboard data. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
-      
+      {loading && (
+        <div className="text-sm text-slate-500">Loading dashboard...</div>
+      )}
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          {error}
+        </div>
+      )}
+
       {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
@@ -134,7 +169,7 @@ const DashboardHome = () => {
             <CardContent>
               <div className="h-56 sm:h-64 md:h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="name" />
                     <YAxis />
@@ -172,7 +207,7 @@ const DashboardHome = () => {
           </div>
 
           <div className="space-y-3 sm:space-y-4">
-            {upcomingDeadlines.map((item, index) => (
+            {deadlines.map((item, index) => (
               <Card key={index} className="shadow-sm">
                 <CardContent className="p-3 flex gap-3">
                   <div className={`p-2 rounded-lg ${item.color}`}>

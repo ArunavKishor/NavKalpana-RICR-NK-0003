@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Plus,
   FileText,
@@ -12,92 +12,75 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-// Sample assignments data
-const assignmentsData = [
-  {
-    id: 1,
-    title: "Custom Hook Implementation",
-    lesson: "Introduction to React Hooks",
-    description: "Create a useLocalStorage hook to persist state.",
-    deadline: "2026-02-25",
-    maxMarks: 50,
-    progress: 75,
-    status: "ONGOING",
-    submissions: 24,
-    late: 2,
-    evaluated: 18,
-    type: "assignment",
-  },
-  {
-    id: 2,
-    title: "Redux Toolkit Store",
-    lesson: "State Management with Redux",
-    description: "Set up a global store using RTK for a cart app.",
-    deadline: "2026-02-20",
-    maxMarks: 100,
-    progress: 43,
-    status: "EVALUATING",
-    submissions: 28,
-    late: 4,
-    evaluated: 12,
-    type: "assignment",
-  },
-  {
-    id: 4,
-    title: "Node.js API Development",
-    lesson: "Backend Development",
-    description: "Build a RESTful API with Express and MongoDB.",
-    deadline: "2026-03-05",
-    maxMarks: 80,
-    progress: 15,
-    status: "ONGOING",
-    submissions: 8,
-    late: 0,
-    evaluated: 2,
-    type: "assignment",
-  },
-];
-
-// Sample quizzes data
-const quizzesData = [
-  {
-    id: 1,
-    title: "React Fundamentals Quiz",
-    lesson: "Introduction to React Hooks",
-    duration: 20,
-    attempts: 26,
-    questions: 15,
-    avgScore: 24.5,
-    maxScore: 30,
-    status: "ACTIVE",
-    type: "quiz",
-  },
-  {
-    id: 2,
-    title: "Routing Proficiency Test",
-    lesson: "Advanced Routing Patterns",
-    duration: 30,
-    attempts: 12,
-    questions: 20,
-    avgScore: 32.2,
-    maxScore: 40,
-    status: "SCHEDULED",
-    type: "quiz",
-  },
-];
+import api from "@/config/Api";
 
 const AssessmentManagement = () => {
   const [activeTab, setActiveTab] = useState("assignments");
   const [selectedLesson, setSelectedLesson] = useState("all");
+  const [assignments, setAssignments] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Get data based on active tab
   const filteredData =
-    activeTab === "assignments" ? assignmentsData : quizzesData;
+    activeTab === "assignments" ? assignments : quizzes;
+
+  useEffect(() => {
+    const loadAssessments = async () => {
+      try {
+        setLoading(true);
+        const [assignRes, quizRes] = await Promise.all([
+          api.get("/api/assessments", { params: { type: "assignment" } }),
+          api.get("/api/assessments", { params: { type: "quiz" } }),
+        ]);
+
+        const enrich = async (items) => {
+          const stats = await Promise.all(
+            items.map(async (item) => {
+              try {
+                const { data } = await api.get(
+                  `/api/assessments/${item._id}/statistics`,
+                );
+                return { id: item._id, stats: data?.data };
+              } catch (err) {
+                return { id: item._id, stats: null };
+              }
+            }),
+          );
+          const statMap = new Map(stats.map((s) => [s.id, s.stats]));
+          return items.map((item) => ({ ...item, stats: statMap.get(item._id) }));
+        };
+
+        const assignmentList = assignRes?.data?.data?.assessments || [];
+        const quizList = quizRes?.data?.data?.assessments || [];
+
+        setAssignments(await enrich(assignmentList));
+        setQuizzes(await enrich(quizList));
+        setError("");
+      } catch (err) {
+        console.error("Load assessments failed:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load assessments. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAssessments();
+  }, []);
 
   // Get status badge color
   const getStatusColor = (status) => {
     switch (status) {
+      case "published":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "draft":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "closed":
+        return "bg-slate-100 text-slate-700 border-slate-200";
       case "ONGOING":
         return "bg-emerald-100 text-emerald-700 border-emerald-200";
       case "EVALUATING":
@@ -115,6 +98,16 @@ const AssessmentManagement = () => {
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="text-sm text-slate-500">Loading assessments...</div>
+      )}
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
         <div>
@@ -183,7 +176,7 @@ const AssessmentManagement = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredData.map((assignment) => (
             <Card
-              key={assignment.id}
+              key={assignment._id}
               className="border-none shadow-sm hover:shadow-md transition-all duration-300"
             >
               <CardContent className="p-6 space-y-5">
@@ -198,20 +191,20 @@ const AssessmentManagement = () => {
                         {assignment.title}
                       </h3>
                       <p className="text-sm text-slate-500 truncate">
-                        Lesson: {assignment.lesson}
+                        Batch: {assignment.batch?.name || "Unassigned"}
                       </p>
                     </div>
                   </div>
                   <Badge
                     className={`${getStatusColor(assignment.status)} border px-3 py-1 font-semibold text-xs shrink-0`}
                   >
-                    {assignment.status}
+                    {assignment.status?.toUpperCase()}
                   </Badge>
                 </div>
 
                 {/* Description */}
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  {assignment.description}
+                  {assignment.description || "No description provided."}
                 </p>
 
                 {/* Deadline and Max Marks */}
@@ -223,7 +216,13 @@ const AssessmentManagement = () => {
                         Deadline
                       </p>
                       <p className="text-sm font-semibold text-slate-900 mt-0.5">
-                        {assignment.deadline}
+                        {assignment.dueDate
+                          ? new Date(assignment.dueDate).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "2-digit",
+                            })
+                          : "N/A"}
                       </p>
                     </div>
                   </div>
@@ -234,7 +233,7 @@ const AssessmentManagement = () => {
                         Max Marks
                       </p>
                       <p className="text-sm font-semibold text-slate-900 mt-0.5">
-                        {assignment.maxMarks}
+                        {assignment.totalMarks}
                       </p>
                     </div>
                   </div>
@@ -244,16 +243,20 @@ const AssessmentManagement = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Evaluation Progress
+                      Completion Rate
                     </span>
                     <span className="text-sm font-bold text-blue-600">
-                      {assignment.progress}%
+                      {Math.round(assignment.stats?.completionPercentage || 0)}%
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                     <div
                       className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                      style={{ width: `${assignment.progress}%` }}
+                      style={{
+                        width: `${Math.round(
+                          assignment.stats?.completionPercentage || 0,
+                        )}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -263,26 +266,26 @@ const AssessmentManagement = () => {
                   <div className="flex items-center gap-4 sm:gap-6">
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl font-bold text-slate-900">
-                        {assignment.submissions}
+                        {assignment.stats?.submissionCount || 0}
                       </div>
                       <div className="text-xs text-slate-500 uppercase tracking-wide">
                         Submissions
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xl sm:text-2xl font-bold text-red-600">
-                        {assignment.late}
+                      <div className="text-xl sm:text-2xl font-bold text-emerald-600">
+                        {Math.round(assignment.stats?.averageMarks || 0)}
                       </div>
                       <div className="text-xs text-slate-500 uppercase tracking-wide">
-                        Late
+                        Avg Marks
                       </div>
                     </div>
                     <div className="text-center">
                       <div className="text-xl sm:text-2xl font-bold text-emerald-600">
-                        {assignment.evaluated}
+                        {Math.round(assignment.stats?.completionPercentage || 0)}%
                       </div>
                       <div className="text-xs text-slate-500 uppercase tracking-wide">
-                        Evaluated
+                        Completion
                       </div>
                     </div>
                   </div>
@@ -315,7 +318,7 @@ const AssessmentManagement = () => {
             <div className="divide-y divide-slate-200">
               {filteredData.map((quiz) => (
                 <div
-                  key={quiz.id}
+                  key={quiz._id}
                   className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 sm:p-6 hover:bg-slate-50 transition-colors"
                 >
                   {/* Quiz Title */}
@@ -328,7 +331,7 @@ const AssessmentManagement = () => {
                         {quiz.title}
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-500 truncate">
-                        {quiz.lesson}
+                        Batch: {quiz.batch?.name || "Unassigned"}
                       </p>
                     </div>
                   </div>
@@ -340,7 +343,12 @@ const AssessmentManagement = () => {
                     </div>
                     <Clock className="w-4 h-4 text-slate-400" />
                     <span className="text-sm font-semibold text-slate-900">
-                      {quiz.duration} mins
+                      {quiz.dueDate
+                        ? new Date(quiz.dueDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "2-digit",
+                          })
+                        : "N/A"}
                     </span>
                   </div>
 
@@ -352,13 +360,13 @@ const AssessmentManagement = () => {
                     <div className="space-y-1">
                       <p className="text-sm">
                         <span className="font-bold text-slate-900">
-                          {quiz.attempts}
+                          {quiz.stats?.submissionCount || 0}
                         </span>{" "}
                         <span className="text-slate-500">Attempts</span>
                       </p>
                       <p className="text-xs text-slate-500">
-                        {quiz.questions}{" "}
-                        <span className="text-orange-500">QUESTIONS</span>
+                        {quiz.totalMarks}{" "}
+                        <span className="text-orange-500">TOTAL MARKS</span>
                       </p>
                     </div>
                   </div>
@@ -369,11 +377,11 @@ const AssessmentManagement = () => {
                       Avg Score:
                     </div>
                     <span className="text-lg font-bold text-slate-900">
-                      {quiz.avgScore}
+                      {Math.round(quiz.stats?.averageMarks || 0)}
                     </span>
                     <span className="text-slate-400 mx-1">/</span>
                     <span className="text-sm text-slate-500">
-                      {quiz.maxScore}
+                      {quiz.totalMarks}
                     </span>
                   </div>
 
@@ -382,7 +390,7 @@ const AssessmentManagement = () => {
                     <Badge
                       className={`${getStatusColor(quiz.status)} border px-3 py-1.5 font-semibold text-xs`}
                     >
-                      {quiz.status}
+                      {quiz.status?.toUpperCase()}
                     </Badge>
                   </div>
 

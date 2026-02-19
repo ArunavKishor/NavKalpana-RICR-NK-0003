@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Users,
   CheckCircle,
@@ -12,62 +12,34 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-/* ---------------- SAMPLE DATA ---------------- */
-const studentsData = [
-  {
-    id: 1,
-    name: "Emily Davis",
-    email: "emily.d@example.com",
-    phone: "+1 (555) 004-5678",
-    course: "Data Science",
-    enrollmentId: "ENR-2025-098",
-    attendance: 98,
-    modules: ["Python", "Machine Learning"],
-    status: "ONGOING",
-  },
-  {
-    id: 2,
-    name: "Alex Johnson",
-    email: "alex.j@example.com",
-    phone: "+1 (555) 002-1123",
-    course: "Web Development",
-    enrollmentId: "ENR-2025-102",
-    attendance: 82,
-    modules: ["React", "Node"],
-    status: "ONGOING",
-  },
-  {
-    id: 3,
-    name: "Michael Chen",
-    email: "michael.c@example.com",
-    phone: "+1 (555) 009-7788",
-    course: "Data Science",
-    enrollmentId: "ENR-2024-087",
-    attendance: 74,
-    modules: ["Python", "Statistics"],
-    status: "COMPLETED",
-  },
-];
+import api from "@/config/Api";
 
 const StudentManagement = () => {
   const [activeTab, setActiveTab] = useState("ONGOING");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("All");
+  const [students, setStudents] = useState([]);
+  const [counts, setCounts] = useState({
+    total: 0,
+    active: 0,
+    completed: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   /* ---------------- COUNTS ---------------- */
-  const total = studentsData.length;
-  const ongoing = studentsData.filter((s) => s.status === "ONGOING").length;
-  const completed = studentsData.filter((s) => s.status === "COMPLETED").length;
+  const total = counts.total;
+  const ongoing = counts.active;
+  const completed = counts.completed;
 
   /* ---------------- UNIQUE COURSES ---------------- */
   const uniqueCourses = useMemo(() => {
-    return ["All", ...new Set(studentsData.map((s) => s.course))];
-  }, []);
+    return ["All", ...new Set(students.map((s) => s.course).filter(Boolean))];
+  }, [students]);
 
   /* ---------------- FILTER LOGIC ---------------- */
   const filteredStudents = useMemo(() => {
-    return studentsData.filter((student) => {
+    return students.filter((student) => {
       const matchesTab = student.status === activeTab;
 
       const matchesSearch =
@@ -80,7 +52,89 @@ const StudentManagement = () => {
 
       return matchesTab && matchesSearch && matchesCourse;
     });
-  }, [activeTab, searchTerm, selectedCourse]);
+  }, [students, activeTab, searchTerm, selectedCourse]);
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      try {
+        const [totalRes, activeRes, completedRes] = await Promise.all([
+          api.get("/api/students", { params: { limit: 1 } }),
+          api.get("/api/students", { params: { limit: 1, status: "active" } }),
+          api.get("/api/students", {
+            params: { limit: 1, status: "completed" },
+          }),
+        ]);
+        setCounts({
+          total: totalRes?.data?.data?.pagination?.total || 0,
+          active: activeRes?.data?.data?.pagination?.total || 0,
+          completed: completedRes?.data?.data?.pagination?.total || 0,
+        });
+      } catch (err) {
+        console.error("Load student counts failed:", err);
+      }
+    };
+
+    loadCounts();
+  }, []);
+
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        const status =
+          activeTab === "COMPLETED" ? "completed" : "active";
+        const { data } = await api.get("/api/students", {
+          params: {
+            status,
+            search: searchTerm || undefined,
+          },
+        });
+        const list = data?.data?.students || [];
+
+        const performanceRes = await api.get("/api/dashboard/performance");
+        const performanceData =
+          performanceRes?.data?.data?.studentPerformance || [];
+
+        const performanceMap = new Map(
+          performanceData.map((item) => [item.student.id, item]),
+        );
+
+        const mapped = list.map((student) => {
+          const course = student.batches?.[0]?.course || "Unassigned";
+          const modules = student.batches?.map((b) => b.name) || [];
+          const performance = performanceMap.get(student._id);
+          const attendance = performance
+            ? Math.round(performance.attendancePercentage)
+            : 0;
+
+          return {
+            id: student._id,
+            name: student.user?.fullName || "Unknown",
+            email: student.user?.email || "N/A",
+            phone: student.phone || "N/A",
+            course,
+            enrollmentId: student.enrollmentId,
+            attendance,
+            modules,
+            status: student.status === "completed" ? "COMPLETED" : "ONGOING",
+          };
+        });
+
+        setStudents(mapped);
+        setError("");
+      } catch (err) {
+        console.error("Load students failed:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load students. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStudents();
+  }, [activeTab, searchTerm]);
 
   const getAttendanceStyle = (attendance) => {
     if (attendance >= 85)
@@ -92,42 +146,18 @@ const StudentManagement = () => {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      {/* ---------------- HEADER ---------------- */}
-      <div className="bg-white px-8 py-4 flex justify-between items-center shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-800">
-          Good Afternoon, <span className="text-blue-600">Sarah</span>
-        </h2>
-
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-            <input
-              placeholder="Search students, batches..."
-              className="pl-9 pr-4 py-2 w-72 border rounded-lg bg-slate-50 text-sm focus:outline-none"
-            />
-          </div>
-
-          <Bell className="w-5 h-5 text-slate-500 cursor-pointer" />
-
-          <div className="flex items-center gap-2 cursor-pointer">
-            <img
-              src="https://i.pravatar.cc/40?img=5"
-              alt="Dr. Sarah Jenkins"
-              className="w-9 h-9 rounded-full"
-            />
-            <div className="text-right">
-              <p className="text-sm font-medium">Dr. Sarah Jenkins</p>
-              <p className="text-xs text-slate-500">
-                Senior Faculty, CS Department
-              </p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-slate-500" />
-          </div>
-        </div>
-      </div>
-
       {/* ---------------- PAGE CONTENT ---------------- */}
       <div className="p-8 space-y-6">
+        {loading && (
+          <div className="text-sm text-slate-500">Loading students...</div>
+        )}
+
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+            {error}
+          </div>
+        )}
+
         {/* Title + Stats */}
         <div className="flex justify-between items-center">
           <div>
@@ -147,7 +177,7 @@ const StudentManagement = () => {
             />
             <StatCard
               icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
-              label="ONGOING"
+              label="ACTIVE"
               value={ongoing}
             />
             <StatCard
@@ -190,7 +220,7 @@ const StudentManagement = () => {
                 active={activeTab === "ONGOING"}
                 onClick={() => setActiveTab("ONGOING")}
               >
-                Ongoing Students
+                Active Students
               </ToggleButton>
 
               <ToggleButton

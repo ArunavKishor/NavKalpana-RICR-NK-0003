@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,45 +10,8 @@ import {
   Plus,
   ChevronRight,
 } from "lucide-react";
+import api from "@/config/Api";
 
-
-// -------------------- Dummy Data --------------------
-
-const batchesData = [
-  {
-    id: 1,
-    name: "Full Stack Web Development",
-    type: "Development",
-    status: "ONGOING",
-    students: 45,
-    date: "Jan 2026",
-    progress: 65,
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-  },
-  {
-    id: 2,
-    name: "UI/UX Masterclass",
-    type: "Design",
-    status: "UPCOMING",
-    students: 30,
-    date: "March 2026",
-    progress: 0,
-    image:
-      "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e",
-  },
-  {
-    id: 3,
-    name: "React Advanced",
-    type: "Frontend",
-    status: "COMPLETED",
-    students: 50,
-    date: "Oct 2025",
-    progress: 100,
-    image:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee",
-  },
-];
 
 // -------------------- Component --------------------
 
@@ -56,20 +19,60 @@ const BatchManagement = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const filters = ["All", "Ongoing", "Completed", "Upcoming"];
 
-  const filteredBatches = batchesData.filter((batch) => {
-    const matchesFilter =
-      activeFilter === "All" ||
-      batch.status === activeFilter.toUpperCase();
+  useEffect(() => {
+    const loadBatches = async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get("/api/batches", {
+          params: {
+            search: searchQuery || undefined,
+            status:
+              activeFilter === "All"
+                ? undefined
+                : activeFilter.toLowerCase(),
+          },
+        });
+        setBatches(data?.data?.batches || []);
+        setError("");
+      } catch (err) {
+        console.error("Load batches failed:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load batches. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const matchesSearch =
-      batch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      batch.type.toLowerCase().includes(searchQuery.toLowerCase());
+    loadBatches();
+  }, [activeFilter, searchQuery]);
 
-    return matchesFilter && matchesSearch;
-  });
+  const filteredBatches = useMemo(() => {
+    if (!searchQuery) return batches;
+    return batches.filter((batch) => {
+      const matchesSearch =
+        batch.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        batch.course?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    });
+  }, [batches, searchQuery]);
+
+  const computeProgress = (batch) => {
+    if (!batch.startDate || !batch.endDate) return 0;
+    const start = new Date(batch.startDate).getTime();
+    const end = new Date(batch.endDate).getTime();
+    const now = Date.now();
+    if (now <= start) return 0;
+    if (now >= end) return 100;
+    return Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -86,6 +89,15 @@ const BatchManagement = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+      {loading && (
+        <div className="text-sm text-slate-500">Loading batches...</div>
+      )}
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          {error}
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -141,21 +153,21 @@ const BatchManagement = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredBatches.map((batch) => (
           <Card
-            key={batch.id}
+            key={batch._id}
             className="shadow-sm hover:shadow-lg transition overflow-hidden"
           >
             {/* Image */}
             <div className="relative h-48 overflow-hidden">
               <img
-                src={batch.image}
+                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085"
                 alt={batch.name}
                 className="w-full h-full object-cover hover:scale-105 transition duration-300"
               />
               <div className="absolute top-3 right-3">
                 <Badge
-                  className={`${getStatusColor(batch.status)} border`}
+                  className={`${getStatusColor(batch.status?.toUpperCase())} border`}
                 >
-                  {batch.status}
+                  {batch.status?.toUpperCase()}
                 </Badge>
               </div>
             </div>
@@ -166,18 +178,23 @@ const BatchManagement = () => {
                   {batch.name}
                 </h3>
                 <p className="text-sm text-blue-600 font-medium uppercase">
-                  {batch.type}
+                  {batch.course}
                 </p>
               </div>
 
               <div className="flex justify-between text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  {batch.students} Students
+                  {batch.enrolledStudents ?? batch.students?.length ?? 0} Students
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {batch.date}
+                  {batch.startDate
+                    ? new Date(batch.startDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "N/A"}
                 </div>
               </div>
 
@@ -185,19 +202,19 @@ const BatchManagement = () => {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Progress</span>
-                  <span>{batch.progress}%</span>
+                  <span>{computeProgress(batch)}%</span>
                 </div>
                 <div className="w-full bg-slate-200 h-2 rounded-full">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all"
-                    style={{ width: `${batch.progress}%` }}
+                    style={{ width: `${computeProgress(batch)}%` }}
                   ></div>
                 </div>
               </div>
 
               <button
                 onClick={() =>
-                  navigate(`/admin/batches/${batch.id}`)
+                  navigate(`/admin/batches/${batch._id}`)
                 }
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg flex items-center justify-center gap-2"
               >
