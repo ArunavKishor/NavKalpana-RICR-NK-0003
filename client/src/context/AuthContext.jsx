@@ -17,8 +17,10 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("CravingUser");
-    if (storedUser) {
+    const storedUser = sessionStorage.getItem("user");
+    const storedToken = sessionStorage.getItem("token");
+
+    if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
@@ -26,7 +28,8 @@ export const AuthProvider = ({ children }) => {
         setRole(parsedUser.role || "student");
       } catch (error) {
         console.error("Failed to parse stored user", error);
-        sessionStorage.removeItem("CravingUser");
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("token");
       }
     }
     setIsLoading(false);
@@ -36,14 +39,16 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setIsLogin(true);
     setRole(userData.role || "student");
-    sessionStorage.setItem("CravingUser", JSON.stringify(userData));
+    sessionStorage.setItem("user", JSON.stringify(userData));
+    sessionStorage.setItem("token", userData.token);
   };
 
   const logout = () => {
     setUser(null);
     setIsLogin(false);
     setRole(null);
-    sessionStorage.removeItem("CravingUser");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
   };
 
   return (

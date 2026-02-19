@@ -53,7 +53,8 @@ const Login = () => {
       setUser(user);
       setIsLogin(true);
       setRole(role);
-      sessionStorage.setItem("CravingUser", JSON.stringify(user));
+      sessionStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("token", user.token);
 
       handleClearForm();
 
