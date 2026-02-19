@@ -15,7 +15,7 @@ const StudentProfileModal = ({ student, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="bg-white w-[1000px] max-h-[90vh] overflow-y-auto rounded-2xl shadow-xl">
+      <div className="bg-white w-250 max-h-[90vh] overflow-y-auto rounded-2xl shadow-xl">
 
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b">
