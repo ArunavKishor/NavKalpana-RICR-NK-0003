@@ -16,162 +16,128 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
 
-// Sample student data
+/* ---------------- Dummy Data ---------------- */
+
 const studentsData = [
-  {
-    id: "S001",
-    name: "James Wilson",
-    avatar: "https://i.pravatar.cc/150?img=12",
-    status: null,
-  },
-  {
-    id: "S002",
-    name: "Elena Rodriguez",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    status: null,
-  },
-  {
-    id: "S003",
-    name: "Marcus Chen",
-    avatar: "https://i.pravatar.cc/150?img=13",
-    status: null,
-  },
-  {
-    id: "S004",
-    name: "Sarah Miller",
-    avatar: "https://i.pravatar.cc/150?img=9",
-    status: null,
-  },
-  {
-    id: "S005",
-    name: "Devin Page",
-    avatar: "https://i.pravatar.cc/150?img=15",
-    status: null,
-  },
-  {
-    id: "S006",
-    name: "Sophia Lane",
-    avatar: "https://i.pravatar.cc/150?img=10",
-    status: null,
-  },
+  { id: "S001", name: "James Wilson", avatar: "https://i.pravatar.cc/150?img=12", status: null },
+  { id: "S002", name: "Elena Rodriguez", avatar: "https://i.pravatar.cc/150?img=5", status: null },
+  { id: "S003", name: "Marcus Chen", avatar: "https://i.pravatar.cc/150?img=13", status: null },
+  { id: "S004", name: "Sarah Miller", avatar: "https://i.pravatar.cc/150?img=9", status: null },
+  { id: "S005", name: "Devin Page", avatar: "https://i.pravatar.cc/150?img=15", status: null },
+  { id: "S006", name: "Sophia Lane", avatar: "https://i.pravatar.cc/150?img=10", status: null },
 ];
 
 const AttendanceManagement = () => {
   const navigate = useNavigate();
   const { batchId } = useParams();
+
   const [students, setStudents] = useState(studentsData);
   const [searchQuery, setSearchQuery] = useState("");
   const [sessionRemarks, setSessionRemarks] = useState("");
 
-  // Get current date
-  const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString("en-US", {
+  const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 
-  // Handle attendance marking
-  const markAttendance = (studentId, status) => {
-    setStudents(
-      students.map((student) =>
-        student.id === studentId ? { ...student, status } : student,
-      ),
+  const markAttendance = (id, status) => {
+    setStudents((prev) =>
+      prev.map((student) =>
+        student.id === id ? { ...student, status } : student
+      )
     );
   };
 
-  // Count marked students
-  const markedCount = students.filter((s) => s.status !== null).length;
-  const totalStudents = students.length;
-
-  // Filter students based on search
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchQuery.toLowerCase()),
+      student.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Calculate attendance percentage
+  const markedCount = students.filter((s) => s.status !== null).length;
+  const totalStudents = students.length;
   const presentCount = students.filter((s) => s.status === "present").length;
   const attendancePercentage =
     markedCount > 0 ? ((presentCount / markedCount) * 100).toFixed(1) : 0;
 
-  // Handle submit
   const handleSubmit = () => {
-    if (markedCount === totalStudents) {
-      console.log("Submitting attendance:", students, sessionRemarks);
-      alert("Attendance submitted successfully!");
-    } else {
-      alert(
-        `Please mark attendance for all students (${markedCount}/${totalStudents})`,
-      );
+    if (markedCount !== totalStudents) {
+      alert(`Mark all students first (${markedCount}/${totalStudents})`);
+      return;
     }
+    alert("Attendance Submitted Successfully ✅");
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div className="flex items-start gap-3 sm:gap-4 w-full">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+
+      {/* Header */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+
+        <div className="flex items-start gap-4">
           <button
             onClick={() => navigate("/admin/batches")}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors shrink-0 mt-1"
+            className="p-2 hover:bg-slate-100 rounded-lg transition"
           >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 truncate">
+
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                 Attendance Management
               </h1>
-              <Badge className="bg-blue-100 text-blue-700 border-blue-200 border px-3 py-1 font-semibold text-xs w-fit">
+
+              <Badge className="bg-blue-100 text-blue-700 border px-3 py-1 text-xs font-semibold">
                 BATCH: B{batchId || "001"}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 text-slate-500 text-xs sm:text-sm">
-              <span className="text-slate-400">📅</span>
-              <span className="truncate">{formattedDate}</span>
-            </div>
+
+            <p className="text-slate-500 text-sm mt-1">
+              📅 {currentDate}
+            </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm flex-1 sm:flex-initial justify-center">
+        {/* Header Buttons */}
+        <div className="grid grid-cols-3 sm:flex gap-2">
+          <Button variant="outline" className="flex items-center gap-2">
             <Edit3 className="w-4 h-4" />
             <span className="hidden sm:inline">Mark</span>
           </Button>
-          <Button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm flex-1 sm:flex-initial justify-center">
+          <Button variant="outline" className="flex items-center gap-2">
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">History</span>
           </Button>
-          <Button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm flex-1 sm:flex-initial justify-center">
+          <Button variant="outline" className="flex items-center gap-2">
             <FileDown className="w-4 h-4" />
             <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Student Roster - Left Side */}
-        <div className="lg:col-span-2">
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6">
-              {/* Student Roster Header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <h2 className="text-lg font-bold text-slate-900">
-                  Student Roster
-                </h2>
-                <div className="relative w-full sm:w-64">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+        {/* Students Section */}
+        <div className="xl:col-span-2">
+          <Card className="shadow-sm">
+            <CardContent className="p-4 sm:p-6">
+
+              {/* Search */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 className="text-lg font-bold">Student Roster</h2>
+
+                <div className="relative w-full sm:w-72">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Quick search..."
+                    placeholder="Search student..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
               </div>
@@ -181,61 +147,43 @@ const AttendanceManagement = () => {
                 {filteredStudents.map((student) => (
                   <div
                     key={student.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors gap-4"
+                    className="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition gap-4"
                   >
-                    {/* Student Info */}
                     <div className="flex items-center gap-4">
                       <img
                         src={student.avatar}
                         alt={student.name}
-                        className="w-12 h-12 rounded-full object-cover shrink-0"
+                        className="w-12 h-12 rounded-full object-cover"
                       />
                       <div>
-                        <h3 className="font-semibold text-slate-900">
-                          {student.name}
-                        </h3>
+                        <h3 className="font-semibold">{student.name}</h3>
                         <p className="text-sm text-slate-500">{student.id}</p>
                       </div>
                     </div>
 
-                    {/* Attendance Buttons */}
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <button
-                        onClick={() => markAttendance(student.id, "present")}
-                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-initial justify-center ${
-                          student.status === "present"
-                            ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">Present</span>
-                        <span className="sm:hidden">P</span>
-                      </button>
-                      <button
-                        onClick={() => markAttendance(student.id, "absent")}
-                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-initial justify-center ${
-                          student.status === "absent"
-                            ? "bg-red-100 text-red-700 border-2 border-red-500"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        <XCircle className="w-4 h-4" />
-                        <span className="hidden sm:inline">Absent</span>
-                        <span className="sm:hidden">A</span>
-                      </button>
-                      <button
-                        onClick={() => markAttendance(student.id, "late")}
-                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-initial justify-center ${
-                          student.status === "late"
-                            ? "bg-orange-100 text-orange-700 border-2 border-orange-500"
-                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        <Clock className="w-4 h-4" />
-                        <span className="hidden sm:inline">Late</span>
-                        <span className="sm:hidden">L</span>
-                      </button>
+                    <div className="grid grid-cols-3 sm:flex gap-2 w-full lg:w-auto">
+                      {["present", "absent", "late"].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => markAttendance(student.id, type)}
+                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+                            student.status === type
+                              ? type === "present"
+                                ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
+                                : type === "absent"
+                                ? "bg-red-100 text-red-700 border-2 border-red-500"
+                                : "bg-orange-100 text-orange-700 border-2 border-orange-500"
+                              : "bg-white border border-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {type === "present" && <CheckCircle2 className="w-4 h-4" />}
+                          {type === "absent" && <XCircle className="w-4 h-4" />}
+                          {type === "late" && <Clock className="w-4 h-4" />}
+                          <span className="capitalize hidden sm:inline">
+                            {type}
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -244,85 +192,61 @@ const AttendanceManagement = () => {
           </Card>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Session Remarks Card */}
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-6 space-y-4">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 mb-2">
-                  Session Remarks <span className="text-red-500">*</span>
-                </h3>
-                <textarea
-                  value={sessionRemarks}
-                  onChange={(e) => setSessionRemarks(e.target.value)}
-                  placeholder="E.g., Covered Chapter 4, React Hooks. Group activity completed."
-                  className="w-full h-32 p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                />
-              </div>
+        {/* Sidebar */}
+        <div className="space-y-6">
 
-              <div className="text-xs text-slate-400 flex items-center gap-1">
-                <span>ℹ️</span>
-                <span>VISIBLE IN BATCH CONTEXT & STUDENT PROFILE</span>
-              </div>
+          <Card className="shadow-sm">
+            <CardContent className="p-4 sm:p-6 space-y-4">
+              <h3 className="font-semibold">Session Remarks *</h3>
+              <textarea
+                value={sessionRemarks}
+                onChange={(e) => setSessionRemarks(e.target.value)}
+                className="w-full h-28 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+              />
 
-              {/* Marked Counter */}
-              <div className="flex items-center justify-between py-3 border-t border-slate-200">
-                <span className="font-semibold text-slate-700">Marked:</span>
-                <span className="text-lg font-bold text-slate-900">
-                  {markedCount} / {totalStudents}
+              <div className="flex justify-between border-t pt-4">
+                <span className="font-medium">Marked:</span>
+                <span className="font-bold">
+                  {markedCount}/{totalStudents}
                 </span>
               </div>
 
-              {/* Submit Button */}
               <Button
                 onClick={handleSubmit}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-sm"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2"
               >
-                <Save className="w-5 h-5" />
+                <Save className="w-4 h-4" />
                 Submit Attendance
               </Button>
             </CardContent>
           </Card>
 
-          {/* Growth Intelligence Card */}
-          <Card className="border-none shadow-sm  bg-blue-50 text-black overflow-hidden relative">
+          <Card className="bg-blue-50 shadow-sm">
             <CardContent className="p-6">
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-5 h-5" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider opacity-90">
-                    Growth Intelligence
-                  </h3>
-                </div>
-
-                <div className="mb-3">
-                  <div className="text-5xl font-bold mb-1">
-                    {attendancePercentage}%
-                  </div>
-                  <div className="text-xs opacity-80 uppercase tracking-wide">
-                    Batch Attendance Index
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-white/20 rounded-full h-2 mb-4">
-                  <div
-                    className="bg-emerald-400 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${attendancePercentage}%` }}
-                  ></div>
-                </div>
-
-                <p className="text-sm opacity-90">
-                  This session will boost the Overall Average
-                </p>
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase">
+                  Growth Intelligence
+                </span>
               </div>
 
-              {/* Background Decoration */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12"></div>
+              <div className="text-4xl font-bold mb-2">
+                {attendancePercentage}%
+              </div>
+
+              <div className="w-full bg-white/40 h-2 rounded-full mb-4">
+                <div
+                  className="bg-emerald-400 h-2 rounded-full transition-all"
+                  style={{ width: `${attendancePercentage}%` }}
+                />
+              </div>
+
+              <p className="text-sm">
+                This session improves batch performance.
+              </p>
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>
