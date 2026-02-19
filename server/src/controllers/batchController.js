@@ -22,6 +22,9 @@ const applyBatchStatusUpdates = async (batches) => {
 
 export const createBatch = async (req, res) => {
   try {
+    if (!req.user?._id) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
     const {
       name,
       course,
@@ -49,6 +52,9 @@ export const createBatch = async (req, res) => {
       data: batch,
     });
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid data format" });
+    }
     const validationErrors = formatValidationErrors(error);
     if (validationErrors) {
       return res.status(400).json({
@@ -176,6 +182,9 @@ export const updateBatch = async (req, res) => {
       data: batch,
     });
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid data format" });
+    }
     const validationErrors = formatValidationErrors(error);
     if (validationErrors) {
       return res.status(400).json({

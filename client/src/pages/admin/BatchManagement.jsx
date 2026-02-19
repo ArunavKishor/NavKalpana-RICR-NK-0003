@@ -1,58 +1,78 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Users,
   Calendar,
   Search,
   Plus,
   ChevronRight,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import api from "@/config/Api";
+import toast from "react-hot-toast";
+import Modal from "@/components/admin/Modal";
+import BatchForm from "@/components/admin/BatchForm";
+import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
 
 
 // -------------------- Component --------------------
 
 const BatchManagement = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("create");
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [batchToDelete, setBatchToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filters = ["All", "Ongoing", "Completed", "Upcoming"];
 
-  useEffect(() => {
-    const loadBatches = async () => {
-      try {
-        setLoading(true);
-        const { data } = await api.get("/api/batches", {
-          params: {
-            search: searchQuery || undefined,
-            status:
-              activeFilter === "All"
-                ? undefined
-                : activeFilter.toLowerCase(),
-          },
-        });
-        setBatches(data?.data?.batches || []);
-        setError("");
-      } catch (err) {
-        console.error("Load batches failed:", err);
-        setError(
-          err.response?.data?.message ||
-            "Failed to load batches. Please try again.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadBatches = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get("/api/batches", {
+        params: {
+          search: searchQuery || undefined,
+          status:
+            activeFilter === "All" ? undefined : activeFilter.toLowerCase(),
+        },
+      });
+      setBatches(data?.data?.batches || []);
+      setError("");
+    } catch (err) {
+      console.error("Load batches failed:", err);
+      setError(
+        err.response?.data?.message ||
+        "Failed to load batches. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadBatches();
   }, [activeFilter, searchQuery]);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "create") {
+      openCreateModal();
+    }
+  }, [searchParams]);
 
   const filteredBatches = useMemo(() => {
     if (!searchQuery) return batches;
@@ -72,6 +92,121 @@ const BatchManagement = () => {
     if (now <= start) return 0;
     if (now >= end) return 100;
     return Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
+  };
+
+  const resetForm = () => {
+    setFormErrors({});
+    setSelectedBatch(null);
+  };
+
+  const openCreateModal = () => {
+    resetForm();
+    setModalMode("create");
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (batch) => {
+    setModalMode("edit");
+    setSelectedBatch(batch);
+    setFormErrors({});
+    setIsModalOpen(true);
+  };
+
+  const validateForm = (data) => {
+    const errors = {};
+    if (!data.name || data.name.trim().length < 3) {
+      errors.name = "Name must be at least 3 characters";
+    }
+    if (!data.course) {
+      errors.course = "Course is required";
+    }
+    if (!data.startDate) {
+      errors.startDate = "Start date is required";
+    }
+    if (!data.endDate) {
+      errors.endDate = "End date is required";
+    }
+    if (data.startDate && data.endDate) {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      if (end <= start) {
+        errors.endDate = "End date must be after start date";
+      }
+    }
+    if (!data.maxStudents || data.maxStudents < 1 || data.maxStudents > 500) {
+      errors.maxStudents = "Max students must be between 1 and 500";
+    }
+    return errors;
+  };
+
+  const handleBatchFormSubmit = async (data) => {
+    const errors = validateForm(data);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      setIsSubmitting(true);
+      if (modalMode === "create") {
+        await api.post("/api/batches", {
+          ...data,
+          maxStudents: Number(data.maxStudents),
+        });
+        toast.success("Batch created successfully");
+      } else {
+        await api.put(`/api/batches/${selectedBatch._id}`, {
+          ...data,
+          maxStudents: Number(data.maxStudents),
+        });
+        toast.success("Batch updated successfully");
+      }
+      setIsModalOpen(false);
+      resetForm();
+      await loadBatches();
+    } catch (err) {
+      console.error("Batch submit failed:", err);
+      const backendErrors = err.response?.data?.errors;
+      if (Array.isArray(backendErrors)) {
+        const mapped = backendErrors.reduce((acc, item) => {
+          acc[item.field] = item.message;
+          return acc;
+        }, {});
+        setFormErrors(mapped);
+      }
+      toast.error(
+        err.response?.data?.message ||
+        "Failed to save batch. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openDeleteDialog = (batch) => {
+    setBatchToDelete(batch);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!batchToDelete) return;
+    try {
+      setIsDeleting(true);
+      await api.delete(`/api/batches/${batchToDelete._id}`);
+      setBatches((prev) =>
+        prev.filter((batch) => batch._id !== batchToDelete._id),
+      );
+      toast.success("Deleted successfully", { duration: 5000 });
+      setDeleteDialogOpen(false);
+      setBatchToDelete(null);
+    } catch (err) {
+      console.error("Delete batch failed:", err);
+      toast.error(
+        err.response?.data?.message ||
+        "Failed to delete batch. Please try again.",
+        { duration: 5000 },
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -110,7 +245,10 @@ const BatchManagement = () => {
           </p>
         </div>
 
-        <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+        <Button
+          className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          onClick={openCreateModal}
+        >
           <Plus className="w-4 h-4" />
           Create Batch
         </Button>
@@ -125,11 +263,10 @@ const BatchManagement = () => {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition whitespace-nowrap ${
-                activeFilter === filter
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition whitespace-nowrap ${activeFilter === filter
+                ? "bg-blue-600 text-white"
+                : "text-slate-600 hover:bg-slate-100"
+                }`}
             >
               {filter}
             </button>
@@ -191,9 +328,9 @@ const BatchManagement = () => {
                   <Calendar className="w-4 h-4" />
                   {batch.startDate
                     ? new Date(batch.startDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      })
+                      month: "short",
+                      year: "numeric",
+                    })
                     : "N/A"}
                 </div>
               </div>
@@ -212,14 +349,28 @@ const BatchManagement = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => navigate(`/admin/batches/${batch._id}`)}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+                >
+                  Manage
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => openEditModal(batch)}
+                  className="w-full bg-white border border-slate-200 text-slate-700 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </button>
+              </div>
               <button
-                onClick={() =>
-                  navigate(`/admin/batches/${batch._id}`)
-                }
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+                onClick={() => openDeleteDialog(batch)}
+                className="w-full bg-red-50 text-red-600 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-red-100"
               >
-                Manage
-                <ChevronRight className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" />
+                Delete
               </button>
             </CardContent>
           </Card>
@@ -235,6 +386,36 @@ const BatchManagement = () => {
           </p>
         </div>
       )}
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={modalMode === "create" ? "Create Batch" : "Edit Batch"}
+        description={`Provide batch details to ${modalMode === "create" ? "create" : "update"}.`}
+      >
+        <BatchForm
+          initialData={modalMode === "edit" ? selectedBatch : null}
+          onSubmit={handleBatchFormSubmit}
+          onCancel={() => {
+            setIsModalOpen(false);
+            resetForm();
+          }}
+          isLoading={isSubmitting}
+          errors={formErrors}
+        />
+      </Modal>
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Batch"
+        description={`Are you sure you want to delete "${batchToDelete?.name}"? This will remove all associated student records.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

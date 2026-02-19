@@ -27,6 +27,8 @@ const AdminLogin = () => {
                 // Store user/token in sessionStorage/localStorage for AdminDashboard check
                 sessionStorage.setItem("AdminUser", JSON.stringify(data.data));
                 sessionStorage.setItem("AdminToken", data.data.token);
+                localStorage.setItem("token", data.data.token);
+                api.defaults.headers.common.Authorization = `Bearer ${data.data.token}`;
 
                 // Redirect to dashboard
                 navigate("/admin-dashboard");

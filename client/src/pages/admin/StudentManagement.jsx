@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Users,
   CheckCircle,
@@ -12,9 +13,16 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import api from "@/config/Api";
+import toast from "react-hot-toast";
+import Modal from "@/components/admin/Modal";
+import StudentForm from "@/components/admin/StudentForm";
+import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
 
 const StudentManagement = () => {
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("ONGOING");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("All");
@@ -26,6 +34,20 @@ const StudentManagement = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("create");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "create") {
+      openCreateModal();
+    }
+  }, [searchParams]);
 
   /* ---------------- COUNTS ---------------- */
   const total = counts.total;
@@ -126,7 +148,7 @@ const StudentManagement = () => {
         console.error("Load students failed:", err);
         setError(
           err.response?.data?.message ||
-            "Failed to load students. Please try again.",
+          "Failed to load students. Please try again.",
         );
       } finally {
         setLoading(false);
@@ -135,6 +157,103 @@ const StudentManagement = () => {
 
     loadStudents();
   }, [activeTab, searchTerm]);
+
+  const handleStudentFormSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      setFormErrors({});
+
+      if (modalMode === "create") {
+        await api.post("/api/students", data);
+        toast.success("Student created successfully");
+      } else {
+        await api.put(`/api/students/${selectedStudent.id}`, data);
+        toast.success("Student updated successfully");
+      }
+
+      setIsModalOpen(false);
+      await loadStudents();
+      // Reload counts too
+      const [totalRes, activeRes, completedRes] = await Promise.all([
+        api.get("/api/students", { params: { limit: 1 } }),
+        api.get("/api/students", { params: { limit: 1, status: "active" } }),
+        api.get("/api/students", {
+          params: { limit: 1, status: "completed" },
+        }),
+      ]);
+      setCounts({
+        total: totalRes?.data?.data?.pagination?.total || 0,
+        active: activeRes?.data?.data?.pagination?.total || 0,
+        completed: completedRes?.data?.data?.pagination?.total || 0,
+      });
+    } catch (err) {
+      console.error("Student submit failed:", err);
+      const backendErrors = err.response?.data?.errors;
+      if (Array.isArray(backendErrors)) {
+        const mapped = backendErrors.reduce((acc, item) => {
+          acc[item.field] = item.message;
+          return acc;
+        }, {});
+        setFormErrors(mapped);
+      }
+      toast.error(
+        err.response?.data?.message || "Failed to save student",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openCreateModal = () => {
+    setModalMode("create");
+    setSelectedStudent(null);
+    setFormErrors({});
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (student) => {
+    setModalMode("edit");
+    setSelectedStudent(student);
+    setFormErrors({});
+    setIsModalOpen(true);
+  };
+
+  const openDeleteDialog = (student) => {
+    setStudentToDelete(student);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!studentToDelete) return;
+    try {
+      setIsDeleting(true);
+      await api.delete(`/api/students/${studentToDelete.id}`);
+      toast.success("Student deleted successfully");
+      setDeleteDialogOpen(false);
+      setStudentToDelete(null);
+      await loadStudents();
+      // Reload counts
+      const [totalRes, activeRes, completedRes] = await Promise.all([
+        api.get("/api/students", { params: { limit: 1 } }),
+        api.get("/api/students", { params: { limit: 1, status: "active" } }),
+        api.get("/api/students", {
+          params: { limit: 1, status: "completed" },
+        }),
+      ]);
+      setCounts({
+        total: totalRes?.data?.data?.pagination?.total || 0,
+        active: activeRes?.data?.data?.pagination?.total || 0,
+        completed: completedRes?.data?.data?.pagination?.total || 0,
+      });
+    } catch (err) {
+      console.error("Delete student failed:", err);
+      toast.error(
+        err.response?.data?.message || "Failed to delete student",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const getAttendanceStyle = (attendance) => {
     if (attendance >= 85)
@@ -168,6 +287,14 @@ const StudentManagement = () => {
               Track and manage student performance and profiles
             </p>
           </div>
+
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2"
+            onClick={openCreateModal}
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Student</span>
+          </Button>
 
           <div className="flex gap-4">
             <StatCard
@@ -306,7 +433,21 @@ const StudentManagement = () => {
                   ))}
                 </div>
 
-                <div className="col-span-1 text-right">
+                <div className="col-span-1 text-right flex items-center justify-end gap-2">
+                  <button
+                    className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
+                    onClick={() => openEditModal(student)}
+                    title="Edit Student"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
+                    onClick={() => openDeleteDialog(student)}
+                    title="Delete Student"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                   <button className="p-2 rounded-lg hover:bg-slate-100">
                     <ChevronRight className="w-5 h-5 text-slate-600" />
                   </button>
@@ -315,6 +456,30 @@ const StudentManagement = () => {
             ))}
           </CardContent>
         </Card>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={modalMode === "create" ? "Add New Student" : "Edit Student"}
+          description={modalMode === "create" ? "Enter student details to create a new profile." : "Update student profile information."}
+        >
+          <StudentForm
+            initialData={selectedStudent}
+            onSubmit={handleStudentFormSubmit}
+            onCancel={() => setIsModalOpen(false)}
+            isLoading={isSubmitting}
+            errors={formErrors}
+          />
+        </Modal>
+
+        <DeleteConfirmationDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          onConfirm={confirmDelete}
+          title="Delete Student"
+          description={`Are you sure you want to delete "${studentToDelete?.name}"? This will deactivate their student profile and access. This action cannot be undone.`}
+          isLoading={isDeleting}
+        />
       </div>
     </div>
   );
@@ -335,9 +500,8 @@ const StatCard = ({ icon, label, value }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-      active ? "bg-slate-200" : "bg-white border"
-    }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
+      }`}
   >
     {children}
   </button>

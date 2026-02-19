@@ -1,0 +1,200 @@
+import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+
+const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) => {
+    const [formData, setFormData] = useState({
+        name: "",
+        course: "",
+        startDate: "",
+        endDate: "",
+        instructor: "",
+        schedule: "",
+        maxStudents: 1,
+    });
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                name: initialData.name || "",
+                course: initialData.course || "",
+                startDate: initialData.startDate
+                    ? new Date(initialData.startDate).toISOString().split("T")[0]
+                    : "",
+                endDate: initialData.endDate
+                    ? new Date(initialData.endDate).toISOString().split("T")[0]
+                    : "",
+                instructor: initialData.instructor || "",
+                schedule: initialData.schedule || "",
+                maxStudents: initialData.maxStudents || 1,
+            });
+        } else {
+            setFormData({
+                name: "",
+                course: "",
+                startDate: "",
+                endDate: "",
+                instructor: "",
+                schedule: "",
+                maxStudents: 1,
+            });
+        }
+    }, [initialData]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name === "maxStudents" ? Number(value) : value,
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(formData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="name">Batch Name</Label>
+                    <Input
+                        id="name"
+                        name="name"
+                        placeholder="e.g. Alpha 2024"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                        className={errors.name ? "border-red-500" : ""}
+                    />
+                    {errors.name && (
+                        <p className="text-xs text-red-500">{errors.name}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="course">Course Name</Label>
+                    <Input
+                        id="course"
+                        name="course"
+                        placeholder="e.g. FullStack Development"
+                        value={formData.course}
+                        onChange={handleChange}
+                        required
+                        className={errors.course ? "border-red-500" : ""}
+                    />
+                    {errors.course && (
+                        <p className="text-xs text-red-500">{errors.course}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <Input
+                        id="startDate"
+                        name="startDate"
+                        type="date"
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        required
+                        className={errors.startDate ? "border-red-500" : ""}
+                    />
+                    {errors.startDate && (
+                        <p className="text-xs text-red-500">{errors.startDate}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="endDate">End Date</Label>
+                    <Input
+                        id="endDate"
+                        name="endDate"
+                        type="date"
+                        value={formData.endDate}
+                        onChange={handleChange}
+                        required
+                        className={errors.endDate ? "border-red-500" : ""}
+                    />
+                    {errors.endDate && (
+                        <p className="text-xs text-red-500">{errors.endDate}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="instructor">Instructor</Label>
+                    <Input
+                        id="instructor"
+                        name="instructor"
+                        placeholder="e.g. John Doe"
+                        value={formData.instructor}
+                        onChange={handleChange}
+                        required
+                        className={errors.instructor ? "border-red-500" : ""}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="maxStudents">Max Students</Label>
+                    <Input
+                        id="maxStudents"
+                        name="maxStudents"
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={formData.maxStudents}
+                        onChange={handleChange}
+                        required
+                        className={errors.maxStudents ? "border-red-500" : ""}
+                    />
+                    {errors.maxStudents && (
+                        <p className="text-xs text-red-500">{errors.maxStudents}</p>
+                    )}
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="schedule">Schedule</Label>
+                <Input
+                    id="schedule"
+                    name="schedule"
+                    placeholder="e.g. Mon-Fri, 10 AM"
+                    value={formData.schedule}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={onCancel}
+                    disabled={isLoading}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                        </>
+                    ) : initialData ? (
+                        "Update Batch"
+                    ) : (
+                        "Create Batch"
+                    )}
+                </Button>
+            </div>
+        </form>
+    );
+};
+
+export default BatchForm;

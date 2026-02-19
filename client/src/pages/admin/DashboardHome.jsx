@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Users, BookOpen, ClipboardCheck, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import api from "@/config/Api";
+import { PlusCircle, MessageSquarePlus, UserPlus } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -92,7 +94,7 @@ const DashboardHome = () => {
         console.error("Dashboard load failed:", err);
         setError(
           err.response?.data?.message ||
-            "Failed to load dashboard data. Please try again.",
+          "Failed to load dashboard data. Please try again.",
         );
       } finally {
         setLoading(false);
@@ -144,7 +146,7 @@ const DashboardHome = () => {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        
+
         {/* Chart Section */}
         <div className="lg:col-span-2">
           <Card className="border-none shadow-sm">
@@ -233,19 +235,62 @@ const DashboardHome = () => {
             </h3>
 
             <div className="grid grid-cols-2 gap-3">
-              <button className="w-full bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Link
+                to="/admin/batches"
+                className="w-full bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors border border-transparent hover:border-blue-200"
+              >
+                <BookOpen className="w-5 h-5" />
                 <span className="text-xs font-semibold">All Batches</span>
-              </button>
+              </Link>
 
-              <button className="w-full bg-slate-50 hover:bg-purple-50 hover:text-purple-600 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors">
-                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Link
+                to="/admin/students"
+                className="w-full bg-slate-50 hover:bg-purple-50 hover:text-purple-600 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors border border-transparent hover:border-purple-200"
+              >
+                <Users className="w-5 h-5" />
                 <span className="text-xs font-semibold">Student List</span>
-              </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 text-center">
+              Quick Actions
+            </h3>
+            <div className="space-y-2">
+              <Link
+                to="/admin/batches?action=create"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 group transition-all"
+              >
+                <div className="p-2 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100">
+                  <PlusCircle className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">Create New Batch</span>
+              </Link>
+
+              <Link
+                to="/admin/students?action=create"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-emerald-600 group transition-all"
+              >
+                <div className="p-2 rounded-md bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">Add New Student</span>
+              </Link>
+
+              <Link
+                to="/admin/support?action=create"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-orange-600 group transition-all"
+              >
+                <div className="p-2 rounded-md bg-orange-50 text-orange-600 group-hover:bg-orange-100">
+                  <MessageSquarePlus className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">New Support Ticket</span>
+              </Link>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
