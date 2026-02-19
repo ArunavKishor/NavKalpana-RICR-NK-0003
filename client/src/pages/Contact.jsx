@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import api from "../config/Api";
+
+const STORAGE_KEY = "ContactFormDraft";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -12,28 +14,57 @@ const Contact = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // ✅ Load saved draft when component mounts
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(STORAGE_KEY);
+    if (savedDraft) {
+      try {
+        setFormData(JSON.parse(savedDraft));
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  // ✅ Save draft automatically whenever formData changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleClear = () => {
-    setFormData({
+    const emptyForm = {
       fullName: "",
       email: "",
       mobileNumber: "",
       message: "",
-    });
+    };
+
+    setFormData(emptyForm);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isLoading) return;
+
     setIsLoading(true);
 
     try {
-      const res = await api.post("/contact", formData);
-      toast.success(res.data.message || "Message sent successfully!");
-      handleClear();
+      const res = await api.post("/api/contact", formData);
+
+      toast.success(res?.data?.message || "Message sent successfully!");
+
+      handleClear(); // clear only after success
     } catch (error) {
       toast.error(
         error?.response?.data?.message || "Something went wrong"
@@ -49,12 +80,13 @@ const Contact = () => {
         <h1 className="text-4xl font-bold text-slate-900 mb-6">
           Contact Us
         </h1>
+
         <p className="text-lg text-slate-600 mb-8">
           Get in touch with us for any queries or support.
         </p>
 
         <div className="bg-white rounded-xl shadow p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
             <input
               type="text"
@@ -63,7 +95,7 @@ const Contact = () => {
               value={formData.fullName}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500 transition"
             />
 
             <input
@@ -73,7 +105,7 @@ const Contact = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500 transition"
             />
 
             <input
@@ -83,7 +115,7 @@ const Contact = () => {
               value={formData.mobileNumber}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500 transition"
             />
 
             <textarea
@@ -93,16 +125,39 @@ const Contact = () => {
               value={formData.message}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500 transition resize-none"
             />
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-50"
-            >
-              {isLoading ? "Sending..." : "Send Message"}
-            </button>
+            <div className="flex gap-4">
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-50"
+              >
+                {isLoading ? "Sending..." : "Send Message"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClear}
+                className="bg-slate-200 text-slate-700 px-6 py-3 rounded-lg font-semibold hover:bg-slate-300 transition"
+              >
+                Clear
+              </button>
+
+            </div>
+
+            {/* Draft indicator */}
+            {formData.fullName ||
+            formData.email ||
+            formData.mobileNumber ||
+            formData.message ? (
+              <p className="text-sm text-slate-500">
+                Draft saved automatically
+              </p>
+            ) : null}
+
           </form>
         </div>
       </div>
