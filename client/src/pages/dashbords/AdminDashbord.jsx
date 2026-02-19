@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 
 const getStoredUser = () => {
   try {
-    const raw = sessionStorage.getItem("CravingUser");
+    const raw = sessionStorage.getItem("Token");
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
     return null;

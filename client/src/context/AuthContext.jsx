@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     try {
-      const storedUser = sessionStorage.getItem("CravingUser");
+      const storedUser = sessionStorage.getItem("Token");
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         setUser(parsed);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsLogin(false);
     setRole(null);
-    sessionStorage.removeItem("CravingUser");
+    sessionStorage.removeItem("Token");
   };
 
   return (

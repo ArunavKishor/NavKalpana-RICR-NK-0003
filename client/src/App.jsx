@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import { AuthProvider } from "./context/AuthContext";
 import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
 
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/course/:title" element={<CourseDetail />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
