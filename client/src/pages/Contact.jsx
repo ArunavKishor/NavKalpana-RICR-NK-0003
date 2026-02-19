@@ -128,63 +128,7 @@ const Contact = () => {
               required
               className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-orange-500 transition"
             />
-
-              <motion.input
-                custom={1}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                type="text"
-                name="fullName"
-                placeholder="Full Name"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-                className="inputStyle"
-              />
-
-              <motion.input
-                custom={2}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="inputStyle"
-              />
-
-              <motion.input
-                custom={3}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                type="text"
-                name="mobileNumber"
-                placeholder="Mobile Number"
-                value={formData.mobileNumber}
-                onChange={handleChange}
-                required
-                className="inputStyle"
-              />
-
-              <motion.input
-                custom={4}
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                type="text"
-                name="city"
-                placeholder="City"
-                value={formData.city}
-                onChange={handleChange}
-                className="inputStyle"
-              />
-
-            </div>
+            
 
             {/* Academic Info */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -280,7 +224,7 @@ const Contact = () => {
             ) : null}
 
           </form>
-        </motion.div>
+        </div>
       </div>
 
       {/* Tailwind Reusable Input Style */}
