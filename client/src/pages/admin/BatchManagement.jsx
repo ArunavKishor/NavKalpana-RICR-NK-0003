@@ -1,79 +1,56 @@
 import React, { useState } from "react";
-import { Plus, Search, Users, Calendar, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  Calendar,
+  Search,
+  Plus,
+  ChevronRight,
+} from "lucide-react";
 
-// Sample batch data
+
+// -------------------- Dummy Data --------------------
+
 const batchesData = [
   {
     id: 1,
-    name: "Full Stack Web (MERN)",
-    type: "WEB BATCH",
-    students: 45,
-    date: "Jan 15, 2026",
-    progress: 75,
+    name: "Full Stack Web Development",
+    type: "Development",
     status: "ONGOING",
+    students: 45,
+    date: "Jan 2026",
+    progress: 65,
     image:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
   },
   {
     id: 2,
-    name: "Data Structures & Algos",
-    type: "DSA BATCH",
-    students: 32,
-    date: "Feb 10, 2026",
-    progress: 40,
-    status: "ONGOING",
+    name: "UI/UX Masterclass",
+    type: "Design",
+    status: "UPCOMING",
+    students: 30,
+    date: "March 2026",
+    progress: 0,
     image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+      "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e",
   },
   {
     id: 3,
-    name: "Advanced React Design",
-    type: "WEB BATCH",
-    students: 28,
-    date: "Nov 05, 2025",
-    progress: 100,
+    name: "React Advanced",
+    type: "Frontend",
     status: "COMPLETED",
-    image:
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80",
-  },
-  {
-    id: 4,
-    name: "Machine Learning Basics",
-    type: "ML BATCH",
-    students: 38,
-    date: "Mar 01, 2026",
-    progress: 0,
-    status: "UPCOMING",
-    image:
-      "https://images.unsplash.com/photo-1527474305487-b87b222841cc?w=600&q=80",
-  },
-  {
-    id: 5,
-    name: "Python for Beginners",
-    type: "PYTHON BATCH",
-    students: 52,
-    date: "Jan 20, 2026",
-    progress: 65,
-    status: "ONGOING",
-    image:
-      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80",
-  },
-  {
-    id: 6,
-    name: "UI/UX Design Bootcamp",
-    type: "DESIGN BATCH",
-    students: 24,
-    date: "Dec 15, 2025",
+    students: 50,
+    date: "Oct 2025",
     progress: 100,
-    status: "COMPLETED",
     image:
-      "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600&q=80",
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee",
   },
 ];
+
+// -------------------- Component --------------------
 
 const BatchManagement = () => {
   const navigate = useNavigate();
@@ -82,17 +59,18 @@ const BatchManagement = () => {
 
   const filters = ["All", "Ongoing", "Completed", "Upcoming"];
 
-  // Filter batches based on active filter and search query
   const filteredBatches = batchesData.filter((batch) => {
     const matchesFilter =
-      activeFilter === "All" || batch.status === activeFilter.toUpperCase();
+      activeFilter === "All" ||
+      batch.status === activeFilter.toUpperCase();
+
     const matchesSearch =
       batch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       batch.type.toLowerCase().includes(searchQuery.toLowerCase());
+
     return matchesFilter && matchesSearch;
   });
 
-  // Get status badge color
   const getStatusColor = (status) => {
     switch (status) {
       case "ONGOING":
@@ -107,36 +85,38 @@ const BatchManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
             Batch Management
           </h1>
           <p className="text-slate-500 mt-1 text-sm sm:text-base">
-            Monitor and manage your active learning groups
+            Monitor and manage your learning batches
           </p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center">
-          <Plus className="w-5 h-5" />
-          <span className="hidden sm:inline">Create New Batch</span>
-          <span className="sm:hidden">New Batch</span>
+
+        <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Create Batch
         </Button>
       </div>
 
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 sm:gap-2 bg-white rounded-lg p-1.5 shadow-sm border border-slate-200 w-full sm:w-auto overflow-x-auto">
+      {/* Filters & Search */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+        {/* Filters */}
+        <div className="flex gap-2 bg-white rounded-lg p-1.5 shadow-sm border overflow-x-auto">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition whitespace-nowrap ${
                 activeFilter === filter
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-50"
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               {filter}
@@ -144,111 +124,97 @@ const BatchManagement = () => {
           ))}
         </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        {/* Search */}
+        <div className="relative w-full lg:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by name or type..."
+            placeholder="Search batches..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
       </div>
 
-      {/* Batch Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredBatches.map((batch) => (
           <Card
             key={batch.id}
-            className="border-none shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
+            className="shadow-sm hover:shadow-lg transition overflow-hidden"
           >
-            {/* Batch Image with Status Badge */}
+            {/* Image */}
             <div className="relative h-48 overflow-hidden">
               <img
                 src={batch.image}
                 alt={batch.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover hover:scale-105 transition duration-300"
               />
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-3 right-3">
                 <Badge
-                  className={`${getStatusColor(batch.status)} border px-3 py-1 font-semibold text-xs shadow-sm`}
+                  className={`${getStatusColor(batch.status)} border`}
                 >
                   {batch.status}
                 </Badge>
               </div>
             </div>
 
-            <CardContent className="p-5 space-y-4">
-              {/* Batch Info */}
+            <CardContent className="p-4 space-y-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">
+                <h3 className="text-lg font-bold">
                   {batch.name}
                 </h3>
-                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+                <p className="text-sm text-blue-600 font-medium uppercase">
                   {batch.type}
                 </p>
               </div>
 
-              {/* Stats */}
-              <div className="flex items-center gap-6 text-sm text-slate-600">
+              <div className="flex justify-between text-sm text-slate-600">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-slate-400" />
-                  <span className="font-medium">{batch.students} Students</span>
+                  <Users className="w-4 h-4" />
+                  {batch.students} Students
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <span className="font-medium">{batch.date}</span>
+                  <Calendar className="w-4 h-4" />
+                  {batch.date}
                 </div>
               </div>
 
-              {/* Progress Bar */}
+              {/* Progress */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Progress
-                  </span>
-                  <span className="text-sm font-bold text-slate-700">
-                    {batch.progress}%
-                  </span>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Progress</span>
+                  <span>{batch.progress}%</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-slate-200 h-2 rounded-full">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      batch.progress === 100 ? "bg-slate-400" : "bg-blue-600"
-                    }`}
+                    className="bg-blue-600 h-2 rounded-full transition-all"
                     style={{ width: `${batch.progress}%` }}
                   ></div>
                 </div>
               </div>
 
-              {/* Action Button */}
               <button
                 onClick={() =>
-                  navigate(`/admin/batches/${batch.id}/attendance`)
+                  navigate(`/admin/batches/${batch.id}`)
                 }
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 group/btn"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg flex items-center justify-center gap-2"
               >
-                Manage Attendance
-                <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                Manage
+                <ChevronRight className="w-4 h-4" />
               </button>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* No Results Message */}
+      {/* No Results */}
       {filteredBatches.length === 0 && (
-        <div className="text-center py-16">
-          <div className="inline-block p-4 bg-slate-100 rounded-full mb-4">
-            <Search className="w-8 h-8 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+        <div className="text-center py-12">
+          <Search className="w-8 h-8 mx-auto text-slate-400 mb-2" />
+          <p className="text-slate-600">
             No batches found
-          </h3>
-          <p className="text-slate-500">
-            Try adjusting your search or filter to find what you're looking for.
           </p>
         </div>
       )}
