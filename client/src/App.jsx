@@ -1,5 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Courses from "./pages/CoursesPage";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header";
@@ -19,8 +23,9 @@ import {
   AssessmentManagement,
   SupportRequests,
 } from "./pages/admin/AdminPages";
-
-import { AuthProvider } from "./context/AuthContext";
+import AttendanceManagement from "./pages/admin/AttendenceManagement";
+import CoursesPage from "./pages/CoursesPage";
+import CourseDetailsPage from "./pages/CourseDetailsPage";
 
 const App = () => {
   return (
@@ -32,9 +37,17 @@ const App = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/courses/:title" element={<CourseDetailsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLogin />} />
+
+          <Route path="/admin-dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+          </Route>
 
           {/* Admin Protected Routes */}
           <Route
