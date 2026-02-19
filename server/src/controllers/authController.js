@@ -166,7 +166,7 @@ export const getMe = async (req, res, next) => {
 
     if (!user) {
       return res.status(404).json({
-        message: "User not found",
+        message: "Resource not found",
       });
     }
 
@@ -269,7 +269,7 @@ export const resetPassword = async (req, res, next) => {
 
     if (!user) {
       return res.status(404).json({
-        message: "User not found",
+        message: "Resource not found",
       });
     }
 
