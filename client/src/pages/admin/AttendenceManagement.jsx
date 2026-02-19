@@ -112,43 +112,43 @@ const AttendanceManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex items-start gap-3 sm:gap-4 w-full">
           <button
             onClick={() => navigate("/admin/batches")}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors shrink-0 mt-1"
           >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-bold text-slate-900">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 truncate">
                 Attendance Management
               </h1>
-              <Badge className="bg-blue-100 text-blue-700 border-blue-200 border px-3 py-1 font-semibold text-xs">
+              <Badge className="bg-blue-100 text-blue-700 border-blue-200 border px-3 py-1 font-semibold text-xs w-fit">
                 BATCH: B{batchId || "001"}
               </Badge>
             </div>
-            <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <div className="flex items-center gap-2 text-slate-500 text-xs sm:text-sm">
               <span className="text-slate-400">📅</span>
-              <span>{formattedDate}</span>
+              <span className="truncate">{formattedDate}</span>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          <Button className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm flex-1 sm:flex-initial justify-center">
             <Edit3 className="w-4 h-4" />
-            Mark
+            <span className="hidden sm:inline">Mark</span>
           </Button>
-          <Button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+          <Button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm flex-1 sm:flex-initial justify-center">
             <History className="w-4 h-4" />
-            History
+            <span className="hidden sm:inline">History</span>
           </Button>
-          <Button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+          <Button className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm flex-1 sm:flex-initial justify-center">
             <FileDown className="w-4 h-4" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
@@ -160,11 +160,11 @@ const AttendanceManagement = () => {
           <Card className="border-none shadow-sm">
             <CardContent className="p-6">
               {/* Student Roster Header */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <h2 className="text-lg font-bold text-slate-900">
                   Student Roster
                 </h2>
-                <div className="relative w-64">
+                <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
@@ -181,14 +181,14 @@ const AttendanceManagement = () => {
                 {filteredStudents.map((student) => (
                   <div
                     key={student.id}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors gap-4"
                   >
                     {/* Student Info */}
                     <div className="flex items-center gap-4">
                       <img
                         src={student.avatar}
                         alt={student.name}
-                        className="w-12 h-12 rounded-full object-cover"
+                        className="w-12 h-12 rounded-full object-cover shrink-0"
                       />
                       <div>
                         <h3 className="font-semibold text-slate-900">
@@ -199,39 +199,42 @@ const AttendanceManagement = () => {
                     </div>
 
                     {/* Attendance Buttons */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => markAttendance(student.id, "present")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-initial justify-center ${
                           student.status === "present"
                             ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
                             : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         <CheckCircle2 className="w-4 h-4" />
-                        Present
+                        <span className="hidden sm:inline">Present</span>
+                        <span className="sm:hidden">P</span>
                       </button>
                       <button
                         onClick={() => markAttendance(student.id, "absent")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-initial justify-center ${
                           student.status === "absent"
                             ? "bg-red-100 text-red-700 border-2 border-red-500"
                             : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         <XCircle className="w-4 h-4" />
-                        Absent
+                        <span className="hidden sm:inline">Absent</span>
+                        <span className="sm:hidden">A</span>
                       </button>
                       <button
                         onClick={() => markAttendance(student.id, "late")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                        className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex-1 sm:flex-initial justify-center ${
                           student.status === "late"
                             ? "bg-orange-100 text-orange-700 border-2 border-orange-500"
                             : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         <Clock className="w-4 h-4" />
-                        Late
+                        <span className="hidden sm:inline">Late</span>
+                        <span className="sm:hidden">L</span>
                       </button>
                     </div>
                   </div>

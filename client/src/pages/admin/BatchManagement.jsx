@@ -109,30 +109,31 @@ const BatchManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
             Batch Management
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 mt-1 text-sm sm:text-base">
             Monitor and manage your active learning groups
           </p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2">
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center">
           <Plus className="w-5 h-5" />
-          Create New Batch
+          <span className="hidden sm:inline">Create New Batch</span>
+          <span className="sm:hidden">New Batch</span>
         </Button>
       </div>
 
       {/* Filters and Search */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 bg-white rounded-lg p-1.5 shadow-sm border border-slate-200">
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-white rounded-lg p-1.5 shadow-sm border border-slate-200 w-full sm:w-auto overflow-x-auto">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                 activeFilter === filter
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-50"
