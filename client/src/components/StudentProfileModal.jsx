@@ -27,7 +27,7 @@ const StudentProfileModal = ({ student, onClose }) => {
             <div>
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold">
-                  {student.name}
+                  {student.fullname}
                 </h2>
                 <Badge className="bg-emerald-100 text-emerald-700">
                   {student.status}
