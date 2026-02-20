@@ -14,12 +14,11 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
-import api from "@/config/Api";
-import toast from "react-hot-toast";
 import Modal from "@/components/admin/Modal";
 import StudentForm from "@/components/admin/StudentForm";
 import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
+import StudentDetailModal from "@/components/admin/StudentDetailModal";
+import { Plus, Pencil, Trash2, Loader2, Eye } from "lucide-react";
 
 const StudentManagement = () => {
   const [searchParams] = useSearchParams();
@@ -42,6 +41,8 @@ const StudentManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [studentToView, setStudentToView] = useState(null);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -449,6 +450,16 @@ const StudentManagement = () => {
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
+                  <button
+                    className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
+                    onClick={() => {
+                      setStudentToView(student);
+                      setIsDetailModalOpen(true);
+                    }}
+                    title="View Details"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
                   <button className="p-2 rounded-lg hover:bg-slate-100">
                     <ChevronRight className="w-5 h-5 text-slate-600" />
                   </button>
@@ -480,6 +491,12 @@ const StudentManagement = () => {
           title="Delete Student"
           description={`Are you sure you want to delete "${studentToDelete?.name}"? This will deactivate their student profile and access. This action cannot be undone.`}
           isLoading={isDeleting}
+        />
+
+        <StudentDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          studentId={studentToView?.id}
         />
       </div>
     </div>

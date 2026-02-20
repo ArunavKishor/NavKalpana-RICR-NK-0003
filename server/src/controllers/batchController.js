@@ -158,7 +158,6 @@ export const updateBatch = async (req, res) => {
     if (!batch || !batch.isActive) {
       return res.status(404).json({ message: "Resource not found" });
     }
-
     const fields = [
       "name",
       "course",
@@ -167,6 +166,7 @@ export const updateBatch = async (req, res) => {
       "instructor",
       "schedule",
       "maxStudents",
+      "content",
     ];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) {
