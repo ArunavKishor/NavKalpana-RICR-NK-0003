@@ -77,102 +77,105 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6">
-      <div className="w-full max-w-sm sm:max-w-md">
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-3 sm:px-4 py-4 sm:py-6">
+        <div className="w-full max-w-md">
+          <div className="bg-white shadow-lg rounded-lg sm:rounded-xl p-6 sm:p-8 border border-gray-200">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 text-center">
+              Education Portal Login
+            </h1>
 
-        <div className="bg-white shadow-lg rounded-2xl p-6 sm:p-8 border border-gray-200">
-          
-          {/* Heading */}
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 text-center">
-            Education Portal Login
-          </h1>
+            <p className="text-slate-500 text-xs sm:text-sm mt-2 text-center">
+              Sign in to access the administration panel
+            </p>
 
-          <p className="text-slate-500 text-xs sm:text-sm mt-2 text-center">
-            Sign in to access the administration panel
-          </p>
+            <form
+              onSubmit={handleSubmit}
+              onReset={handleClearForm}
+              className="space-y-4 sm:space-y-5 md:space-y-6 mt-6 sm:mt-8"
+            >
+              {/* Email */}
+              <div>
+                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                  Email Address
+                </label>
 
-          <form
-            onSubmit={handleSubmit}
-            onReset={handleClearForm}
-            className="space-y-5 sm:space-y-6 mt-6"
-          >
-            {/* Email */}
-            <div>
-              <label className="text-xs sm:text-sm font-medium text-slate-700">
-                Email Address
-              </label>
-
-              <input
-                type="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isLoading}
-                placeholder="Enter admin email"
-                className="w-full mt-2 px-4 py-3 text-sm sm:text-base rounded-xl border border-slate-200
-                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                           outline-none transition-all bg-white"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="relative">
-              <label className="text-xs sm:text-sm font-medium text-slate-700">
-                Password
-              </label>
-
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading}
-                placeholder="Enter password"
-                className="w-full mt-2 px-4 py-3 text-sm sm:text-base rounded-xl border border-slate-200
-                           focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                           outline-none transition-all bg-white"
-              />
-
-              <div
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-4 top-[44px] sm:top-[46px] cursor-pointer
-                           text-slate-400 hover:text-indigo-600 transition"
-              >
-                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  placeholder="Enter admin email"
+                  className="w-full mt-1.5 sm:mt-2 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
+                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                             outline-none transition-all bg-white"
+                />
               </div>
-            </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                type="reset"
-                disabled={isLoading}
-                className="w-full py-3 text-sm sm:text-base rounded-xl border border-slate-200
-                           text-slate-600 hover:bg-slate-50 transition"
-              >
-                Clear
-              </motion.button>
+              {/* Password */}
+              <div className="relative">
+                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                  Password
+                </label>
 
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 text-sm sm:text-base rounded-xl bg-indigo-600 text-white font-medium
-                           shadow-lg hover:bg-indigo-700 transition flex items-center justify-center"
-              >
-                {isLoading ? (
-                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                ) : (
-                  "Login"
-                )}
-              </motion.button>
-            </div>
-          </form>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  placeholder="Enter password"
+                  className="w-full mt-1.5 sm:mt-2 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
+                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                             outline-none transition-all bg-white"
+                />
+
+                <div
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 sm:right-4 top-[42px] sm:top-[46px] cursor-pointer
+                             text-slate-400 hover:text-indigo-600 transition"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 sm:gap-4 pt-2 sm:pt-4">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  type="reset"
+                  disabled={isLoading}
+                  className="flex-1 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
+                             text-slate-600 hover:bg-slate-50 transition"
+                >
+                  Clear
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl bg-indigo-600 text-white font-medium
+                             shadow-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <span className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  ) : (
+                    "Login"
+                  )}
+                </motion.button>
+              </div>
+            </form>
+          </div>
+
+          <p className="text-center text-slate-400 mt-5 sm:mt-6 text-xs">
+            © 2026 Administration System
+          </p>
         </div>
 
         <p className="text-center text-slate-400 mt-6 text-[10px] sm:text-xs">

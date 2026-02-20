@@ -79,7 +79,6 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-10 sm:py-14 lg:py-16 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-
         {/* Header */}
         <div className="text-center mb-10 sm:mb-14">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900">
@@ -88,13 +87,13 @@ const Contact = () => {
           <p className="text-gray-600 mt-3 text-sm sm:text-base max-w-xl mx-auto">
             Have questions about courses or enrollment?
             <span className="text-indigo-600 font-medium">
-              {" "}We’re here to help.
+              {" "}
+              We’re here to help.
             </span>
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-
+        <div className="grid lg:grid-cols-2 gap-12">
           {/* LEFT SIDE */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
@@ -107,27 +106,35 @@ const Contact = () => {
                 Reach Us Directly
               </h3>
 
-              <div className="space-y-5 sm:space-y-6 text-gray-600">
-
+              <div className="space-y-6 text-gray-600">
                 {[
-                  { icon: Mail, title: "Email", value: "punitpawar59@gmail.com" },
+                  {
+                    icon: Mail,
+                    title: "Email",
+                    value: "punitpawar59@gmail.com",
+                  },
                   { icon: Phone, title: "Phone", value: "+91 98765 43210" },
-                  { icon: MapPin, title: "Location", value: "Your City, India" },
-                  { icon: Clock, title: "Working Hours", value: "Mon – Sat | 9 AM – 7 PM" },
+                  {
+                    icon: MapPin,
+                    title: "Location",
+                    value: "Your City, India",
+                  },
+                  {
+                    icon: Clock,
+                    title: "Working Hours",
+                    value: "Mon – Sat | 9 AM – 7 PM",
+                  },
                 ].map((item, index) => (
                   <div key={index} className="flex items-start gap-3 sm:gap-4">
                     <div className="bg-indigo-100 p-2 rounded-lg">
                       <item.icon className="text-indigo-600 w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800 text-sm sm:text-base">
-                        {item.title}
-                      </p>
-                      <p className="text-xs sm:text-sm">{item.value}</p>
+                      <p className="font-medium text-gray-800">{item.title}</p>
+                      <p className="text-sm">{item.value}</p>
                     </div>
                   </div>
                 ))}
-
               </div>
             </div>
 
@@ -135,8 +142,10 @@ const Contact = () => {
               <h4 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
                 Why Choose Us?
               </h4>
-              <ul className="text-gray-600 space-y-2 text-xs sm:text-sm">
-                <li className="text-indigo-600">✔ Industry-focused curriculum</li>
+              <ul className="text-gray-600 space-y-2 text-sm">
+                <li className="text-indigo-600">
+                  ✔ Industry-focused curriculum
+                </li>
                 <li>✔ Real-world projects</li>
                 <li>✔ Placement assistance</li>
                 <li>✔ Experienced mentors</li>
@@ -151,9 +160,8 @@ const Contact = () => {
             transition={{ duration: 0.6 }}
             className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 border border-indigo-50"
           >
-            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-5">
                 <input
                   type="text"
                   name="fullName"
@@ -222,7 +230,6 @@ const Contact = () => {
               )}
             </form>
           </motion.div>
-
         </div>
       </div>
 
