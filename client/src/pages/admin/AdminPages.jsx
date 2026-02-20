@@ -4,6 +4,7 @@ import AssessmentManagement from "./AssessmentManagement";
 import StudentManagement from "./StudentManagement";
 import SupportRequests from "./SupportRequests";
 import BatchDetail from "./BatchDetail";
+import TeacherManagement from "./TeacherManagement";
 
 export {
   BatchManagement,
@@ -11,4 +12,5 @@ export {
   StudentManagement,
   SupportRequests,
   BatchDetail,
+  TeacherManagement,
 };

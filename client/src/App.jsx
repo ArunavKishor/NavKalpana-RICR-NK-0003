@@ -17,11 +17,13 @@ import {
   StudentManagement,
   SupportRequests,
   BatchDetail,
+  TeacherManagement,
 } from "./pages/admin/AdminPages";
 import AttendanceManagement from "./pages/admin/AttendenceManagement";
-import CoursesPage from "./pages/CoursesPage";
-import CourseDetailsPage from "./pages/CourseDetailsPage";
 import Login from "./pages/Login";
+
+import TeacherDashboardLayout from "./components/teacher/TeacherDashboardLayout";
+import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
 
 const App = () => {
   return (
@@ -52,8 +54,18 @@ const App = () => {
             />
             <Route path="assessments" element={<AssessmentManagement />} />
             <Route path="students" element={<StudentManagement />} />
+            <Route path="teachers" element={<TeacherManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
+
+          {/* Teacher Dashboard Routes */}
+          <Route path="/teacher-dashboard" element={<TeacherDashboardLayout />}>
+            <Route index element={<TeacherDashboardHome />} />
+            <Route path="assessments" element={<AssessmentManagement />} />
+            <Route path="students" element={<StudentManagement />} />
+            <Route path="support" element={<SupportRequests />} />
+          </Route>
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>
