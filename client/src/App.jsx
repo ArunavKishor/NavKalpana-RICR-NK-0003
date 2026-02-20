@@ -9,7 +9,6 @@ import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import AdminLogin from "./pages/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
-import Login from "./pages/Login";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/admin/DashboardHome";
 import {
@@ -22,6 +21,7 @@ import {
 import AttendanceManagement from "./pages/admin/AttendenceManagement";
 import CoursesPage from "./pages/CoursesPage";
 import CourseDetailsPage from "./pages/CourseDetailsPage";
+import Login from "./pages/Login";
 
 const App = () => {
   return (
@@ -30,12 +30,11 @@ const App = () => {
         <Toaster />
         <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Login />} />
           {/* <Route path="/about" element={<About />} /> */}
           {/* <Route path="/contact" element={<Contact />} /> */}
           {/* <Route path="/courses" element={<CoursesPage />} /> */}
           {/* <Route path="/courses/:title" element={<CourseDetailsPage />} /> */}
-          <Route path="/login" element={<Login />} />
           {/* <Route path="/register" element={<Register />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
 
