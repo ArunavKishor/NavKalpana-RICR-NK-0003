@@ -56,14 +56,14 @@ const Login = () => {
         return;
       }
 
-      /* ✅ ADMIN-ONLY VALIDATION */
-      if (role !== "admin") {
-        toast.error("Access denied. Admins only.");
+      /* ✅ VALIDATION: Allow both admin and teacher */
+      if (role !== "admin" && role !== "teacher") {
+        toast.error("Access denied. Authorized personnel only.");
         sessionStorage.removeItem("Token");
         return;
       }
 
-      toast.success("Welcome Admin");
+      toast.success(`Welcome ${role === "admin" ? "Admin" : "Teacher"}`);
 
       setUser(user);
       setIsLogin(true);
@@ -73,7 +73,11 @@ const Login = () => {
       sessionStorage.setItem("token", user.token);
       sessionStorage.setItem("Token", JSON.stringify(user));
 
-      navigate("/admin-dashboard");
+      if (role === "teacher") {
+        navigate("/teacher-dashboard");
+      } else {
+        navigate("/admin-dashboard");
+      }
 
       handleClearForm();
     } catch (error) {
