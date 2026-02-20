@@ -9,8 +9,6 @@ import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import AdminLogin from "./pages/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/admin/DashboardHome";
 import {
@@ -18,10 +16,12 @@ import {
   AssessmentManagement,
   StudentManagement,
   SupportRequests,
+  BatchDetail,
 } from "./pages/admin/AdminPages";
 import AttendanceManagement from "./pages/admin/AttendenceManagement";
 import CoursesPage from "./pages/CoursesPage";
 import CourseDetailsPage from "./pages/CourseDetailsPage";
+import Login from "./pages/Login";
 
 const App = () => {
   return (
@@ -30,13 +30,12 @@ const App = () => {
         <Toaster />
         <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/courses" element={<CoursesPage />} />
-          <Route path="/courses/:title" element={<CourseDetailsPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Login />} />
+          {/* <Route path="/about" element={<About />} /> */}
+          {/* <Route path="/contact" element={<Contact />} /> */}
+          {/* <Route path="/courses" element={<CoursesPage />} /> */}
+          {/* <Route path="/courses/:title" element={<CourseDetailsPage />} /> */}
+          {/* <Route path="/register" element={<Register />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
 
           <Route path="/admin-dashboard" element={<DashboardLayout />}>
@@ -46,6 +45,7 @@ const App = () => {
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="batches" element={<BatchManagement />} />
+            <Route path="batches/:batchId" element={<BatchDetail />} />
             <Route
               path="batches/:batchId/attendance"
               element={<AttendanceManagement />}

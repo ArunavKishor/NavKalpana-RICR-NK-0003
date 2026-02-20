@@ -64,6 +64,14 @@ const batchSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    content: [
+      {
+        title: { type: String, required: true },
+        body: { type: String, required: true },
+        order: { type: Number, default: 0 },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,
