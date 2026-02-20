@@ -94,7 +94,7 @@ studentSchema.statics.generateEnrollmentId = async function () {
   return `${prefix}${padded}`;
 };
 
-studentSchema.pre("validate", async function (next) {
+studentSchema.pre("validate", async function () {
   if (!this.enrollmentId) {
     const Student = this.constructor;
     this.enrollmentId = await Student.generateEnrollmentId();
@@ -102,7 +102,6 @@ studentSchema.pre("validate", async function (next) {
   if (!this.enrollmentDate) {
     this.enrollmentDate = new Date();
   }
-  next();
 });
 
 const Student = mongoose.model("Student", studentSchema);

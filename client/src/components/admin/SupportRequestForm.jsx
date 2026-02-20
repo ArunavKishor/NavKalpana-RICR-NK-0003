@@ -80,7 +80,7 @@ const SupportRequestForm = ({
                     <SelectContent>
                         {students.map((student) => (
                             <SelectItem key={student._id} value={student._id}>
-                                {student.name} ({student.email})
+                                {student.user?.fullName} ({student.user?.email})
                             </SelectItem>
                         ))}
                     </SelectContent>

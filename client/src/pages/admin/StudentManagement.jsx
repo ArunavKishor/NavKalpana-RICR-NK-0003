@@ -99,62 +99,63 @@ const StudentManagement = () => {
     loadCounts();
   }, []);
 
+  /* ---------------- FETCH DATA ---------------- */
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      const status = activeTab === "COMPLETED" ? "completed" : "active";
+      const { data } = await api.get("/api/students", {
+        params: {
+          status,
+          search: searchTerm || undefined,
+        },
+      });
+      const list = data?.data?.students || [];
+
+      // Fetch performance data to map attendance
+      const performanceRes = await api.get("/api/dashboard/performance");
+      const performanceData =
+        performanceRes?.data?.data?.studentPerformance || [];
+
+      const performanceMap = new Map(
+        performanceData.map((item) => [item.student.id, item])
+      );
+
+      const mapped = list.map((student) => {
+        const course = student.batches?.[0]?.course || "Unassigned";
+        const modules = student.batches?.map((b) => b.name) || [];
+        const performance = performanceMap.get(student._id);
+        const attendance = performance
+          ? Math.round(performance.attendancePercentage)
+          : 0;
+
+        return {
+          id: student._id,
+          name: student.user?.fullName || "Unknown",
+          email: student.user?.email || "N/A",
+          phone: student.phone || "N/A",
+          course,
+          enrollmentId: student.enrollmentId,
+          attendance,
+          modules,
+          status: student.status === "completed" ? "COMPLETED" : "ONGOING",
+        };
+      });
+
+      setStudents(mapped);
+      setError("");
+    } catch (err) {
+      console.error("Load students failed:", err);
+      setError(
+        err.response?.data?.message ||
+        "Failed to load students. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        setLoading(true);
-        const status =
-          activeTab === "COMPLETED" ? "completed" : "active";
-        const { data } = await api.get("/api/students", {
-          params: {
-            status,
-            search: searchTerm || undefined,
-          },
-        });
-        const list = data?.data?.students || [];
-
-        const performanceRes = await api.get("/api/dashboard/performance");
-        const performanceData =
-          performanceRes?.data?.data?.studentPerformance || [];
-
-        const performanceMap = new Map(
-          performanceData.map((item) => [item.student.id, item]),
-        );
-
-        const mapped = list.map((student) => {
-          const course = student.batches?.[0]?.course || "Unassigned";
-          const modules = student.batches?.map((b) => b.name) || [];
-          const performance = performanceMap.get(student._id);
-          const attendance = performance
-            ? Math.round(performance.attendancePercentage)
-            : 0;
-
-          return {
-            id: student._id,
-            name: student.user?.fullName || "Unknown",
-            email: student.user?.email || "N/A",
-            phone: student.phone || "N/A",
-            course,
-            enrollmentId: student.enrollmentId,
-            attendance,
-            modules,
-            status: student.status === "completed" ? "COMPLETED" : "ONGOING",
-          };
-        });
-
-        setStudents(mapped);
-        setError("");
-      } catch (err) {
-        console.error("Load students failed:", err);
-        setError(
-          err.response?.data?.message ||
-          "Failed to load students. Please try again.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadStudents();
   }, [activeTab, searchTerm]);
 

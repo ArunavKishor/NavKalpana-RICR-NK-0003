@@ -22,6 +22,7 @@ const buildStudentSearchFilter = async (search) => {
 };
 
 export const createStudent = async (req, res) => {
+  let user = null;
   try {
     const {
       userId,
@@ -32,8 +33,6 @@ export const createStudent = async (req, res) => {
       enrollmentDate,
       status,
     } = req.body;
-
-    let user = null;
 
     if (userId) {
       user = await User.findById(userId);
@@ -61,19 +60,27 @@ export const createStudent = async (req, res) => {
       });
     }
 
-    const student = await Student.create({
-      user: user._id,
-      phone,
-      enrollmentDate: enrollmentDate ? new Date(enrollmentDate) : undefined,
-      status,
-      batches: [],
-      enrollmentHistory: [],
-    });
+    try {
+      const student = await Student.create({
+        user: user._id,
+        phone,
+        enrollmentDate: enrollmentDate ? new Date(enrollmentDate) : undefined,
+        status,
+        batches: [],
+        enrollmentHistory: [],
+      });
 
-    res.status(201).json({
-      message: "Student created successfully",
-      data: student,
-    });
+      res.status(201).json({
+        message: "Student created successfully",
+        data: student,
+      });
+    } catch (studentError) {
+      // Manual rollback: if creating student fails, and we created a new user, delete the user
+      if (!userId && user) {
+        await User.findByIdAndDelete(user._id);
+      }
+      throw studentError; // Re-throw to be caught by outer catch
+    }
   } catch (error) {
     const validationErrors = formatValidationErrors(error);
     if (validationErrors) {
@@ -85,8 +92,16 @@ export const createStudent = async (req, res) => {
     if (isDuplicateKeyError(error)) {
       return res.status(409).json({ message: "Resource already exists" });
     }
-    console.error("Create Student Error:", error);
-    res.status(500).json({ message: "Failed to create student" });
+    console.error("Create Student Error Detailed:", {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    res.status(500).json({
+      message: "Failed to create student. Please check server logs.",
+      error: error.message
+    });
   }
 };
 

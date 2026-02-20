@@ -60,6 +60,8 @@ export const getAssessments = async (req, res) => {
     const { page, limit, skip } = pagination;
     const { search, batch, type, status, startDate, endDate } = req.query;
 
+    console.log("Get Assessments Query:", req.query);
+
     const filter = { isActive: true };
     if (type && !["assignment", "quiz"].includes(type)) {
       return res.status(400).json({ message: "Invalid type filter" });

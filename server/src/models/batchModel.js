@@ -79,12 +79,11 @@ batchSchema.methods.computeStatus = function (now = new Date()) {
   return "ongoing";
 };
 
-batchSchema.pre("validate", function (next) {
+batchSchema.pre("validate", function () {
   if (this.startDate && this.endDate && this.endDate <= this.startDate) {
     this.invalidate("endDate", "End date must be after start date");
   }
   this.status = this.computeStatus();
-  next();
 });
 
 const Batch = mongoose.model("Batch", batchSchema);
