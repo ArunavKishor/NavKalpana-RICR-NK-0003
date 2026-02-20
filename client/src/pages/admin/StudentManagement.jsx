@@ -19,6 +19,8 @@ import StudentForm from "@/components/admin/StudentForm";
 import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
 import StudentDetailModal from "@/components/admin/StudentDetailModal";
 import { Plus, Pencil, Trash2, Loader2, Eye } from "lucide-react";
+import api from "@/config/Api";
+import toast from "react-hot-toast";
 
 const StudentManagement = () => {
   const [searchParams] = useSearchParams();
