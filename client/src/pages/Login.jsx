@@ -57,7 +57,7 @@ const Login = () => {
         return;
       }
 
-      toast.success("Welcome Admin");
+      toast.success(`Welcome ${role === "admin" ? "Admin" : "Teacher"}`);
 
       setUser(user);
       setIsLogin(true);

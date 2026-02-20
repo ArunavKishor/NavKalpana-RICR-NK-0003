@@ -13,6 +13,7 @@ import AttendanceRouter from "./src/routers/attendanceRoutes.js";
 import AssessmentRouter from "./src/routers/assessmentRoutes.js";
 import SupportRouter from "./src/routers/supportRoutes.js";
 import DashboardRouter from "./src/routers/dashboardRoutes.js";
+import TeacherRouter from "./src/routers/teacherRoutes.js";
 
 dotenv.config();
 
@@ -42,6 +43,7 @@ app.use("/api/attendance", AttendanceRouter);
 app.use("/api/assessments", AssessmentRouter);
 app.use("/api/support", SupportRouter);
 app.use("/api/dashboard", DashboardRouter);
+app.use("/api/teachers", TeacherRouter);
 
 // Default Route
 app.get("/", (req, res) => {

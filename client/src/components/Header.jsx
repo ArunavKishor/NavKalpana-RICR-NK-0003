@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
@@ -9,47 +9,67 @@ const Header = () => {
   const { isLogin } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // ✅ Completely remove header after login
   if (isLogin) return null;
 
   return (
     <motion.header
-      initial={{ y: -70, opacity: 0 }}
+      initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full z-50 bg-transparent"
+      transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "py-2" : "py-4 pt-6"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <motion.img
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 250 }}
+            whileHover={{ scale: 1.05, rotate: -2 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
             src={tranparentLogo}
             alt="Logo"
             className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
           />
         </Link>
 
-        {/* Desktop Login Button */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-8">
+          <nav className="flex gap-6 text-sm font-medium text-white/80">
+            {/* Put any navigation links here if needed */}
+          </nav>
+
+          {/* Enhanced Login Button */}
           <motion.button
-            whileHover={{ scale: 1.07 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)" }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/login")}
             className="relative px-5 lg:px-6 py-2 rounded-xl text-sm lg:text-base font-semibold text-white overflow-hidden
                        bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 shadow-lg"
           >
-            <span className="relative z-10">Login</span>
+            {/* Button Gradient Hover Effect */}
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full -z-10" />
 
-            <motion.span
+            {/* Shine effect */}
+            <motion.div
               initial={{ x: "-100%" }}
-              whileHover={{ x: "100%" }}
-              transition={{ duration: 0.8 }}
-              className="absolute inset-0 bg-white/20 skew-x-12"
+              animate={{ x: "200%" }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute inset-0 bg-white/20 skew-x-12 w-1/2 -z-10"
             />
+
+            <span className="relative z-10 tracking-wide">Login</span>
           </motion.button>
         </div>
 
@@ -82,7 +102,7 @@ const Header = () => {
                            bg-gradient-to-r from-orange-500 to-pink-500 text-white"
               >
                 Login
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         )}
