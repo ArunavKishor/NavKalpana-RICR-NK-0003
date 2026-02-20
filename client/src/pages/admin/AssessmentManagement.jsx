@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import Modal from "@/components/admin/Modal";
 import AssessmentForm from "@/components/admin/AssessmentForm";
 import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
+import SubmissionListModal from "@/components/admin/SubmissionListModal";
 
 const AssessmentManagement = () => {
   const [activeTab, setActiveTab] = useState("assignments");
@@ -35,6 +36,8 @@ const AssessmentManagement = () => {
   const [assessmentToDelete, setAssessmentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [batchOptions, setBatchOptions] = useState([]);
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState(null);
 
   // Get data based on active tab
   const filteredData =
@@ -128,6 +131,11 @@ const AssessmentManagement = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openSubmissionModal = (assessment) => {
+    setSelectedAssessmentId(assessment._id);
+    setSubmissionModalOpen(true);
   };
 
   const openCreateModal = () => {
@@ -399,22 +407,35 @@ const AssessmentManagement = () => {
                     </div>
                   </div>
 
-                  {/* View All Link */}
+                  {/* View All Actions */}
                   <div className="flex items-center gap-2">
-                    <button
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm group"
-                      onClick={() => openEditModal(assignment)}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                      onClick={() => openSubmissionModal(assignment)}
                     >
-                      <Pencil className="w-4 h-4" />
-                      Edit
-                    </button>
-                    <button
-                      className="flex items-center gap-1 text-red-600 hover:text-red-700 font-semibold text-sm"
-                      onClick={() => openDeleteDialog(assignment)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
+                      <FileText className="w-4 h-4 mr-1" />
+                      Submissions
+                    </Button>
+
+                    {/* View All Link */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm group"
+                        onClick={() => openEditModal(assignment)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button
+                        className="flex items-center gap-1 text-red-600 hover:text-red-700 font-semibold text-sm"
+                        onClick={() => openDeleteDialog(assignment)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -537,24 +558,27 @@ const AssessmentManagement = () => {
             </div>
           </CardContent>
         </Card>
-      )}
+      )
+      }
 
       {/* No Results Message */}
-      {filteredData.length === 0 && (
-        <div className="text-center py-16">
-          <div className="inline-block p-4 bg-slate-100 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-slate-400" />
+      {
+        filteredData.length === 0 && (
+          <div className="text-center py-16">
+            <div className="inline-block p-4 bg-slate-100 rounded-full mb-4">
+              <FileText className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              No {activeTab} found
+            </h3>
+            <p className="text-slate-500">
+              Create your first{" "}
+              {activeTab === "assignments" ? "assignment" : "quiz"} to get
+              started.
+            </p>
           </div>
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">
-            No {activeTab} found
-          </h3>
-          <p className="text-slate-500">
-            Create your first{" "}
-            {activeTab === "assignments" ? "assignment" : "quiz"} to get
-            started.
-          </p>
-        </div>
-      )}
+        )
+      }
 
       <Modal
         isOpen={isModalOpen}
@@ -582,7 +606,13 @@ const AssessmentManagement = () => {
         description={`Are you sure you want to delete "${assessmentToDelete?.title}"? This will also remove any student submissions associated with it.`}
         isLoading={isDeleting}
       />
-    </div>
+
+      <SubmissionListModal
+        isOpen={submissionModalOpen}
+        onClose={() => setSubmissionModalOpen(false)}
+        assessmentId={selectedAssessmentId}
+      />
+    </div >
   );
 };
 
