@@ -77,14 +77,14 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-16 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-10 sm:py-14 lg:py-16 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-14">
-          <h1 className="text-4xl font-semibold text-gray-900">
+        <div className="text-center mb-10 sm:mb-14">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900">
             Contact Our Team
           </h1>
-          <p className="text-gray-600 mt-3 max-w-xl mx-auto">
+          <p className="text-gray-600 mt-3 text-sm sm:text-base max-w-xl mx-auto">
             Have questions about courses or enrollment?
             <span className="text-indigo-600 font-medium">
               {" "}
@@ -99,10 +99,10 @@ const Contact = () => {
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-indigo-50">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-md border border-indigo-50">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-5 sm:mb-6">
                 Reach Us Directly
               </h3>
 
@@ -125,9 +125,9 @@ const Contact = () => {
                     value: "Mon – Sat | 9 AM – 7 PM",
                   },
                 ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-4">
+                  <div key={index} className="flex items-start gap-3 sm:gap-4">
                     <div className="bg-indigo-100 p-2 rounded-lg">
-                      <item.icon className="text-indigo-600" size={18} />
+                      <item.icon className="text-indigo-600 w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">{item.title}</p>
@@ -138,8 +138,8 @@ const Contact = () => {
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-indigo-50">
-              <h4 className="font-semibold text-gray-900 mb-3">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-md border border-indigo-50">
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
                 Why Choose Us?
               </h4>
               <ul className="text-gray-600 space-y-2 text-sm">
@@ -158,7 +158,7 @@ const Contact = () => {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="bg-white rounded-2xl shadow-xl p-10 border border-indigo-50"
+            className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 border border-indigo-50"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-5">
@@ -202,11 +202,11 @@ const Contact = () => {
                 className="inputStyle resize-none"
               />
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-4 pt-2 sm:pt-4">
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-50 shadow-md"
+                  className="w-full py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-50 shadow-md"
                 >
                   {isLoading ? "Sending..." : "Submit"}
                 </button>
@@ -214,7 +214,7 @@ const Contact = () => {
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="flex-1 py-3 rounded-xl border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition"
+                  className="w-full py-3 rounded-xl border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition"
                 >
                   Clear
                 </button>
@@ -224,7 +224,7 @@ const Contact = () => {
                 formData.email ||
                 formData.mobileNumber ||
                 formData.message) && (
-                <p className="text-sm text-indigo-500">
+                <p className="text-xs sm:text-sm text-indigo-500">
                   Draft saved automatically
                 </p>
               )}
@@ -243,6 +243,7 @@ const Contact = () => {
           outline: none;
           transition: all 0.3s ease;
           background: #fff;
+          font-size: 14px;
         }
         .inputStyle:focus {
           border-color: #6366f1;
