@@ -10,7 +10,6 @@ import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import AdminLogin from "./pages/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/admin/DashboardHome";
 import {
@@ -32,12 +31,12 @@ const App = () => {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/courses" element={<CoursesPage />} />
-          <Route path="/courses/:title" element={<CourseDetailsPage />} />
+          {/* <Route path="/about" element={<About />} /> */}
+          {/* <Route path="/contact" element={<Contact />} /> */}
+          {/* <Route path="/courses" element={<CoursesPage />} /> */}
+          {/* <Route path="/courses/:title" element={<CourseDetailsPage />} /> */}
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* <Route path="/register" element={<Register />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
 
           <Route path="/admin-dashboard" element={<DashboardLayout />}>
