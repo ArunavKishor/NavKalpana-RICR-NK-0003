@@ -20,15 +20,16 @@ const Header = () => {
       transition={{ duration: 0.7, ease: "easeOut" }}
       className="fixed top-0 left-0 w-full z-50 bg-transparent"
     >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
 
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <motion.img
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 250 }}
             src={tranparentLogo}
             alt="Logo"
-            className="h-12 w-auto object-contain"
+            className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
           />
         </Link>
 
@@ -38,7 +39,7 @@ const Header = () => {
             whileHover={{ scale: 1.07 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/login")}
-            className="relative px-6 py-2 rounded-xl font-semibold text-white overflow-hidden
+            className="relative px-5 lg:px-6 py-2 rounded-xl text-sm lg:text-base font-semibold text-white overflow-hidden
                        bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 shadow-lg"
           >
             <span className="relative z-10">Login</span>
@@ -53,8 +54,11 @@ const Header = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button onClick={() => setOpen(!open)} className="md:hidden text-white">
-          {open ? <X size={28} /> : <Menu size={28} />}
+        <button
+          onClick={() => setOpen(!open)}
+          className="md:hidden text-white p-1"
+        >
+          {open ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
 
@@ -62,16 +66,20 @@ const Header = () => {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
-            className="md:hidden mx-4 mt-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10"
+            className="md:hidden mx-4 mt-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-lg"
           >
             <div className="flex flex-col p-4 gap-3">
               <button
-                onClick={() => navigate("/login")}
-                className="py-2 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white"
+                onClick={() => {
+                  navigate("/login");
+                  setOpen(false);
+                }}
+                className="w-full py-2.5 rounded-lg text-sm font-medium
+                           bg-gradient-to-r from-orange-500 to-pink-500 text-white"
               >
                 Login
               </button>

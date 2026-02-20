@@ -222,7 +222,7 @@ const BatchManagement = () => {
     }
   };
 return (
-  <div className="px-3 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-8">
+  <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-12 py-6 max-w-[1600px] mx-auto space-y-8">
 
     {loading && (
       <div className="text-sm text-slate-500">Loading batches...</div>
@@ -238,10 +238,10 @@ return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
       <div className="text-center md:text-left">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
+        <h1 className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
           Batch Management
         </h1>
-        <p className="text-slate-500 mt-1 text-sm sm:text-base">
+        <p className="text-slate-500 mt-1 text-xs xs:text-sm sm:text-base">
           Monitor and manage your learning batches
         </p>
       </div>
@@ -259,15 +259,16 @@ return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
       {/* Filters */}
-      <div className="flex gap-2 bg-white rounded-lg p-1.5 shadow-sm border overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2 bg-white rounded-lg p-1.5 shadow-sm border overflow-x-auto whitespace-nowrap scrollbar-thin">
         {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition whitespace-nowrap ${activeFilter === filter
-              ? "bg-blue-600 text-white"
-              : "text-slate-600 hover:bg-slate-100"
-              }`}
+            className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${
+              activeFilter === filter
+                ? "bg-blue-600 text-white"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
           >
             {filter}
           </button>
@@ -275,28 +276,28 @@ return (
       </div>
 
       {/* Search */}
-      <div className="relative w-full lg:w-80">
+      <div className="relative w-full sm:w-full md:w-72 lg:w-80">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           type="text"
           placeholder="Search batches..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
         />
       </div>
     </div>
 
     {/* Cards Grid */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6">
 
       {filteredBatches.map((batch) => (
         <Card
           key={batch._id}
-          className="shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col"
+          className="shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full"
         >
           {/* Image */}
-          <div className="relative h-40 sm:h-48 md:h-52 overflow-hidden">
+          <div className="relative h-40 xs:h-44 sm:h-48 md:h-52 overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1498050108023-c5249f4df085"
               alt={batch.name}
@@ -304,7 +305,7 @@ return (
             />
             <div className="absolute top-3 right-3">
               <Badge
-                className={`${getStatusColor(batch.status?.toUpperCase())} border`}
+                className={`${getStatusColor(batch.status?.toUpperCase())} border text-xs`}
               >
                 {batch.status?.toUpperCase()}
               </Badge>
@@ -314,15 +315,15 @@ return (
           <CardContent className="p-4 space-y-4 flex flex-col flex-1">
 
             <div>
-              <h3 className="text-lg font-bold line-clamp-1">
+              <h3 className="text-base sm:text-lg font-bold line-clamp-1">
                 {batch.name}
               </h3>
-              <p className="text-sm text-blue-600 font-medium uppercase">
+              <p className="text-xs sm:text-sm text-blue-600 font-medium uppercase">
                 {batch.course}
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-sm text-slate-600">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-xs sm:text-sm text-slate-600">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 {batch.enrolledStudents ?? batch.students?.length ?? 0} Students
@@ -331,16 +332,16 @@ return (
                 <Calendar className="w-4 h-4" />
                 {batch.startDate
                   ? new Date(batch.startDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })
+                      month: "short",
+                      year: "numeric",
+                    })
                   : "N/A"}
               </div>
             </div>
 
             {/* Progress */}
             <div>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-xs sm:text-sm mb-1">
                 <span>Progress</span>
                 <span>{computeProgress(batch)}%</span>
               </div>
@@ -358,7 +359,7 @@ return (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   onClick={() => navigate(`/admin/batches/${batch._id}`)}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg flex items-center justify-center gap-2"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-2"
                 >
                   Manage
                   <ChevronRight className="w-4 h-4" />
@@ -366,7 +367,7 @@ return (
 
                 <button
                   onClick={() => openEditModal(batch)}
-                  className="w-full bg-white border border-slate-200 text-slate-700 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50"
+                  className="w-full bg-white border border-slate-200 text-slate-700 py-2 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-slate-50"
                 >
                   <Pencil className="w-4 h-4" />
                   Edit
@@ -375,7 +376,7 @@ return (
 
               <button
                 onClick={() => openDeleteDialog(batch)}
-                className="w-full bg-red-50 text-red-600 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-red-100"
+                className="w-full bg-red-50 text-red-600 py-2 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-red-100"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
@@ -391,7 +392,7 @@ return (
     {filteredBatches.length === 0 && (
       <div className="text-center py-12">
         <Search className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-        <p className="text-slate-600">
+        <p className="text-slate-600 text-sm">
           No batches found
         </p>
       </div>
@@ -399,7 +400,6 @@ return (
 
   </div>
 );
-
 };
 
 export default BatchManagement;
