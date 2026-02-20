@@ -79,7 +79,6 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-16 px-4">
       <div className="max-w-6xl mx-auto">
-
         {/* Header */}
         <div className="text-center mb-14">
           <h1 className="text-4xl font-semibold text-gray-900">
@@ -87,12 +86,14 @@ const Contact = () => {
           </h1>
           <p className="text-gray-600 mt-3 max-w-xl mx-auto">
             Have questions about courses or enrollment?
-            <span className="text-indigo-600 font-medium"> We’re here to help.</span>
+            <span className="text-indigo-600 font-medium">
+              {" "}
+              We’re here to help.
+            </span>
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-
           {/* LEFT SIDE */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
@@ -106,26 +107,34 @@ const Contact = () => {
               </h3>
 
               <div className="space-y-6 text-gray-600">
-
                 {[
-                  { icon: Mail, title: "Email", value: "punitpawar59@gmail.com" },
+                  {
+                    icon: Mail,
+                    title: "Email",
+                    value: "punitpawar59@gmail.com",
+                  },
                   { icon: Phone, title: "Phone", value: "+91 98765 43210" },
-                  { icon: MapPin, title: "Location", value: "Your City, India" },
-                  { icon: Clock, title: "Working Hours", value: "Mon – Sat | 9 AM – 7 PM" },
+                  {
+                    icon: MapPin,
+                    title: "Location",
+                    value: "Your City, India",
+                  },
+                  {
+                    icon: Clock,
+                    title: "Working Hours",
+                    value: "Mon – Sat | 9 AM – 7 PM",
+                  },
                 ].map((item, index) => (
                   <div key={index} className="flex items-start gap-4">
                     <div className="bg-indigo-100 p-2 rounded-lg">
                       <item.icon className="text-indigo-600" size={18} />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">
-                        {item.title}
-                      </p>
+                      <p className="font-medium text-gray-800">{item.title}</p>
                       <p className="text-sm">{item.value}</p>
                     </div>
                   </div>
                 ))}
-
               </div>
             </div>
 
@@ -134,7 +143,9 @@ const Contact = () => {
                 Why Choose Us?
               </h4>
               <ul className="text-gray-600 space-y-2 text-sm">
-                <li className="text-indigo-600">✔ Industry-focused curriculum</li>
+                <li className="text-indigo-600">
+                  ✔ Industry-focused curriculum
+                </li>
                 <li>✔ Real-world projects</li>
                 <li>✔ Placement assistance</li>
                 <li>✔ Experienced mentors</li>
@@ -150,7 +161,6 @@ const Contact = () => {
             className="bg-white rounded-2xl shadow-xl p-10 border border-indigo-50"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
-
               <div className="grid md:grid-cols-2 gap-5">
                 <input
                   type="text"
@@ -220,7 +230,6 @@ const Contact = () => {
               )}
             </form>
           </motion.div>
-
         </div>
       </div>
 
