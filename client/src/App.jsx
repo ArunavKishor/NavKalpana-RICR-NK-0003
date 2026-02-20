@@ -18,6 +18,7 @@ import {
   AssessmentManagement,
   StudentManagement,
   SupportRequests,
+  BatchDetail,
 } from "./pages/admin/AdminPages";
 import AttendanceManagement from "./pages/admin/AttendenceManagement";
 import CoursesPage from "./pages/CoursesPage";
@@ -46,6 +47,7 @@ const App = () => {
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="batches" element={<BatchManagement />} />
+            <Route path="batches/:batchId" element={<BatchDetail />} />
             <Route
               path="batches/:batchId/attendance"
               element={<AttendanceManagement />}
