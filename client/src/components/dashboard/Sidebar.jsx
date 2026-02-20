@@ -21,7 +21,7 @@ const Sidebar = ({ isOpen }) => {
                 <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                     <GraduationCap className="text-white w-5 h-5" />
                 </div>
-                <span className="text-xl font-bold tracking-wide text-slate-900">Academia</span>
+                <span className="text-xl font-bold tracking-wide text-slate-900">MindRise</span>
             </div>
 
             {/* Navigation */}
@@ -51,16 +51,7 @@ const Sidebar = ({ isOpen }) => {
                 })}
             </nav>
 
-            {/* System Status / Settings */}
-            <div className="p-4 border-t border-slate-100">
-                <div className="mb-4 px-4">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">System Status</p>
-                    <div className="flex items-center gap-2 text-slate-600 text-xs font-medium">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                        Live Services
-                    </div>
-                </div>
-            </div>
+
         </div>
     );
 };

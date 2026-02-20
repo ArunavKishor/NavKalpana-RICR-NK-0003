@@ -4,14 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../config/Api";
 import { useAuth } from "../context/AuthContext";
-import ForgetPasswordModal from "../components/publicModals/ForgetPasswordModal";
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
-
-const roleRoutes = {
-  admin: "/admin-dashboard",
-  student: "/student-dashboard",
-};
 
 const Login = () => {
   const { setUser, setIsLogin, setRole } = useAuth();
@@ -74,9 +68,9 @@ const Login = () => {
       setUser(user);
       setIsLogin(true);
       setRole(role);
+
       sessionStorage.setItem("user", JSON.stringify(user));
       sessionStorage.setItem("token", user.token);
-
       sessionStorage.setItem("Token", JSON.stringify(user));
 
       navigate("/admin-dashboard");
@@ -94,22 +88,19 @@ const Login = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div className="w-full max-w-md">
 
-          {/* Professional Card */}
           <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-
             <h1 className="text-2xl font-semibold text-gray-800 text-center">
               Education Portal Login
             </h1>
 
-              <p className="text-slate-500 text-sm mt-2">
-                Sign in to access the administration panel
-              </p>
+            <p className="text-slate-500 text-sm mt-2 text-center">
+              Sign in to access the administration panel
+            </p>
 
-            {/* Form */}
             <form
               onSubmit={handleSubmit}
               onReset={handleClearForm}
-              className="space-y-6"
+              className="space-y-6 mt-6"
             >
               {/* Email */}
               <div>
@@ -159,19 +150,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Forgot Password */}
-              <div className="text-right">
-                <button
-                  className="text-sm text-indigo-600 hover:text-indigo-800 transition"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsForgetPasswordModelOpen(true);
-                  }}
-                >
-                  Forgot Password?
-                </button>
-              </div>
-
               {/* Buttons */}
               <div className="flex gap-4 pt-2">
                 <motion.button
@@ -190,7 +168,8 @@ const Login = () => {
                   whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-medium shadow-lg hover:bg-indigo-700 transition flex items-center justify-center"
+                  className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-medium
+                             shadow-lg hover:bg-indigo-700 transition flex items-center justify-center"
                 >
                   {isLoading ? (
                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -207,13 +186,6 @@ const Login = () => {
           </p>
         </div>
       </div>
-
-      {/* Forget Password Modal */}
-      {isForgetPasswordModelOpen && (
-        <ForgetPasswordModal
-          onClose={() => setIsForgetPasswordModelOpen(false)}
-        />
-      )}
     </>
   );
 };
