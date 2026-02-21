@@ -177,12 +177,8 @@ const Login = () => {
             © 2026 Administration System
           </p>
         </div>
-
-        <p className="text-center text-slate-400 mt-6 text-[10px] sm:text-xs">
-          © 2026 Administration System
-        </p>
       </div>
-    </div>
+    </>
   );
 };
 
