@@ -102,7 +102,7 @@ const Header = () => {
                            bg-gradient-to-r from-orange-500 to-pink-500 text-white"
               >
                 Login
-              </motion.button>
+              </button>
             </div>
           </motion.div>
         )}

@@ -25,6 +25,14 @@ import Login from "./pages/Login";
 import TeacherDashboardLayout from "./components/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
 
+import StudentDashboardLayout from "./components/dashboard/StudentDashboardLayout";
+import StudentDashboardHome from "./pages/student/StudentDashboardHome";
+import AssignmentManagement from "./pages/student/AssignmentManagement";
+import AttendanceSummary from "./pages/student/AttendanceSummary";
+import StudentProfile from "./pages/student/StudentProfile";
+import Quizzes from "./pages/student/Quizzes";
+import QuizQuestions from "./pages/student/QuizQuestions";
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -65,7 +73,15 @@ const App = () => {
             <Route path="students" element={<StudentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
-
+         {/* Student Dashboard Routes */}
+         <Route path="/student-dashboard" element={<StudentDashboardLayout />}>
+            <Route index element={<StudentDashboardHome />} />
+            <Route path="assignments" element={<AssignmentManagement />} />
+            <Route path="attendance" element={<AttendanceSummary />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="quizzes" element={<Quizzes />} />
+            <Route path="quizzes/:quizId" element={<QuizQuestions />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>
