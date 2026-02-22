@@ -35,7 +35,6 @@ const App = () => {
     <BrowserRouter>
       <AuthProvider>
         <Toaster />
-        <Header />
         <Routes>
           <Route path="/" element={<Login />} />
           {/* <Route path="/about" element={<About />} /> */}

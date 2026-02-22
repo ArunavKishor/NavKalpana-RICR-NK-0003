@@ -51,8 +51,8 @@ const Login = () => {
         return;
       }
 
-      if (role !== "admin") {
-        toast.error("Access denied. Admins only.");
+      if (role !== "admin" && role !== "teacher") {
+        toast.error("Access denied. Admins and Teachers only.");
         sessionStorage.removeItem("Token");
         return;
       }
@@ -67,7 +67,11 @@ const Login = () => {
       sessionStorage.setItem("token", user.token);
       sessionStorage.setItem("Token", JSON.stringify(user));
 
-      navigate("/admin-dashboard");
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (role === "teacher") {
+        navigate("/teacher-dashboard");
+      }
       handleClearForm();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
@@ -78,15 +82,19 @@ const Login = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-3 sm:px-4 py-4 sm:py-6">
-        <div className="w-full max-w-md">
-          <div className="bg-white shadow-lg rounded-lg sm:rounded-xl p-6 sm:p-8 border border-gray-200">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 text-center">
-              Education Portal Login
-            </h1>
+      <div className="relative min-h-screen flex flex-col items-center justify-center bg-white px-3 sm:px-4 py-4 sm:py-6">
+        {/* Background Grid Layer */}
+        <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"></div>
 
-            <p className="text-slate-500 text-xs sm:text-sm mt-2 text-center">
-              Sign in to access the administration panel
+        <div className="w-full max-w-md flex-1 flex flex-col justify-center">
+          <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-lg sm:rounded-2xl p-6 sm:p-10 border border-gray-100">
+
+
+            <h1 className="text-2xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 text-center mb-1">
+              Sign in to mindrise
+            </h1>
+            <p className="text-slate-500 text-sm sm:text-base mt-2 text-center font-medium">
+              Access your administration panel
             </p>
 
             <form
@@ -173,11 +181,28 @@ const Login = () => {
             </form>
           </div>
 
-          <p className="text-center text-slate-400 mt-5 sm:mt-6 text-xs">
-            © 2026 Administration System
+          <p className="text-center text-slate-400 mt-6 sm:mt-8 text-xs font-medium">
+            © {new Date().getFullYear()} Mindrise Administration. All rights reserved.
           </p>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="w-full py-6 mt-auto border-t border-slate-100/50 bg-white/50 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-slate-800 tracking-tight">mindrise</span>
+            <span className="text-slate-300 text-sm">|</span>
+            <span className="text-xs text-slate-500">Empowering Education</span>
+          </div>
+
+          <div className="flex items-center gap-6 text-xs font-medium text-slate-500">
+            <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">Help Center</a>
+          </div>
+        </div>
+      </footer>
     </>
   );
 };

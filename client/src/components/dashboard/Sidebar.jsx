@@ -16,7 +16,6 @@ const sidebarItems = [
   { icon: FileText, label: "Assessment Management", href: "/admin/assessments" },
   { icon: GraduationCap, label: "Student Management", href: "/admin/students" },
   { icon: Users, label: "Teacher Management", href: "/admin/teachers" },
-  { icon: LifeBuoy, label: "Support Requests", href: "/admin/support" },
 ];
 
 const Sidebar = ({ isOpen }) => {

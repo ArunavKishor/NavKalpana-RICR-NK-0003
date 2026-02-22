@@ -25,12 +25,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // Don't return password by default in queries
+      select: false, // Do not return password in queries
     },
     role: {
       type: String,
       enum: {
-        values: ["admin", "student", "teacher", "partner"],
+        values: ["admin", "student", "teacher"],
         message: "{VALUE} is not a valid role",
       },
       default: "student",
@@ -41,8 +41,8 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt
-  },
+    timestamps: true,
+  }
 );
 
 // Hash password before saving
@@ -56,12 +56,12 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Method to compare password
+// 🔑 Compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to get public profile (without sensitive data)
+// 🧹 Remove sensitive fields when returning user
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;

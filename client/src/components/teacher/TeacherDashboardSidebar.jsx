@@ -15,7 +15,6 @@ const sidebarItems = [
     { icon: FileText, label: "Assessment Management", href: "/teacher-dashboard/assessments" },
     { icon: BookOpen, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
     { icon: GraduationCap, label: "Student Management", href: "/teacher-dashboard/students" },
-    { icon: LifeBuoy, label: "Support Requests", href: "/teacher-dashboard/support" },
 ];
 
 const TeacherSidebar = ({ isOpen }) => {
