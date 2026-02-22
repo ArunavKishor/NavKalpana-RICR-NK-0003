@@ -51,8 +51,8 @@ const Login = () => {
         return;
       }
 
-      if (role !== "admin") {
-        toast.error("Access denied. Admins only.");
+      if (role !== "admin" && role !== "teacher") {
+        toast.error("Access denied. Admins and Teachers only.");
         sessionStorage.removeItem("Token");
         return;
       }
@@ -67,7 +67,11 @@ const Login = () => {
       sessionStorage.setItem("token", user.token);
       sessionStorage.setItem("Token", JSON.stringify(user));
 
-      navigate("/admin-dashboard");
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (role === "teacher") {
+        navigate("/teacher-dashboard");
+      }
       handleClearForm();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
