@@ -1,42 +1,51 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { quizService } from "@/utils/quizService";
+import toast from "react-hot-toast";
 
 const QuizQuestions = () => {
   const navigate = useNavigate();
+  const { quizId } = useParams();
 
-  const quizData = [
-    {
-      question: "What is React?",
-      options: [
-        "A database",
-        "A JavaScript library",
-        "A backend framework",
-        "A programming language",
-      ],
-      correct: 1,
-    },
-    {
-      question: "What is useState?",
-      options: [
-        "A lifecycle method",
-        "A React hook",
-        "A database",
-        "A CSS property",
-      ],
-      correct: 1,
-    },
-    {
-      question: "Which company developed React?",
-      options: ["Google", "Facebook", "Microsoft", "Amazon"],
-      correct: 1,
-    },
-  ];
-
+  const [quizData, setQuizData] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState(
-    Array(quizData.length).fill(null)
-  );
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadQuiz();
+  }, [quizId]);
+
+  const loadQuiz = () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const quiz = quizService.getQuizById(quizId);
+      if (!quiz) {
+        setError("Quiz not found");
+        toast.error("Quiz not found");
+        return;
+      }
+
+      if (!quiz.questions || quiz.questions.length === 0) {
+        setError("Quiz has no questions");
+        toast.error("Quiz has no questions");
+        return;
+      }
+
+      setQuizData(quiz);
+      setSelectedAnswers(Array(quiz.questions.length).fill(null));
+    } catch (err) {
+      console.error("Error loading quiz:", err);
+      setError("Failed to load quiz");
+      toast.error("Failed to load quiz");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOptionClick = (index) => {
     const updatedAnswers = [...selectedAnswers];
@@ -45,7 +54,7 @@ const QuizQuestions = () => {
   };
 
   const handleNext = () => {
-    if (currentQuestion < quizData.length - 1) {
+    if (currentQuestion < quizData.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setShowResult(true);
@@ -59,17 +68,48 @@ const QuizQuestions = () => {
   };
 
   const calculateScore = () => {
+    if (!quizData) return 0;
     let score = 0;
     selectedAnswers.forEach((answer, index) => {
-      if (answer === quizData[index].correct) {
+      if (answer === quizData.questions[index].correctAnswer) {
         score++;
       }
     });
     return score;
   };
 
-  const progressPercentage =
-    ((currentQuestion + 1) / quizData.length) * 100;
+  const progressPercentage = quizData
+    ? ((currentQuestion + 1) / quizData.questions.length) * 100
+    : 0;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-8 text-center w-full max-w-md">
+          <p className="text-slate-500">Loading quiz...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !quizData) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-8 text-center w-full max-w-md">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Error</h2>
+          <p className="text-slate-600 mb-6">{error || "Quiz not found"}</p>
+          <button
+            onClick={() => navigate("/student-dashboard/quizzes")}
+            className="bg-slate-900 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition"
+          >
+            Back to Quizzes
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (showResult) {
     return (
@@ -82,10 +122,13 @@ const QuizQuestions = () => {
             Your Score:
           </p>
           <p className="text-3xl font-bold text-orange-500 mb-6">
-            {calculateScore()} / {quizData.length}
+            {calculateScore()} / {quizData.questions.length}
+          </p>
+          <p className="text-sm text-slate-600 mb-6">
+            Percentage: {Math.round((calculateScore() / quizData.questions.length) * 100)}%
           </p>
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/student-dashboard/quizzes")}
             className="bg-slate-900 text-white px-6 py-2 rounded-lg hover:bg-slate-800 transition"
           >
             Back to Quiz List
@@ -101,7 +144,7 @@ const QuizQuestions = () => {
 
         {/* Back Button */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/student-dashboard/quizzes")}
           className="mb-4 text-orange-500 hover:text-orange-600 font-medium"
         >
           ← Back
@@ -110,8 +153,11 @@ const QuizQuestions = () => {
         {/* Header Card */}
         <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-slate-800 mb-2">
-            Question {currentQuestion + 1} of {quizData.length}
+            {quizData.title}
           </h2>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">
+            Question {currentQuestion + 1} of {quizData.questions.length}
+          </h3>
 
           {/* Progress Bar */}
           <div className="w-full bg-slate-200 rounded-full h-3">
@@ -125,11 +171,11 @@ const QuizQuestions = () => {
         {/* Question Card */}
         <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-6">
           <h3 className="text-lg font-medium text-slate-800 mb-6">
-            {quizData[currentQuestion].question}
+            {quizData.questions[currentQuestion].question}
           </h3>
 
           <div className="space-y-4">
-            {quizData[currentQuestion].options.map((option, index) => (
+            {quizData.questions[currentQuestion].options.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleOptionClick(index)}
@@ -163,7 +209,7 @@ const QuizQuestions = () => {
               onClick={handleNext}
               className="bg-slate-900 text-white px-5 py-2 rounded-lg hover:bg-slate-800 transition"
             >
-              {currentQuestion === quizData.length - 1
+              {currentQuestion === quizData.questions.length - 1
                 ? "Submit"
                 : "Next"}
             </button>

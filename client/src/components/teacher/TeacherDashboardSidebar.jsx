@@ -5,6 +5,7 @@ import {
     FileText,
     GraduationCap,
     LifeBuoy,
+    BookOpen,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/teacher-dashboard" },
     { icon: FileText, label: "Assessment Management", href: "/teacher-dashboard/assessments" },
+    { icon: BookOpen, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
     { icon: GraduationCap, label: "Student Management", href: "/teacher-dashboard/students" },
 ];
 
@@ -37,29 +39,23 @@ const TeacherSidebar = ({ isOpen }) => {
                     whileHover={{ scale: 1.04 }}
                     className="flex items-center gap-3 group cursor-pointer"
                 >
-                    {/* Floating Gradient Logo */}
                     <motion.div
                         animate={{ y: [0, -2, 0] }}
                         transition={{ repeat: Infinity, duration: 3 }}
                         className="relative"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-tr from-orange-400 via-pink-500 to-rose-500 blur-lg opacity-40 group-hover:opacity-80 transition duration-300"></div>
+                        <div className="absolute inset-0 bg-linear-to-tr from-orange-400 via-pink-500 to-rose-500 blur-lg opacity-40 group-hover:opacity-80 transition duration-300"></div>
 
-                        <div
-                            className="relative w-10 h-10 rounded-xl bg-gradient-to-tr
-                         from-orange-400 via-pink-500 to-rose-500
-                         flex items-center justify-center shadow-lg"
-                        >
-                            <GraduationCap className="text-white w-5 h-5" />
+                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-linear-to-tr from-orange-400 via-pink-500 to-rose-500 flex items-center justify-center shadow-lg">
+                            <GraduationCap className="text-white w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                     </motion.div>
 
-                    {/* Brand Text */}
                     <div className="flex flex-col leading-tight">
-                        <span className="text-base font-semibold text-slate-900 tracking-wide">
+                        <span className="text-sm sm:text-base font-semibold text-slate-900 tracking-wide">
                             MindRise
                         </span>
-                        <span className="text-xs text-orange-500 font-medium">
+                        <span className="text-xs text-slate-400">
                             Teacher Portal
                         </span>
                     </div>
@@ -67,7 +63,7 @@ const TeacherSidebar = ({ isOpen }) => {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-3 py-6 space-y-1">
+            <nav className="flex-1 px-2 sm:px-3 py-4 sm:py-6 space-y-1">
                 {sidebarItems.map((item) => {
                     // Exact match for dashboard home, startsWith for others
                     const isActive =
@@ -84,13 +80,12 @@ const TeacherSidebar = ({ isOpen }) => {
                             <Link
                                 to={item.href}
                                 className={cn(
-                                    "relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group font-medium",
+                                    "relative flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all duration-200 group font-medium",
                                     isActive
                                         ? "bg-slate-900 text-white shadow-md"
                                         : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                                 )}
                             >
-                                {/* Active Indicator Animation */}
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeIndicatorTeacher"
@@ -100,14 +95,14 @@ const TeacherSidebar = ({ isOpen }) => {
 
                                 <item.icon
                                     className={cn(
-                                        "w-5 h-5 transition-colors",
+                                        "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
                                         isActive
                                             ? "text-white"
                                             : "text-slate-400 group-hover:text-slate-900"
                                     )}
                                 />
 
-                                <span className="text-sm">{item.label}</span>
+                                <span className="text-sm truncate">{item.label}</span>
                             </Link>
                         </motion.div>
                     );

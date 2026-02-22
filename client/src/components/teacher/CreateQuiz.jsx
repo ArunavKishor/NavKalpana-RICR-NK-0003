@@ -95,16 +95,24 @@ const CreateQuiz = ({ onQuizCreated, onCancel }) => {
 
   // Save quiz
   const handleSaveQuiz = async () => {
-    if (!validateQuiz()) return;
+    if (!validateQuiz()) {
+      return;
+    }
 
     setLoading(true);
     try {
       // Convert correctAnswer text to index
-      const formattedQuestions = questions.map((q) => ({
-        question: q.question.trim(),
-        options: q.options.map((opt) => opt.trim()),
-        correctAnswer: q.options.indexOf(q.correctAnswer),
-      }));
+      const formattedQuestions = questions.map((q) => {
+        const correctIndex = q.options.indexOf(q.correctAnswer);
+        if (correctIndex === -1) {
+          throw new Error(`Question "${q.question}": Correct answer not found in options`);
+        }
+        return {
+          question: q.question.trim(),
+          options: q.options.map((opt) => opt.trim()),
+          correctAnswer: correctIndex,
+        };
+      });
 
       const quiz = {
         title: quizTitle.trim(),
@@ -113,11 +121,26 @@ const CreateQuiz = ({ onQuizCreated, onCancel }) => {
       };
 
       const savedQuiz = quizService.saveQuiz(quiz);
+      console.log("Quiz saved successfully:", savedQuiz);
       toast.success("Quiz created successfully!");
-      onQuizCreated?.(savedQuiz);
+      
+      // Reset form after successful save
+      setQuizTitle("");
+      setQuestions([
+        {
+          id: 0,
+          question: "",
+          options: ["", "", "", ""],
+          correctAnswer: "",
+        },
+      ]);
+      
+      if (onQuizCreated) {
+        onQuizCreated(savedQuiz);
+      }
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to save quiz");
+      console.error("Error saving quiz:", err);
+      toast.error(err.message || "Failed to save quiz");
     } finally {
       setLoading(false);
     }
