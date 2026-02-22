@@ -6,21 +6,34 @@ export const quizService = {
 
   // Save quiz to localStorage
   saveQuiz: (quiz) => {
-    const quizzes = JSON.parse(localStorage.getItem("quizzes") || "[]");
-    const newQuiz = {
-      id: quizService.generateId(),
-      ...quiz,
-      createdAt: new Date().toISOString(),
-      status: "assigned",
-    };
-    quizzes.push(newQuiz);
-    localStorage.setItem("quizzes", JSON.stringify(quizzes));
-    return newQuiz;
+    try {
+      const quizzes = JSON.parse(localStorage.getItem("quizzes") || "[]");
+      const newQuiz = {
+        id: quizService.generateId(),
+        ...quiz,
+        createdAt: new Date().toISOString(),
+        status: "assigned",
+      };
+      quizzes.push(newQuiz);
+      localStorage.setItem("quizzes", JSON.stringify(quizzes));
+      console.log("Quiz saved successfully with ID:", newQuiz.id);
+      return newQuiz;
+    } catch (error) {
+      console.error("Error saving quiz to localStorage:", error);
+      throw error;
+    }
   },
 
   // Get all quizzes
   getAllQuizzes: () => {
-    return JSON.parse(localStorage.getItem("quizzes") || "[]");
+    try {
+      const quizzes = JSON.parse(localStorage.getItem("quizzes") || "[]");
+      console.log("Retrieved quizzes from localStorage:", quizzes);
+      return quizzes;
+    } catch (error) {
+      console.error("Error retrieving quizzes from localStorage:", error);
+      return [];
+    }
   },
 
   // Get quiz by ID
