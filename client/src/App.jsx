@@ -24,6 +24,7 @@ import Login from "./pages/Login";
 
 import TeacherDashboardLayout from "./components/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
+import QuizManagement from "./pages/teacher/QuizManagement";
 
 import StudentDashboardLayout from "./components/dashboard/StudentDashboardLayout";
 import StudentDashboardHome from "./pages/student/StudentDashboardHome";
@@ -70,6 +71,7 @@ const App = () => {
           <Route path="/teacher-dashboard" element={<TeacherDashboardLayout />}>
             <Route index element={<TeacherDashboardHome />} />
             <Route path="assessments" element={<AssessmentManagement />} />
+            <Route path="quizzes" element={<QuizManagement />} />
             <Route path="students" element={<StudentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>

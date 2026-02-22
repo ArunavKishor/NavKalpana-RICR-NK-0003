@@ -12,19 +12,32 @@ const QuizManagement = () => {
   // Load quizzes on mount
   useEffect(() => {
     loadQuizzes();
+    
+    // Listen for storage changes (for multi-tab support)
+    const handleStorageChange = () => {
+      console.log("Storage changed, reloading quizzes");
+      loadQuizzes();
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const loadQuizzes = () => {
     try {
       const allQuizzes = quizService.getAllQuizzes();
+      console.log("Loaded quizzes:", allQuizzes);
       setQuizzes(allQuizzes);
     } catch (error) {
+      console.error("Error loading quizzes:", error);
       toast.error("Failed to load quizzes");
     }
   };
 
   const handleQuizCreated = (newQuiz) => {
-    setQuizzes([...quizzes, newQuiz]);
+    // Reload quizzes from localStorage to ensure consistency
+    const updatedQuizzes = quizService.getAllQuizzes();
+    setQuizzes(updatedQuizzes);
     setShowCreateForm(false);
     toast.success("Quiz created and assigned to students!");
   };
