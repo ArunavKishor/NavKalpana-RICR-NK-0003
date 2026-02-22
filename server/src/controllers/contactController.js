@@ -1,4 +1,4 @@
-import Contact from "../models/contactModel.js";
+import Contact from "../models/contactModels.js";
 
 /**
  * @desc    Create New Contact Message
@@ -23,9 +23,10 @@ export const NewContact = async (req, res, next) => {
       message,
     });
 
-    console.log("New Contact Message:", newContact);
+    console.log("New Contact Message:", newContact._id);
 
     res.status(201).json({
+      success: true,
       message:
         "Thanks for contacting us. We will get back to you within 24-48 hours.",
     });
@@ -34,18 +35,17 @@ export const NewContact = async (req, res, next) => {
   }
 };
 
-
-
 /**
- * @desc    Get All Contact Messages (Admin)
+ * @desc    Get All Contact Messages
  * @route   GET /api/contact
- * @access  Private/Admin
+ * @access  Admin
  */
 export const GetAllContacts = async (req, res, next) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
 
     res.status(200).json({
+      success: true,
       message: "Contact messages fetched successfully",
       data: contacts,
     });
@@ -54,19 +54,17 @@ export const GetAllContacts = async (req, res, next) => {
   }
 };
 
-
-
 /**
  * @desc    Delete Contact Message
  * @route   DELETE /api/contact/:id
- * @access  Private/Admin
+ * @access  Admin
  */
 export const DeleteContact = async (req, res, next) => {
   try {
     const contact = await Contact.findById(req.params.id);
 
     if (!contact) {
-      const error = new Error("Contact message not found");
+      const error = new Error("Resource not found");
       error.statusCode = 404;
       return next(error);
     }
@@ -74,6 +72,7 @@ export const DeleteContact = async (req, res, next) => {
     await contact.deleteOne();
 
     res.status(200).json({
+      success: true,
       message: "Contact message deleted successfully",
     });
   } catch (error) {

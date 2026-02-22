@@ -14,26 +14,42 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
   const [role, setRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedUser = sessionStorage.getItem("CravingUser");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
+    const storedUser = sessionStorage.getItem("user");
+    const storedToken = sessionStorage.getItem("token");
+
+    if (storedUser && storedToken) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
         setIsLogin(true);
-        setRole(parsed.role);
+        setRole(parsedUser.role || "student");
+      } catch (error) {
+        console.error("Failed to parse stored user", error);
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("token");
       }
-    } catch (error) {
-      console.error("Failed to parse stored user", error);
     }
+    setIsLoading(false);
   }, []);
+
+  const login = (userData) => {
+    setUser(userData);
+    setIsLogin(true);
+    setRole(userData.role || "student");
+    sessionStorage.setItem("user", JSON.stringify(userData));
+    sessionStorage.setItem("token", userData.token);
+  };
 
   const logout = () => {
     setUser(null);
     setIsLogin(false);
     setRole(null);
-    sessionStorage.removeItem("CravingUser");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    window.location.href = "/";
   };
 
   return (
@@ -45,10 +61,12 @@ export const AuthProvider = ({ children }) => {
         setIsLogin,
         role,
         setRole,
+        login,
         logout,
+        isLoading
       }}
     >
-      {children}
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };

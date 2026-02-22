@@ -1,93 +1,121 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import tranparentLogo from "../assets/tranparentLogo.png";
+import { Menu, X } from "lucide-react";
 
 const Header = () => {
-  const { user, isLogin, role } = useAuth();
+  const { isLogin } = useAuth();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const handleNavigate = () => {
-    switch (role) {
-      case "manager":
-        navigate("/resturant-dashboard");
-        break;
-      case "partner":
-        navigate("/rider-dashboard");
-        break;
-      case "customer":
-        navigate("/user-dashboard");
-        break;
-      case "admin":
-        navigate("/admin-dashboard");
-        break;
-      case "student":
-        navigate("/student-dashboard");
-        break;
-      default:
-        navigate("/");
-        break;
-    }
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ✅ Completely remove header after login
+  if (isLogin) return null;
 
   return (
-    <header className="bg-slate-900 shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+    <motion.header
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? "py-2" : "py-4 pt-6"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
+        
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img
+          <motion.img
+            whileHover={{ scale: 1.05, rotate: -2 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
             src={tranparentLogo}
-            alt="NavKalpana Logo"
-            className="h-12 w-20 object-cover"
+            alt="Logo"
+            className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
           />
-          {/* <span className="text-white font-semibold text-lg hidden sm:block">
-            NavKalpana
-          </span> */}
         </Link>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-6">
-          <Link
-            to="/"
-            className="text-slate-200 hover:text-orange-400 transition font-medium"
-          >
-            Home
-          </Link>
-          <Link
-            to="/courses"
-            className="text-slate-200 hover:text-orange-400 transition font-medium"
-          >
-            Courses
-          </Link>
-          <Link
-            to="/contact"
-            className="text-slate-200 hover:text-orange-400 transition font-medium"
-          >
-            Contact Us
-          </Link>
-        </nav>
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-8">
+          <nav className="flex gap-6 text-sm font-medium text-white/80">
+            {/* Add nav links here if needed */}
+          </nav>
 
-        {/* Auth Section */}
-        <div className="flex items-center gap-4">
-          {isLogin ? (
-            <div
-              onClick={handleNavigate}
-              className="text-white font-semibold cursor-pointer hover:text-orange-400 transition"
-            >
-              {user?.fullName || user?.name || "Dashboard"}
-            </div>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="bg-orange-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
-            >
-              Login
-            </button>
-          )}
+          {/* Desktop Login Button */}
+          <motion.button
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/login")}
+            className="relative px-5 lg:px-6 py-2 rounded-xl text-sm lg:text-base font-semibold text-white overflow-hidden
+                       bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 shadow-lg"
+          >
+            {/* Shine effect */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: "200%" }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
+              className="absolute inset-0 bg-white/20 skew-x-12 w-1/2 -z-10"
+            />
+
+            <span className="relative z-10 tracking-wide">Login</span>
+          </motion.button>
         </div>
+
+        {/* Mobile Toggle Button */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="md:hidden text-white p-1"
+        >
+          {open ? <X size={26} /> : <Menu size={26} />}
+        </button>
       </div>
-    </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+            className="md:hidden mx-4 mt-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-lg"
+          >
+            <div className="flex flex-col p-4 gap-3">
+              <button
+                onClick={() => {
+                  navigate("/login");
+                  setOpen(false);
+                }}
+                className="w-full py-2.5 rounded-lg text-sm font-medium
+                           bg-gradient-to-r from-orange-500 to-pink-500 text-white"
+              >
+                Login
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
 
-export default Header; 
+export default Header;
