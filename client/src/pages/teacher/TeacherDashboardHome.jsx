@@ -142,6 +142,62 @@ const TeacherDashboardHome = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Quick Navigation & Actions Row */}
+                <div className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                    {/* Quick Navigation */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col">
+                        <h3 className="text-sm font-bold text-slate-400 uppercase mb-4">
+                            Quick Navigation
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <a
+                                href="/teacher-dashboard/assessments"
+                                className="w-full bg-slate-50 hover:bg-orange-50 hover:text-orange-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-orange-200"
+                            >
+                                <FileText className="w-6 h-6" />
+                                <span className="text-sm font-semibold">Assessments</span>
+                            </a>
+
+                            <a
+                                href="/teacher-dashboard/students"
+                                className="w-full bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-blue-200"
+                            >
+                                <Users className="w-6 h-6" />
+                                <span className="text-sm font-semibold">My Students</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col">
+                        <h3 className="text-sm font-bold text-slate-400 uppercase mb-4">
+                            Quick Actions
+                        </h3>
+                        <div className="space-y-3">
+                            <a
+                                href="/teacher-dashboard/assessments?action=create"
+                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-orange-600 group transition-all"
+                            >
+                                <div className="p-2.5 rounded-md bg-orange-50 text-orange-600 group-hover:bg-orange-100">
+                                    <FileText className="w-5 h-5" />
+                                </div>
+                                <span className="text-sm font-medium">Create New Assessment</span>
+                            </a>
+
+                            <a
+                                href="/teacher-dashboard/students?action=view"
+                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 group transition-all"
+                            >
+                                <div className="p-2.5 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100">
+                                    <Users className="w-5 h-5" />
+                                </div>
+                                <span className="text-sm font-medium">Review Student Progress</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

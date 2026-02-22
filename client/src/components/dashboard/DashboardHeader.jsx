@@ -41,8 +41,8 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
                 <div className="truncate">
                     <h2 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
                         Good Morning,{" "}
-                        <span className="text-blue-600">
-                            {user?.fullName?.split(" ")[0] || "Admin"}
+                        <span className="text-blue-600 capitalize">
+                            {user?.fullName?.split(" ")[0] || user?.role || "User"}
                         </span>
                     </h2>
                 </div>
@@ -73,16 +73,16 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
 
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-semibold text-slate-900 leading-tight">
-                                    {user?.fullName || "Administrator"}
+                                    {user?.fullName || (user?.role === "teacher" ? "Teacher" : "Administrator")}
                                 </p>
-                                <p className="text-xs text-slate-500 font-medium">
-                                    Head of Department
+                                <p className="text-xs text-slate-500 font-medium capitalize">
+                                    {user?.role === "teacher" ? "Faculty" : (user?.role === "admin" ? "Head of Department" : "Staff")}
                                 </p>
                             </div>
 
                             <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-white shadow-sm cursor-pointer">
                                 <AvatarImage
-                                    src={`https://ui-avatars.com/api/?name=${user?.fullName || "Admin"}&background=2563eb&color=fff`}
+                                    src={`https://ui-avatars.com/api/?name=${user?.fullName || user?.role || "User"}&background=2563eb&color=fff`}
                                 />
                                 <AvatarFallback>AD</AvatarFallback>
                             </Avatar>

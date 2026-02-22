@@ -20,11 +20,16 @@ const TeacherSidebar = ({ isOpen }) => {
 
     return (
         <motion.div
-            initial={{ x: -80, opacity: 0 }}
-            animate={{ x: isOpen ? 0 : -80, opacity: isOpen ? 1 : 0 }}
-            transition={{ duration: 0.35 }}
-            className="h-screen w-64 bg-white text-slate-800 flex flex-col fixed left-0 top-0 z-40
-                 border-r border-slate-200 shadow-sm"
+            initial={{ x: -100 }}
+            animate={{ x: isOpen ? 0 : -260 }}
+            transition={{ duration: 0.3 }}
+            className={cn(
+                "fixed top-0 left-0 z-40 h-screen bg-white text-slate-800 flex flex-col",
+                "border-r border-slate-200 shadow-sm",
+                "w-64 sm:w-64",
+                "overflow-y-auto",
+                "transition-all duration-300"
+            )}
         >
             {/* Animated Logo Area */}
             <div className="h-20 px-5 flex items-center border-b border-slate-100">
