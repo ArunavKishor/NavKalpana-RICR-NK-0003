@@ -38,7 +38,6 @@ const App = () => {
     <BrowserRouter>
       <AuthProvider>
         <Toaster />
-        <Header />
         <Routes>
           <Route path="/" element={<Login />} />
           {/* <Route path="/about" element={<About />} /> */}
@@ -73,8 +72,8 @@ const App = () => {
             <Route path="students" element={<StudentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
-         {/* Student Dashboard Routes */}
-         <Route path="/student-dashboard" element={<StudentDashboardLayout />}>
+          {/* Student Dashboard Routes */}
+          <Route path="/student-dashboard" element={<StudentDashboardLayout />}>
             <Route index element={<StudentDashboardHome />} />
             <Route path="assignments" element={<AssignmentManagement />} />
             <Route path="attendance" element={<AttendanceSummary />} />
