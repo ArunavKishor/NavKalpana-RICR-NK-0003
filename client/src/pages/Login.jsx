@@ -11,9 +11,6 @@ const Login = () => {
   const { setUser, setIsLogin, setRole } = useAuth();
   const navigate = useNavigate();
 
-  const [isForgetPasswordModelOpen, setIsForgetPasswordModelOpen] =
-    useState(false);
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,7 +21,6 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -39,7 +35,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (isLoading) return;
 
     setIsLoading(true);
@@ -56,9 +51,8 @@ const Login = () => {
         return;
       }
 
-      /* ✅ VALIDATION: Allow both admin and teacher */
-      if (role !== "admin" && role !== "teacher") {
-        toast.error("Access denied. Authorized personnel only.");
+      if (role !== "admin") {
+        toast.error("Access denied. Admins only.");
         sessionStorage.removeItem("Token");
         return;
       }
@@ -73,12 +67,7 @@ const Login = () => {
       sessionStorage.setItem("token", user.token);
       sessionStorage.setItem("Token", JSON.stringify(user));
 
-      if (role === "teacher") {
-        navigate("/teacher-dashboard");
-      } else {
-        navigate("/admin-dashboard");
-      }
-
+      navigate("/admin-dashboard");
       handleClearForm();
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
@@ -188,8 +177,12 @@ const Login = () => {
             © 2026 Administration System
           </p>
         </div>
+
+        <p className="text-center text-slate-400 mt-6 text-[10px] sm:text-xs">
+          © 2026 Administration System
+        </p>
       </div>
-    </>
+    </div>
   );
 };
 

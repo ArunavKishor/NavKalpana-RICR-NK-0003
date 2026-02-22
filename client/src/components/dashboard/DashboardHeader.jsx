@@ -24,24 +24,35 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
     };
 
     return (
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-slate-500 hover:text-slate-900">
-                    <Menu className="h-6 w-6" />
+        <header className="h-16 sm:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
+
+            {/* Left Section */}
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleSidebar}
+                    className="text-slate-500 hover:text-slate-900"
+                >
+                    <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
 
                 {/* Welcome Message */}
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800">
-                        Good Morning, <span className="text-blue-600">{user?.fullName?.split(" ")[0] || "Admin"}</span>
+                <div className="truncate">
+                    <h2 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
+                        Good Morning,{" "}
+                        <span className="text-blue-600">
+                            {user?.fullName?.split(" ")[0] || "Admin"}
+                        </span>
                     </h2>
                 </div>
             </div>
 
-            {/* Right Section: Search, Notifications, Profile */}
-            <div className="flex items-center gap-6">
+            {/* Right Section */}
+            <div className="flex items-center gap-3 sm:gap-6">
+
                 {/* Search Bar */}
-                <div className="relative w-80 hidden md:block">
+                <div className="relative w-52 lg:w-80 hidden md:block">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                     <Input
                         placeholder="Search students, batches..."
@@ -58,27 +69,42 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
                 {/* Profile Dropdown */}
                 <DropdownMenu>
                     <DropdownMenuTrigger className="focus:outline-none">
-                        <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-slate-200">
+
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-semibold text-slate-900 leading-tight">
                                     {user?.fullName || "Administrator"}
                                 </p>
-                                <p className="text-xs text-slate-500 font-medium">Head of Department</p>
+                                <p className="text-xs text-slate-500 font-medium">
+                                    Head of Department
+                                </p>
                             </div>
-                            <Avatar className="h-10 w-10 border-2 border-white shadow-sm cursor-pointer">
-                                <AvatarImage src={`https://ui-avatars.com/api/?name=${user?.fullName || "Admin"}&background=2563eb&color=fff`} />
+
+                            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-white shadow-sm cursor-pointer">
+                                <AvatarImage
+                                    src={`https://ui-avatars.com/api/?name=${user?.fullName || "Admin"}&background=2563eb&color=fff`}
+                                />
                                 <AvatarFallback>AD</AvatarFallback>
                             </Avatar>
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
+
+                            <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
                         </div>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="cursor-pointer">Profile Settings</DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">Support</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer">
+                            Profile Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer">
+                            Support
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-rose-600 cursor-pointer focus:text-rose-700 focus:bg-rose-50" onClick={handleLogout}>
+                        <DropdownMenuItem
+                            className="text-rose-600 cursor-pointer focus:text-rose-700 focus:bg-rose-50"
+                            onClick={handleLogout}
+                        >
                             Log out
                         </DropdownMenuItem>
                     </DropdownMenuContent>

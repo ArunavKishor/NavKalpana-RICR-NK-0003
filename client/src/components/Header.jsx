@@ -30,19 +30,17 @@ const Header = () => {
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "py-2" : "py-4 pt-6"
         }`}
     >
-      <div className={`max-w-7xl mx-auto px-6 transition-all duration-500 ease-in-out ${scrolled
-        ? "bg-black/30 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-full py-2 mx-4 md:mx-auto"
-        : "bg-transparent py-2"
-        } flex items-center justify-between`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
 
-        <Link to="/" className="flex items-center gap-2 z-50">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
           <motion.img
             whileHover={{ scale: 1.05, rotate: -2 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
             src={tranparentLogo}
             alt="Logo"
-            className={`w-auto object-contain transition-all duration-500 ease-in-out ${scrolled ? 'h-10' : 'h-14'}`}
+            className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
           />
         </Link>
 
@@ -57,9 +55,8 @@ const Header = () => {
             whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)" }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/login")}
-            className="group relative px-6 py-2.5 rounded-full font-semibold text-white overflow-hidden
-                       bg-white/5 border border-white/20 backdrop-blur-md shadow-lg transition-all duration-300
-                       hover:border-white/40"
+            className="relative px-5 lg:px-6 py-2 rounded-xl text-sm lg:text-base font-semibold text-white overflow-hidden
+                       bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 shadow-lg"
           >
             {/* Button Gradient Hover Effect */}
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full -z-10" />
@@ -79,9 +76,9 @@ const Header = () => {
         {/* Mobile Toggle */}
         <button
           onClick={() => setOpen(!open)}
-          className="md:hidden relative z-50 p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+          className="md:hidden text-white p-1"
         >
-          {open ? <X size={24} /> : <Menu size={24} />}
+          {open ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
 
@@ -89,22 +86,20 @@ const Header = () => {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-            animate={{ opacity: 1, height: "auto", scale: 1 }}
-            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden absolute top-full left-4 right-4 mt-2 origin-top rounded-3xl bg-black/60 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+            className="md:hidden mx-4 mt-2 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-lg"
           >
-            <div className="flex flex-col p-6 gap-4">
-              <motion.button
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
+            <div className="flex flex-col p-4 gap-3">
+              <button
                 onClick={() => {
-                  setOpen(false);
                   navigate("/login");
+                  setOpen(false);
                 }}
-                className="w-full py-3 rounded-xl font-bold tracking-wide text-white bg-gradient-to-r from-violet-600 to-orange-500 shadow-lg hover:shadow-xl transition-all"
+                className="w-full py-2.5 rounded-lg text-sm font-medium
+                           bg-gradient-to-r from-orange-500 to-pink-500 text-white"
               >
                 Login
               </motion.button>
