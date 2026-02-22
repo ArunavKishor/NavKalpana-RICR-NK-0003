@@ -3,8 +3,10 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+
 import cloudinary from "./src/config/cloudinary.js";
 import connectDB from "./src/config/db.js";
+
 import ContactRouter from "./src/routers/contactRoutes.js";
 import AuthRouter from "./src/routers/authRouter.js";
 import StudentRouter from "./src/routers/studentRoutes.js";
@@ -19,10 +21,7 @@ dotenv.config();
 
 const app = express();
 
-// Connect DB First
-connectDB();
-
-// Middleware
+// ✅ Middleware
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -34,7 +33,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// Routes
+// ✅ Routes
 app.use("/api/auth", AuthRouter);
 app.use("/api/contact", ContactRouter);
 app.use("/api/students", StudentRouter);
@@ -45,12 +44,12 @@ app.use("/api/support", SupportRouter);
 app.use("/api/dashboard", DashboardRouter);
 app.use("/api/teachers", TeacherRouter);
 
-// Default Route
+// ✅ Health Check Route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Server is working ✅" });
 });
 
-// Global Error Handler
+// ✅ Global Error Handler
 app.use((err, req, res, next) => {
   const errorMessage = err.message || "Internal Server Error";
   const statusCode = err.statusCode || 500;
@@ -65,17 +64,24 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 4500;
 
-app.listen(port, () => {
-  console.log(`🚀 Server Started at Port: ${port}`);
-});
-
-app.listen(port, async () => {
-  console.log("Server Started at Port: ", port);
-  connectDB();
+// ✅ START SERVER PROPERLY (ONLY ONE LISTEN)
+const startServer = async () => {
   try {
+    // Connect Database
+    await connectDB();
+
+    // Check Cloudinary
     const res = await cloudinary.api.ping();
-    console.log("Clodinary API is Working :", res);
+    console.log("☁️ Cloudinary Connected:", res.status);
+
+    // Start Express Server
+    app.listen(port, () => {
+      console.log(`🚀 Server Started at Port: ${port}`);
+    });
   } catch (error) {
-    console.error("Error Connecting Clodinary API :", error);
+    console.error("❌ Server Startup Failed:", error);
+    process.exit(1);
   }
-});
+};
+
+startServer();
