@@ -21,6 +21,7 @@ import Login from "./pages/Login";
 import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
 import QuizManagement from "./pages/teacher/QuizManagement";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import StudentDashboardLayout from "./components/dashboard/StudentDashboardLayout";
 import StudentDashboardHome from "./pages/student/StudentDashboardHome";
@@ -37,18 +38,28 @@ const App = () => {
         <Toaster />
         <Routes>
           <Route path="/" element={<Login />} />
-          {/* <Route path="/about" element={<About />} /> */}
-          {/* <Route path="/contact" element={<Contact />} /> */}
-          {/* <Route path="/courses" element={<CoursesPage />} /> */}
-          {/* <Route path="/courses/:title" element={<CourseDetailsPage />} /> */}
-          {/* <Route path="/register" element={<Register />} /> */}
           <Route path="/admin" element={<AdminLogin />} />
 
-          <Route path="/admin-dashboard" element={<DashboardLayout />}>
+          {/* Admin Routes */}
+          <Route
+            path="/admin-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<DashboardHome />} />
           </Route>
 
-          <Route path="/admin" element={<DashboardLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="batches" element={<BatchManagement />} />
             <Route path="batches/:batchId" element={<BatchDetail />} />
@@ -62,16 +73,31 @@ const App = () => {
             <Route path="support" element={<SupportRequests />} />
           </Route>
 
-          {/* Teacher Dashboard Routes */}
-          <Route path="/teacher-dashboard" element={<TeacherDashboardLayout />}>
+          {/* Teacher Dashboard Routes (Admin can view too) */}
+          <Route
+            path="/teacher-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["teacher", "admin"]}>
+                <TeacherDashboardLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<TeacherDashboardHome />} />
             <Route path="assessments" element={<AssessmentManagement />} />
             <Route path="quizzes" element={<QuizManagement />} />
             <Route path="students" element={<StudentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
+
           {/* Student Dashboard Routes */}
-          <Route path="/student-dashboard" element={<StudentDashboardLayout />}>
+          <Route
+            path="/student-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <StudentDashboardLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<StudentDashboardHome />} />
             <Route path="assignments" element={<AssignmentManagement />} />
             <Route path="attendance" element={<AttendanceSummary />} />

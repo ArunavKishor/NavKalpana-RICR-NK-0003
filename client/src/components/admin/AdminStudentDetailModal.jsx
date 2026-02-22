@@ -29,9 +29,9 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
         setLoading(true);
         try {
             const [studentRes, summaryRes, historyRes] = await Promise.all([
-                api.get(`/admin/students/${studentId}`),
-                api.get(`/admin/attendance/student/${studentId}/summary`),
-                api.get(`/admin/attendance?student=${studentId}&limit=50`)
+                api.get(`/api/students/${studentId}`),
+                api.get(`/api/attendance/student/${studentId}`),
+                api.get(`/api/attendance?student=${studentId}&limit=50`)
             ]);
 
             setStudent(studentRes.data.data);
