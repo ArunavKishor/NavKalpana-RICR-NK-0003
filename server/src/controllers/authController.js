@@ -81,8 +81,14 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    console.log("🔍 Login attempt:", {
+      email,
+      password: password ? "***" : "empty",
+    });
+
     // Validate required fields
     if (!email || !password) {
+      console.log("❌ Missing email or password");
       return res.status(400).json({
         message: "Please provide email and password",
       });
@@ -92,13 +98,17 @@ export const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
+      console.log(`❌ User not found with email: ${email}`);
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
+    console.log(`✅ User found: ${user.fullName}, Active: ${user.isActive}`);
+
     // Check if user is active
     if (!user.isActive) {
+      console.log(`❌ User inactive: ${email}`);
       return res.status(403).json({
         message: "Your account has been deactivated. Please contact support.",
       });
@@ -108,10 +118,13 @@ export const login = async (req, res, next) => {
     const isPasswordMatch = await user.comparePassword(password);
 
     if (!isPasswordMatch) {
+      console.log(`❌ Password mismatch for ${email}`);
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
+
+    console.log(`✅ Password match for ${email}`);
 
     // Generate token
     const token = generateToken(user._id);
@@ -120,6 +133,7 @@ export const login = async (req, res, next) => {
     setTokenCookie(res, token);
 
     // Return success response (password won't be included due to toJSON method)
+    console.log(`✅ Login successful for ${email}`);
     res.status(200).json({
       message: "Login successful",
       data: {
