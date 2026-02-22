@@ -101,8 +101,12 @@ const AdminDashbord = () => {
 
   const handleDelete = (id) => {
     setTeachers((prev) => prev.filter((teacher) => teacher.id !== id));
-    if (editingId === id) handleClear();
+    if (editingId === id) {
+      handleClear();
+    }
   };
+
+
 
   /* ---------------- UI ---------------- */
   return (
@@ -118,8 +122,8 @@ const AdminDashbord = () => {
               Manage your profile and teachers in one place.
             </p>
           </div>
-
-          <div className="bg-white rounded-xl shadow px-6 py-4 flex items-center gap-6">
+          {/* Admin Info + Logout */}
+          <div className="bg-white rounded-xl shadow px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-6 justify-between min-w-[300px]">
             <div>
               <p className="text-xs uppercase text-slate-400">Logged in as</p>
               <p className="text-lg font-semibold text-slate-900">
@@ -132,7 +136,7 @@ const AdminDashbord = () => {
 
             <button
               onClick={handleLogout}
-              className="bg-rose-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-rose-700 transition"
+              className="bg-rose-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-rose-700 transition shrink-0 whitespace-nowrap"
             >
               Logout
             </button>
