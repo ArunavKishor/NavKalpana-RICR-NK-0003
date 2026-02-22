@@ -94,13 +94,7 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
                     <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="cursor-pointer">
-                            Profile Settings
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">
-                            Support
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+
                         <DropdownMenuItem
                             className="text-rose-600 cursor-pointer focus:text-rose-700 focus:bg-rose-50"
                             onClick={handleLogout}

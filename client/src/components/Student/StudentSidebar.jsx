@@ -17,7 +17,6 @@ const StudentSidebar = () => {
     { icon: FaClipboardList, label: "Assignments", href: "/student-dashboard/assignments" },
     { icon: FaBook, label: "Quizzes", href: "/student-dashboard/quizzes" },
     { icon: FaCalendarCheck, label: "Attendance", href: "/student-dashboard/attendance" },
-    { icon: FaUser, label: "Profile", href: "/student-dashboard/profile" },
   ];
 
   return (
@@ -69,11 +68,10 @@ const StudentSidebar = () => {
               <NavLink
                 to={item.href}
                 className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium group
-                ${
-                  isActive
+                ${isActive
                     ? "bg-slate-900 text-white shadow-md"
                     : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
-                }`}
+                  }`}
               >
                 {isActive && (
                   <motion.div
@@ -84,11 +82,10 @@ const StudentSidebar = () => {
 
                 <item.icon
                   className={`w-5 h-5 transition-colors
-                  ${
-                    isActive
+                  ${isActive
                       ? "text-white"
                       : "text-slate-400 group-hover:text-slate-900"
-                  }`}
+                    }`}
                 />
 
                 <span className="text-sm truncate">{item.label}</span>

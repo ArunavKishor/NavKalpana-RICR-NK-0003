@@ -41,7 +41,6 @@ const Login = () => {
 
     try {
       const res = await api.post("/api/auth/login", formData);
-      const res = await api.post("/api/auth/login", formData);
       toast.success(res.data.message);
 
       const user = res?.data?.data;

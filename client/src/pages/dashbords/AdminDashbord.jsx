@@ -101,11 +101,7 @@ const AdminDashbord = () => {
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("CravingUser");
-    setAdmin(null);
-    window.location.href = "/login"; // redirect to login page
-  };
+
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 px-4 py-8">
@@ -120,14 +116,9 @@ const AdminDashbord = () => {
               Manage your profile and teachers in one place.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogout}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition"
-            >
-              Sign Out
-            </button>
-            <div className="bg-white rounded-xl shadow px-6 py-4">
+          {/* Admin Info + Logout */}
+          <div className="bg-white rounded-xl shadow px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-6 justify-between min-w-[300px]">
+            <div>
               <p className="text-xs uppercase tracking-wide text-slate-400">
                 Logged in as
               </p>
@@ -138,23 +129,9 @@ const AdminDashbord = () => {
                 {admin?.email || "admin@example.com"}
               </p>
             </div>
-
-          {/* Admin Info + Logout */}
-          <div className="bg-white rounded-xl shadow px-6 py-4 flex flex-col md:flex-row md:items-center gap-4 justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">
-                Logged in as
-              </p>
-              <p className="text-lg font-semibold text-slate-900">
-                {admin?.name || "Admin User"}
-              </p>
-              <p className="text-sm text-slate-600">
-                {admin?.email || "admin@example.com"}
-              </p>
-            </div>
             <button
               onClick={handleLogout}
-              className="mt-3 md:mt-0 bg-rose-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-rose-700 transition"
+              className="bg-rose-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-rose-700 transition shrink-0 whitespace-nowrap"
             >
               Logout
             </button>
