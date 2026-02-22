@@ -68,9 +68,9 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// @desc    Authorize specific roles
+// @desc    Authorize specific roles with hierarchy
 // @access  Private routes with role restriction
-// @usage   authorize('admin', 'manager')
+// @usage   authorize('admin', 'teacher')
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -79,9 +79,25 @@ export const authorize = (...roles) => {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    const { role } = req.user;
+
+    // Role Hierarchy:
+    // admin > teacher > student
+    let isAuthorized = false;
+
+    if (roles.includes(role)) {
+      isAuthorized = true;
+    } else if (role === "admin") {
+      // Admin has all privileges
+      isAuthorized = true;
+    } else if (role === "teacher" && roles.includes("student")) {
+      // Teacher can access student routes
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
       return res.status(403).json({
-        message: `Role '${req.user.role}' is not authorized to access this resource`,
+        message: `Role '${role}' is not authorized to access this resource`,
       });
     }
 

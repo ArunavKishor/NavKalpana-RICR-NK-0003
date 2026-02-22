@@ -11,7 +11,7 @@ import { protect, authorize } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.use(protect, authorize("admin"));
+router.use(protect, authorize("admin", "teacher"));
 
 router.route("/").get(getAttendance).post(createAttendance);
 router.route("/:id").get(getAttendanceById).put(updateAttendance);

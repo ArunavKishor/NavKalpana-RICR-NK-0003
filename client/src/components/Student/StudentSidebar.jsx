@@ -74,7 +74,6 @@ const StudentSidebar = () => {
 
           return (
             <motion.div
-            <motion.div
               key={item.href}
               whileHover={{ x: 4 }}
               transition={{ type: "spring", stiffness: 300 }}

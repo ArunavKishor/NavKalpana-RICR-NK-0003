@@ -12,7 +12,7 @@ import { protect, authorize } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.use(protect, authorize("admin"));
+router.use(protect, authorize("admin", "teacher"));
 
 router.route("/").get(getBatches).post(createBatch);
 router.route("/:id").get(getBatchById).put(updateBatch).delete(deleteBatch);

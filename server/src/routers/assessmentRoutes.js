@@ -18,24 +18,24 @@ router.use(protect);
 
 router
   .route("/")
-  .get(authorize("admin"), getAssessments)
-  .post(authorize("admin"), createAssessment);
+  .get(authorize("admin", "teacher"), getAssessments)
+  .post(authorize("admin", "teacher"), createAssessment);
 router
   .route("/:id")
-  .get(authorize("admin"), getAssessmentById)
-  .put(authorize("admin"), updateAssessment)
-  .delete(authorize("admin"), deleteAssessment);
+  .get(authorize("admin", "teacher"), getAssessmentById)
+  .put(authorize("admin", "teacher"), updateAssessment)
+  .delete(authorize("admin", "teacher"), deleteAssessment);
 router
   .route("/:id/submissions")
-  .get(authorize("admin"), getAssessmentSubmissions);
+  .get(authorize("admin", "teacher"), getAssessmentSubmissions);
 router
   .route("/:id/submit")
-  .post(authorize("student", "admin"), submitAssessment);
+  .post(authorize("student", "admin", "teacher"), submitAssessment);
 router
   .route("/:id/grade/:submissionId")
-  .put(authorize("admin"), gradeSubmission);
+  .put(authorize("admin", "teacher"), gradeSubmission);
 router
   .route("/:id/statistics")
-  .get(authorize("admin"), getAssessmentStatistics);
+  .get(authorize("admin", "teacher"), getAssessmentStatistics);
 
 export default router;
