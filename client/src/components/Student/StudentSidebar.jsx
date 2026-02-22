@@ -35,7 +35,7 @@ const StudentSidebar = () => {
         "transition-all duration-300"
       )}
     >
-      {/* Logo */}
+      {/* LOGO */}
       <div className="h-16 sm:h-20 px-4 sm:px-5 flex items-center border-b border-slate-100">
         <motion.div
           whileHover={{ scale: 1.04 }}
@@ -64,7 +64,7 @@ const StudentSidebar = () => {
         </motion.div>
       </div>
 
-      {/* Navigation */}
+      {/* NAVIGATION */}
       <nav className="flex-1 px-2 sm:px-3 py-4 sm:py-6 space-y-1">
         {sidebarItems.map((item) => {
           const isActive =
@@ -73,7 +73,6 @@ const StudentSidebar = () => {
               : location.pathname.startsWith(item.href);
 
           return (
-            <motion.div
             <motion.div
               key={item.href}
               whileHover={{ x: 4 }}
