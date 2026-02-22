@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-
+import cloudinary from "./src/config/cloudinary.js";
 import connectDB from "./src/config/db.js";
 import ContactRouter from "./src/routers/contactRoutes.js";
 import AuthRouter from "./src/routers/authRouter.js";
@@ -65,4 +65,15 @@ const port = process.env.PORT || 4500;
 
 app.listen(port, () => {
   console.log(`🚀 Server Started at Port: ${port}`);
+});
+
+app.listen(port, async () => {
+  console.log("Server Started at Port: ", port);
+  connectDB();
+  try {
+    const res = await cloudinary.api.ping();
+    console.log("Clodinary API is Working :", res);
+  } catch (error) {
+    console.error("Error Connecting Clodinary API :", error);
+  }
 });
