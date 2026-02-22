@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import api from "../config/Api";
+import api from "../../config/Api";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
