@@ -14,10 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
-import Modal from "@/components/admin/Modal";
-import AssessmentForm from "@/components/admin/AssessmentForm";
-import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
-import SubmissionListModal from "@/components/admin/SubmissionListModal";
+import Modal from "@/components/admin/AdminModal";
+import AssessmentForm from "@/components/admin/AdminAssessmentForm";
+import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
+import SubmissionListModal from "@/components/admin/AdminSubmissionListModal";
 
 const AssessmentManagement = () => {
   const [activeTab, setActiveTab] = useState("assignments");
@@ -36,8 +36,7 @@ const AssessmentManagement = () => {
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState(null);
 
-  const filteredData =
-    activeTab === "assignments" ? assignments : quizzes;
+  const filteredData = activeTab === "assignments" ? assignments : quizzes;
 
   useEffect(() => {
     loadAssessments();
@@ -107,7 +106,6 @@ const AssessmentManagement = () => {
 
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 max-w-[1600px] mx-auto">
-      
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
@@ -168,14 +166,14 @@ const AssessmentManagement = () => {
       {activeTab === "assignments" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {filteredData.map((item) => (
-            <Card key={item._id} className="shadow-sm hover:shadow-md transition">
+            <Card
+              key={item._id}
+              className="shadow-sm hover:shadow-md transition"
+            >
               <CardContent className="p-5 space-y-4">
-                
                 {/* Title */}
                 <div className="flex justify-between gap-3">
-                  <h3 className="font-bold text-lg truncate">
-                    {item.title}
-                  </h3>
+                  <h3 className="font-bold text-lg truncate">{item.title}</h3>
                   <Badge className={getStatusColor(item.status)}>
                     {item.status}
                   </Badge>
@@ -198,9 +196,7 @@ const AssessmentManagement = () => {
 
                   <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm">
-                      {item.totalMarks} Marks
-                    </span>
+                    <span className="text-sm">{item.totalMarks} Marks</span>
                   </div>
                 </div>
 

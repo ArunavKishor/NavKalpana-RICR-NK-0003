@@ -18,9 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
-import Modal from "@/components/admin/Modal";
-import SupportRequestForm from "@/components/admin/SupportRequestForm";
-import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
+import Modal from "@/components/admin/AdminModal";
+import SupportRequestForm from "@/components/admin/AdminSupportForm";
+import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
 
 const SupportRequests = () => {
   const [searchParams] = useSearchParams();
@@ -68,9 +68,7 @@ const SupportRequests = () => {
             ? "in-progress"
             : activeFilter.toLowerCase();
       const priorityParam =
-        selectedPriority === "All"
-          ? undefined
-          : selectedPriority.toLowerCase();
+        selectedPriority === "All" ? undefined : selectedPriority.toLowerCase();
 
       const { data: requestsRes } = await api.get("/api/support", {
         params: {
@@ -94,7 +92,7 @@ const SupportRequests = () => {
       console.error("Load support requests failed:", err);
       setError(
         err.response?.data?.message ||
-        "Failed to load support requests. Please try again.",
+          "Failed to load support requests. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -185,7 +183,7 @@ const SupportRequests = () => {
       console.error("Delete support request failed:", err);
       toast.error(
         err.response?.data?.message ||
-        "Failed to delete support request. Please try again.",
+          "Failed to delete support request. Please try again.",
         { duration: 5000 },
       );
     } finally {
@@ -196,7 +194,8 @@ const SupportRequests = () => {
   // Filter requests
   const filteredRequests = requests.filter((request) => {
     const matchesFilter =
-      activeFilter === "All" || normalizeStatus(request.status) === activeFilter;
+      activeFilter === "All" ||
+      normalizeStatus(request.status) === activeFilter;
     const matchesSearch =
       request.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.student?.user?.fullName
@@ -331,10 +330,11 @@ const SupportRequests = () => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeFilter === filter
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-50"
-                  }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  activeFilter === filter
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
               >
                 {filter}
               </button>
@@ -473,8 +473,16 @@ const SupportRequests = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalMode === "create" ? "New Support Request" : "Edit Support Request"}
-        description={modalMode === "create" ? "Create a new support ticket on behalf of a student." : "Update the support ticket details."}
+        title={
+          modalMode === "create"
+            ? "New Support Request"
+            : "Edit Support Request"
+        }
+        description={
+          modalMode === "create"
+            ? "Create a new support ticket on behalf of a student."
+            : "Update the support ticket details."
+        }
       >
         <SupportRequestForm
           initialData={selectedRequest}

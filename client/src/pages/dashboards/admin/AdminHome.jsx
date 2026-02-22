@@ -1,10 +1,10 @@
 import React from "react";
-import BatchManagement from "./BatchManagement";
-import AssessmentManagement from "./AssessmentManagement";
-import StudentManagement from "./StudentManagement";
-import SupportRequests from "./SupportRequests";
+import BatchManagement from "./AdminBatches";
+import AssessmentManagement from "./AdminAssessment";
+import StudentManagement from "./AdminStudents";
+import SupportRequests from "./AdminSupport";
 import BatchDetail from "./BatchDetail";
-import TeacherManagement from "./TeacherManagement";
+import TeacherManagement from "./AdminTeachers";
 
 export {
   BatchManagement,
