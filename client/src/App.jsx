@@ -1,16 +1,12 @@
 import React from "react";
 import Header from "./components/Header";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Courses from "./pages/CoursesPage";
 import { Toaster } from "react-hot-toast";
 import AdminDashboard from "./pages/dashbords/AdminDashbord";
-import AdminLogin from "./pages/AdminLogin";
+import AdminLogin from "./pages/public/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
-import DashboardLayout from "./components/dashboard/DashboardLayout";
-import DashboardHome from "./pages/admin/DashboardHome";
+import DashboardLayout from "./components/dashboard/DashboardMainLayout";
+import DashboardHome from "./pages/dashboards/admin/AdminDashboardHome";
 import {
   BatchManagement,
   AssessmentManagement,
@@ -18,11 +14,11 @@ import {
   SupportRequests,
   BatchDetail,
   TeacherManagement,
-} from "./pages/admin/AdminPages";
-import AttendanceManagement from "./pages/admin/AttendenceManagement";
+} from "./pages/dashboards/admin/AdminHome";
+import AttendanceManagement from "./pages/dashboards/admin/AdminAttendance";
 import Login from "./pages/Login";
 
-import TeacherDashboardLayout from "./components/teacher/TeacherDashboardLayout";
+import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
 
 import StudentDashboardLayout from "./components/dashboard/StudentDashboardLayout";
@@ -73,8 +69,8 @@ const App = () => {
             <Route path="students" element={<StudentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
-         {/* Student Dashboard Routes */}
-         <Route path="/student-dashboard" element={<StudentDashboardLayout />}>
+          {/* Student Dashboard Routes */}
+          <Route path="/student-dashboard" element={<StudentDashboardLayout />}>
             <Route index element={<StudentDashboardHome />} />
             <Route path="assignments" element={<AssignmentManagement />} />
             <Route path="attendance" element={<AttendanceSummary />} />
