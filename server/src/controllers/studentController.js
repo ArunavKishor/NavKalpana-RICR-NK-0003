@@ -361,6 +361,14 @@ export const unenrollStudentFromBatch = async (req, res) => {
   }
 };
 
+export const getStudentAttendance = async (req, res) => {
+  try {
+    res.json({ message: "Attendance fetched successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getStudentProfile = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -373,9 +381,10 @@ export const getStudentProfile = async (req, res) => {
       return res.status(404).json({ message: "Student record not found" });
     }
 
-    // Determine the student's actual course if enrolled in a batch
     const course =
-      student.batches?.length > 0 ? student.batches[0].course : "Not Assigned";
+      student.batches?.length > 0
+        ? student.batches[0].course
+        : "Not Assigned";
 
     res.status(200).json({
       message: "Student profile retrieved successfully",
@@ -383,10 +392,13 @@ export const getStudentProfile = async (req, res) => {
         name: student.user.fullName,
         email: student.user.email,
         phone: student.phone || "",
-        course: course,
+        course,
         enrollmentId: student.enrollmentId,
         github: student.github || "",
         linkedin: student.linkedin || "",
+
+        // ✅ CRITICAL FIX
+        profilePhoto: student.profilePhoto || null,
       },
     });
   } catch (error) {
@@ -434,17 +446,20 @@ export const updateStudentProfile = async (req, res) => {
         : "Not Assigned";
 
     res.status(200).json({
-      message: "Student profile updated successfully",
-      data: {
-        name: updatedStudent.user.fullName,
-        email: updatedStudent.user.email,
-        phone: updatedStudent.phone || "",
-        course: course,
-        enrollmentId: updatedStudent.enrollmentId,
-        github: updatedStudent.github || "",
-        linkedin: updatedStudent.linkedin || "",
-      },
-    });
+  message: "Student profile updated successfully",
+  data: {
+    name: updatedStudent.user.fullName,
+    email: updatedStudent.user.email,
+    phone: updatedStudent.phone || "",
+    course,
+    enrollmentId: updatedStudent.enrollmentId,
+    github: updatedStudent.github || "",
+    linkedin: updatedStudent.linkedin || "",
+
+    // ✅ IMPORTANT
+    profilePhoto: updatedStudent.profilePhoto || null,
+  },
+});
   } catch (error) {
     console.error("Update Student Profile Error:", error);
     res.status(500).json({ message: "Failed to update student profile" });
@@ -512,5 +527,35 @@ export const getStudentProgress = async (req, res) => {
   } catch (error) {
     console.error("Get Student Progress Error:", error);
     res.status(500).json({ message: "Failed to retrieve student progress" });
+  }
+};
+
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const student = await Student.findOne({ user: userId });
+    if (!student) {
+      return res.status(404).json({ message: "Student profile not found" });
+    }
+
+    // ✅ Works for Cloudinary storage
+    student.profilePhoto = req.file.path;
+
+    await student.save();
+
+    res.status(200).json({
+      message: "Profile photo uploaded successfully",
+      data: {
+        profilePhoto: student.profilePhoto,
+      },
+    });
+  } catch (error) {
+    console.error("Upload Profile Photo Error:", error);
+    res.status(500).json({ message: "Failed to upload profile photo" });
   }
 };

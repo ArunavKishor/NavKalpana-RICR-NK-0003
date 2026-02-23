@@ -1,140 +1,131 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
-// @desc    Protect routes - Verify JWT token
-// @access  Private routes
+/* =========================================
+   Helper – Extract Token Safely
+========================================= */
+const extractToken = (req) => {
+  if (req.cookies?.token) return req.cookies.token;
+
+  if (req.headers.authorization?.startsWith("Bearer")) {
+    return req.headers.authorization.split(" ")[1];
+  }
+
+  return null;
+};
+
+/* =========================================
+   PROTECT – Authentication Required
+========================================= */
 export const protect = async (req, res, next) => {
   try {
-    let token;
+    const token = extractToken(req);
 
-    // Check if token exists in cookies
-    if (req.cookies && req.cookies.token) {
-      token = req.cookies.token;
-    }
-
-    // Check if token exists in Authorization header (Bearer Token)
-    if (!token && req.headers.authorization?.startsWith("Bearer")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    // If no token found
     if (!token) {
       return res.status(401).json({
-        message: "Not authorized. Please login to access this resource.",
+        message: "Not authorized. Token missing.",
       });
     }
 
-    try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Find user by ID from token payload
-      const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.id).select("-password");
 
-      if (!user) {
-        return res.status(401).json({
-          message: "User not found. Token is invalid.",
-        });
-      }
-
-      // Check if user is active
-      if (!user.isActive) {
-        return res.status(403).json({
-          message: "Your account has been deactivated.",
-        });
-      }
-
-      // Attach user to request object
-      req.user = user;
-      next();
-    } catch (error) {
-      if (error.name === "JsonWebTokenError") {
-        return res.status(401).json({
-          message: "Invalid token",
-        });
-      }
-      if (error.name === "TokenExpiredError") {
-        return res.status(401).json({
-          message: "Token expired",
-        });
-      }
-      throw error;
+    if (!user) {
+      return res.status(401).json({
+        message: "User not found. Token invalid.",
+      });
     }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Account is deactivated.",
+      });
+    }
+
+    req.user = user;
+
+    next();
   } catch (error) {
-    console.error("Protect Middleware Error:", error);
-    return res.status(500).json({
-      message: "Authentication failed",
+    console.error("PROTECT ERROR:", error.message);
+
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    return res.status(401).json({
+      message: "Not authorized",
     });
   }
 };
 
-// @desc    Authorize specific roles with hierarchy
-// @access  Private routes with role restriction
-// @usage   authorize('admin', 'teacher')
-export const authorize = (...roles) => {
+/* =========================================
+   AUTHORIZE – Role-Based Access Control
+========================================= */
+export const authorize = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        message: "User not authenticated",
-      });
-    }
+    try {
+      if (!req.user || !req.user.role) {
+        return res.status(403).json({
+          message: "Forbidden. Role not found.",
+        });
+      }
 
-    const { role } = req.user;
+      const userRole = req.user.role.toLowerCase(); // ✅ Case-proof
+      const roles = allowedRoles.map((r) => r.toLowerCase());
 
-    // Role Hierarchy:
-    // admin > teacher > student
-    let isAuthorized = false;
+      // ✅ Role Hierarchy
+      // admin > teacher > student
+      if (userRole === "admin") return next();
 
-    if (roles.includes(role)) {
-      isAuthorized = true;
-    } else if (role === "admin") {
-      // Admin has all privileges
-      isAuthorized = true;
-    } else if (role === "teacher" && roles.includes("student")) {
-      // Teacher can access student routes
-      isAuthorized = true;
-    }
+      if (roles.includes(userRole)) return next();
 
-    if (!isAuthorized) {
+      if (userRole === "teacher" && roles.includes("student")) {
+        return next();
+      }
+
       return res.status(403).json({
-        message: `Role '${role}' is not authorized to access this resource`,
+        message: `Role '${req.user.role}' not permitted.`,
+      });
+    } catch (error) {
+      console.error("AUTHORIZE ERROR:", error.message);
+
+      return res.status(403).json({
+        message: "Forbidden",
       });
     }
-
-    next();
   };
 };
 
-// @desc    Optional authentication - Don't block if no token
-// @access  Public routes that benefit from auth context
+/* =========================================
+   OPTIONAL AUTH – Do Not Block
+========================================= */
 export const optionalAuth = async (req, res, next) => {
   try {
-    let token;
+    const token = extractToken(req);
 
-    if (req.cookies && req.cookies.token) {
-      token = req.cookies.token;
-    }
+    if (!token) return next();
 
-    if (!token && req.headers.authorization?.startsWith("Bearer")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id).select("-password");
-        if (user && user.isActive) {
-          req.user = user;
-        }
-      } catch (error) {
-        // Silently fail for optional auth
-        console.log("Optional auth failed:", error.message);
+      const user = await User.findById(decoded.id).select("-password");
+
+      if (user && user.isActive) {
+        req.user = user;
       }
+    } catch (error) {
+      // Silent failure is correct here
+      console.log("Optional auth skipped:", error.message);
     }
 
     next();
   } catch (error) {
-    console.error("Optional Auth Middleware Error:", error);
+    console.error("OPTIONAL AUTH ERROR:", error.message);
     next();
   }
 };
