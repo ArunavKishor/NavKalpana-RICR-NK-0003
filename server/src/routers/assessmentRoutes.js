@@ -9,6 +9,7 @@ import {
   submitAssessment,
   gradeSubmission,
   getAssessmentStatistics,
+  evaluateSubmission,
 } from "../controllers/assessmentController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/uploadMiddleware.js";
@@ -31,10 +32,17 @@ router
   .get(authorize("admin", "teacher"), getAssessmentSubmissions);
 router
   .route("/:id/submit")
-  .post(authorize("student", "admin", "teacher"), submitAssessment);
+  .post(
+    authorize("student", "admin", "teacher"),
+    upload.single("file"),
+    submitAssessment,
+  );
 router
   .route("/:id/grade/:submissionId")
   .put(authorize("admin", "teacher"), gradeSubmission);
+router
+  .route("/:id/submissions/:submissionId/evaluate")
+  .post(authorize("admin", "teacher"), evaluateSubmission);
 router
   .route("/:id/statistics")
   .get(authorize("admin", "teacher"), getAssessmentStatistics);

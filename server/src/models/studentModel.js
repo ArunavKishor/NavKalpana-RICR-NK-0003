@@ -17,10 +17,7 @@ const studentSchema = new mongoose.Schema(
     phone: {
       type: String,
       trim: true,
-      match: [
-        /^[+]?[\d\s().-]{7,20}$/,
-        "Please provide a valid phone number",
-      ],
+      match: [/^[+]?[\d\s().-]{7,20}$/, "Please provide a valid phone number"],
     },
     enrollmentDate: {
       type: Date,
@@ -68,6 +65,11 @@ const studentSchema = new mongoose.Schema(
     },
     linkedin: {
       type: String,
+      trim: true,
+    },
+    profilePhoto: {
+      type: String,
+      default: null,
       trim: true,
     },
     isActive: {
