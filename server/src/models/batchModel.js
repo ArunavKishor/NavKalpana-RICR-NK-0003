@@ -18,6 +18,11 @@ const batchSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    coverImage: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     startDate: {
       type: Date,
       required: [true, "Start date is required"],

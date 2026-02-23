@@ -23,7 +23,8 @@ const buildTeacherSearchFilter = async (search) => {
 export const createTeacher = async (req, res) => {
   let user = null;
   try {
-    const { userId, fullName, email, password, phone, joiningDate, status } = req.body;
+    const { userId, fullName, email, password, phone, joiningDate, status } =
+      req.body;
 
     if (userId) {
       user = await User.findById(userId);
@@ -39,7 +40,9 @@ export const createTeacher = async (req, res) => {
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.status(409).json({ message: "User with this email already exists" });
+        return res
+          .status(409)
+          .json({ message: "User with this email already exists" });
       }
 
       user = await User.create({
@@ -77,7 +80,9 @@ export const createTeacher = async (req, res) => {
       });
     }
     if (isDuplicateKeyError(error)) {
-      return res.status(409).json({ message: "Teacher resource already exists" });
+      return res
+        .status(409)
+        .json({ message: "Teacher resource already exists" });
     }
     console.error("Create Teacher Error:", error);
     res.status(500).json({ message: "Failed to create teacher" });
@@ -132,8 +137,10 @@ export const getTeachers = async (req, res) => {
 
 export const getTeacherById = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.params.id)
-      .populate("user", "fullName email");
+    const teacher = await Teacher.findById(req.params.id).populate(
+      "user",
+      "fullName email",
+    );
 
     if (!teacher || !teacher.isActive) {
       return res.status(404).json({ message: "Teacher not found" });
@@ -179,7 +186,10 @@ export const updateTeacher = async (req, res) => {
 
     await teacher.save();
 
-    const updatedTeacher = await Teacher.findById(req.params.id).populate("user", "fullName email");
+    const updatedTeacher = await Teacher.findById(req.params.id).populate(
+      "user",
+      "fullName email",
+    );
 
     res.status(200).json({
       message: "Teacher updated successfully",
@@ -221,5 +231,35 @@ export const deleteTeacher = async (req, res) => {
   } catch (error) {
     console.error("Delete Teacher Error:", error);
     res.status(500).json({ message: "Failed to delete teacher" });
+  }
+};
+
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const teacher = await Teacher.findById(id);
+    if (!teacher || !teacher.isActive) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    teacher.profilePhoto = req.file.path;
+    await teacher.save();
+
+    res.status(200).json({
+      message: "Profile photo uploaded successfully",
+      data: {
+        fileUrl: req.file.path,
+        fileName: req.file.originalname,
+        profilePhoto: teacher.profilePhoto,
+      },
+    });
+  } catch (error) {
+    console.error("Upload Profile Photo Error:", error);
+    res.status(500).json({ message: "Failed to upload profile photo" });
   }
 };
