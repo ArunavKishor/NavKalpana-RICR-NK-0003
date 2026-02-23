@@ -995,6 +995,7 @@ const SupportRequests = () => {
       )}
     </div>
   );
+}
 
 const StatsCard = ({ icon, label, value }) => (
   <Card className="border-none shadow-sm">
