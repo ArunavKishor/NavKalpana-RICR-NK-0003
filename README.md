@@ -1,6 +1,6 @@
 <div align="center">
 
-# नवकल्पना (NavKalpana)
+# Mindrise
 
 ### 🎓 Classroom Intelligence & Resource Management Platform
 
@@ -33,12 +33,12 @@ Traditional educational institutions depend on fragmented, manual processes for 
 
 | Name              | Role                          |
 |-------------------|-------------------------------|
-| Arunav Kishor     | Team Lead / Backend Developer |
-| *(Add Member 2)*  | *(Role)*                      |
-| *(Add Member 3)*  | *(Role)*                      |
-| *(Add Member 4)*  | *(Role)*                      |
+| Arunav Kishor     | Team Lead / UI/UX Developer |
+| Prateek Raiger    | Full Stack Developer          |
+| Punit             | Frontend Developer            |
+| Pradeep           | Backend Developer             |
 
-> **Team Name:** NavKalpana | **Project Code:** RICR-NK-0003
+> **Team Name:** Mindrise | **Project Code:** RICR-NK-0003
 
 ---
 
