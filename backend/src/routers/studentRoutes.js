@@ -10,7 +10,9 @@ import {
   unenrollStudentFromBatch,
   getStudentProfile,
   updateStudentProfile,
-  getStudentProgress
+  getStudentProgress,
+  uploadProfilePhoto,
+  getStudentAttendance
 } from "../controllers/studentController.js";
 
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
