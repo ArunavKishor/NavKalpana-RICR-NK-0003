@@ -220,6 +220,13 @@ export const resolveSupportRequest = async (req, res) => {
       return res.status(404).json({ message: "Resource not found" });
     }
 
+    const { solutionFileUrl } = req.body;
+    if (solutionFileUrl) {
+      request.solutionFileUrl = solutionFileUrl;
+    } else if (req.file) {
+      request.solutionFileUrl = req.file.path;
+    }
+
     request.status = "resolved";
     request.statusUpdatedAt = new Date();
     request.resolvedAt = new Date();
@@ -232,6 +239,44 @@ export const resolveSupportRequest = async (req, res) => {
   } catch (error) {
     console.error("Resolve Support Request Error:", error);
     res.status(500).json({ message: "Failed to resolve support request" });
+  }
+};
+
+export const scheduleBackupClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, topic, meetingLink } = req.body;
+
+    if (!date || !topic) {
+      return res.status(400).json({ message: "Date and topic are required for background class" });
+    }
+
+    const request = await SupportRequest.findById(id);
+    if (!request) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
+    request.backupClassSchedule = {
+      date: new Date(date),
+      topic,
+      meetingLink
+    };
+
+    // Automatically transition status to in-progress if it was open
+    if (request.status === "open") {
+      request.status = "in-progress";
+      request.statusUpdatedAt = new Date();
+    }
+
+    await request.save();
+
+    res.status(200).json({
+      message: "Backup class scheduled successfully",
+      data: request
+    });
+  } catch (error) {
+    console.error("Schedule Backup Class Error:", error);
+    res.status(500).json({ message: "Failed to schedule backup class" });
   }
 };
 

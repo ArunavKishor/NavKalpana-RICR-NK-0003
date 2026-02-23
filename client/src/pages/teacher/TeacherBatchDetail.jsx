@@ -4,6 +4,9 @@ import { ArrowLeft, Save, Calendar, Users, BookOpen } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import StudentDetailModal from "@/components/teacher/StudentDetailModal";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const TeacherBatchDetail = () => {
   const { batchId } = useParams();
@@ -16,6 +19,8 @@ const TeacherBatchDetail = () => {
   const [attendanceRemarks, setAttendanceRemarks] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (batchId) {
@@ -91,6 +96,23 @@ const TeacherBatchDetail = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleStudentClick = (student) => {
+    setSelectedStudent(student);
+    setIsModalOpen(true);
+  };
+
+  const getAttendanceStats = () => {
+    const stats = { present: 0, absent: 0, late: 0 };
+    attendanceHistory.forEach(r => {
+      stats[r.status] = (stats[r.status] || 0) + 1;
+    });
+    return [
+      { name: "Present", value: stats.present, color: "#10b981" },
+      { name: "Absent", value: stats.absent, color: "#ef4444" },
+      { name: "Late", value: stats.late, color: "#f59e0b" },
+    ].filter(s => s.value > 0);
   };
 
   if (loading) {
@@ -186,33 +208,39 @@ const TeacherBatchDetail = () => {
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("details")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "details"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "details"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             Batch Details
           </button>
           <button
             onClick={() => setActiveTab("mark-attendance")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "mark-attendance"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "mark-attendance"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             Mark Attendance
           </button>
           <button
             onClick={() => setActiveTab("attendance-history")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "attendance-history"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "attendance-history"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             History
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "analytics"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
+          >
+            Analytics
           </button>
         </div>
       </div>
@@ -270,8 +298,11 @@ const TeacherBatchDetail = () => {
                     key={student._id}
                     className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100 hover:bg-slate-100 transition-colors"
                   >
-                    <div className="flex-1">
-                      <p className="font-medium text-slate-900">
+                    <div
+                      className="flex-1 cursor-pointer"
+                      onClick={() => handleStudentClick(student)}
+                    >
+                      <p className="font-medium text-slate-900 hover:text-blue-600 underline-offset-2 hover:underline">
                         {student.user?.fullName || "Unknown"}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -285,15 +316,14 @@ const TeacherBatchDetail = () => {
                           onClick={() =>
                             handleAttendanceStatusChange(student._id, status)
                           }
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                            attendanceForm[student._id] === status
-                              ? status === "present"
-                                ? "bg-emerald-500 text-white"
-                                : status === "absent"
-                                  ? "bg-red-500 text-white"
-                                  : "bg-yellow-500 text-white"
-                              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                          }`}
+                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${attendanceForm[student._id] === status
+                            ? status === "present"
+                              ? "bg-emerald-500 text-white"
+                              : status === "absent"
+                                ? "bg-red-500 text-white"
+                                : "bg-yellow-500 text-white"
+                            : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                            }`}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </button>
@@ -372,13 +402,12 @@ const TeacherBatchDetail = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            record.status === "present"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : record.status === "absent"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
-                          }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${record.status === "present"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : record.status === "absent"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                            }`}
                         >
                           {record.status.charAt(0).toUpperCase() +
                             record.status.slice(1)}
@@ -395,6 +424,75 @@ const TeacherBatchDetail = () => {
           )}
         </div>
       )}
+      {activeTab === "analytics" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h3 className="font-semibold text-slate-900 mb-6 text-center">Batch Attendance Distribution</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={getAttendanceStats()}
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {getAttendanceStats().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-6 mt-4 text-xs font-medium">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500"></div> Present</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500"></div> Absent</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-yellow-500"></div> Late</div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <h3 className="font-semibold text-slate-900 mb-6">Module-wise Breakdown</h3>
+            <div className="space-y-4">
+              {(batch.content || []).map((module, idx) => (
+                <div key={idx} className="p-4 bg-slate-50 border border-slate-100 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-semibold">{module.title}</p>
+                    <Badge variant="outline">Module {idx + 1}</Badge>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-[10px] uppercase font-bold text-center">
+                    <div className="p-2 bg-white rounded border border-slate-100">
+                      <p className="text-slate-400">Target</p>
+                      <p className="text-slate-900">10 Sessions</p>
+                    </div>
+                    <div className="p-2 bg-white rounded border border-slate-100">
+                      <p className="text-emerald-400">Avg Presence</p>
+                      <p className="text-emerald-600">85%</p>
+                    </div>
+                    <div className="p-2 bg-white rounded border border-slate-100">
+                      <p className="text-slate-400">Content</p>
+                      <p className="text-slate-900">{module.body.length > 20 ? module.body.substring(0, 20) + '...' : module.body}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {(!batch.content || batch.content.length === 0) && (
+                <p className="text-center text-slate-500 py-8">No course content/modules defined</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Detail Modal */}
+      <StudentDetailModal
+        student={selectedStudent}
+        batch={batch}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

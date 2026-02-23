@@ -1,6 +1,8 @@
 import Student from "../models/studentModel.js";
 import User from "../models/userModel.js";
 import Batch from "../models/batchModel.js";
+import Attendance from "../models/attendanceModel.js";
+import Submission from "../models/submissionModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -443,5 +445,69 @@ export const updateStudentProfile = async (req, res) => {
   } catch (error) {
     console.error("Update Student Profile Error:", error);
     res.status(500).json({ message: "Failed to update student profile" });
+  }
+};
+
+export const getStudentProgress = async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // 1. Attendance Metrics
+    const attendanceRecords = await Attendance.find({ student: studentId });
+    const totalSessions = attendanceRecords.length;
+    const presentCount = attendanceRecords.filter(r => r.status === "present").length;
+    const absentCount = attendanceRecords.filter(r => r.status === "absent").length;
+    const lateCount = attendanceRecords.filter(r => r.status === "late").length;
+
+    const attendancePercentage = totalSessions === 0
+      ? 0
+      : Number((( (presentCount + (lateCount * 0.5)) / totalSessions) * 100).toFixed(2));
+
+    // 2. Assessment Metrics
+    const submissions = await Submission.find({ student: studentId }).populate("assessment");
+    const totalSubmissions = submissions.length;
+    const evaluatedSubmissions = submissions.filter(s => s.status === "evaluated");
+
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    evaluatedSubmissions.forEach(s => {
+      totalScore += s.marksObtained || 0;
+      maxPossibleScore += s.assessment?.totalMarks || 0;
+    });
+
+    const averageGrade = maxPossibleScore === 0 ? 0 : Number(((totalScore / maxPossibleScore) * 100).toFixed(2));
+
+    // 3. OGI (Overall Growth Index) Calculation
+    // Logic: 40% Attendance, 60% Academic Performance
+    const ogi = Number(((attendancePercentage * 0.4) + (averageGrade * 0.6)).toFixed(2));
+
+    res.status(200).json({
+      message: "Student progress retrieved successfully",
+      data: {
+        attendance: {
+          percentage: attendancePercentage,
+          present: presentCount,
+          absent: absentCount,
+          late: lateCount,
+          total: totalSessions
+        },
+        academics: {
+          averageGrade,
+          totalSubmissions,
+          evaluated: evaluatedSubmissions.length,
+          totalScore,
+          maxPossibleScore
+        },
+        ogi,
+        status: student.status
+      }
+    });
+  } catch (error) {
+    console.error("Get Student Progress Error:", error);
+    res.status(500).json({ message: "Failed to retrieve student progress" });
   }
 };
