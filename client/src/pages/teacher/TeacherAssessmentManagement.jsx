@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Trash2, Eye, Edit } from "lucide-react";
+import { Plus, Search, Trash2, Eye, Edit, X, FileText, Download, CheckCircle, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from "framer-motion";
 
 const TeacherAssessmentManagement = () => {
   const [activeTab, setActiveTab] = useState("assignments");
@@ -13,10 +17,37 @@ const TeacherAssessmentManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [showEvaluation, setShowEvaluation] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    type: "assignment",
+    batch: "",
+    dueDate: "",
+    totalMarks: 100,
+    submissionType: "PDF"
+  });
+  const [evalData, setEvalData] = useState({
+    marks: "",
+    feedback: "",
+    currentSubmission: null
+  });
 
   useEffect(() => {
     loadAssessments();
+    loadBatches();
   }, [activeTab]);
+
+  const loadBatches = async () => {
+    try {
+      const { data } = await api.get("/api/batches");
+      setBatches(data?.data?.batches || []);
+    } catch (err) {
+      console.error("Load batches failed:", err);
+    }
+  };
 
   const loadAssessments = async () => {
     try {
@@ -56,9 +87,45 @@ const TeacherAssessmentManagement = () => {
     }
   };
 
-  const handleViewSubmissions = (assessment) => {
+  const handleViewSubmissions = async (assessment) => {
     setSelectedAssessment(assessment);
-    // This would open a submissions modal/page
+    try {
+      const { data } = await api.get(`/api/assessments/${assessment._id}/submissions`);
+      setSubmissions(data?.data?.submissions || []);
+      setShowEvaluation(true);
+    } catch (err) {
+      toast.error("Failed to load submissions");
+    }
+  };
+
+  const handleCreateAssessment = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post("/api/assessments", {
+        ...formData,
+        type: activeTab === "assignments" ? "assignment" : "quiz"
+      });
+      toast.success("Assessment created successfully");
+      setShowForm(false);
+      loadAssessments();
+    } catch (err) {
+      toast.error("Failed to create assessment");
+    }
+  };
+
+  const handleEvaluate = async () => {
+    if (!evalData.currentSubmission) return;
+    try {
+      await api.post(`/api/assessments/${selectedAssessment._id}/submissions/${evalData.currentSubmission._id}/evaluate`, {
+        marksObtained: Number(evalData.marks),
+        feedback: evalData.feedback
+      });
+      toast.success("Submission graded");
+      setEvalData({ marks: "", feedback: "", currentSubmission: null });
+      handleViewSubmissions(selectedAssessment);
+    } catch (err) {
+      toast.error("Evaluation failed");
+    }
   };
 
   return (
@@ -83,21 +150,19 @@ const TeacherAssessmentManagement = () => {
       <div className="flex gap-4 border-b border-slate-200 pb-0">
         <button
           onClick={() => setActiveTab("assignments")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${
-            activeTab === "assignments"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-500 border-transparent hover:text-slate-700"
-          }`}
+          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "assignments"
+            ? "text-blue-600 border-blue-600"
+            : "text-slate-500 border-transparent hover:text-slate-700"
+            }`}
         >
           Assignments
         </button>
         <button
           onClick={() => setActiveTab("quizzes")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${
-            activeTab === "quizzes"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-500 border-transparent hover:text-slate-700"
-          }`}
+          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "quizzes"
+            ? "text-blue-600 border-blue-600"
+            : "text-slate-500 border-transparent hover:text-slate-700"
+            }`}
         >
           Quizzes
         </button>
@@ -156,13 +221,12 @@ const TeacherAssessmentManagement = () => {
                           {assessment.title}
                         </h3>
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            assessment.status === "active"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : assessment.status === "draft"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-slate-100 text-slate-700"
-                          }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${assessment.status === "active"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : assessment.status === "draft"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-slate-100 text-slate-700"
+                            }`}
                         >
                           {assessment.status || "active"}
                         </span>
@@ -274,11 +338,184 @@ const TeacherAssessmentManagement = () => {
       {/* Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
-          <strong>Note:</strong> Assessment creation form would open in a modal
-          where teachers can create assignments with file upload requirements
-          and quizzes with MCQ questions.
+          <strong>Note:</strong> Quizzes are managed through the dedicated Quiz Builder component.
         </p>
       </div>
+
+      {/* Create Assessment Modal */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New {activeTab === "assignments" ? "Assignment" : "Quiz"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateAssessment} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                required
+                value={formData.title}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Assessment title"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                required
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Instructions for students"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Batch</label>
+                <Select onValueChange={val => setFormData({ ...formData, batch: val })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Batch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batches.map(b => (
+                      <SelectItem key={b._id} value={b._id}>{b.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Due Date</label>
+                <Input
+                  type="date"
+                  required
+                  value={formData.dueDate}
+                  onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Total Marks</label>
+                <Input
+                  type="number"
+                  required
+                  value={formData.totalMarks}
+                  onChange={e => setFormData({ ...formData, totalMarks: e.target.value })}
+                />
+              </div>
+              {activeTab === "assignments" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Allowed File Type</label>
+                  <Select onValueChange={val => setFormData({ ...formData, submissionType: val })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PDF">PDF Only</SelectItem>
+                      <SelectItem value="Image">Image Only</SelectItem>
+                      <SelectItem value="Any">Any File</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button type="submit">Create Assessment</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Submissions/Evaluation Modal */}
+      <Dialog open={showEvaluation} onOpenChange={setShowEvaluation}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Submissions: {selectedAssessment?.title}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Submission List */}
+              <div className="space-y-4 border-r pr-4">
+                <h4 className="font-semibold text-sm">Student Submissions</h4>
+                <div className="space-y-2">
+                  {submissions.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-8">No submissions yet</p>
+                  ) : (
+                    submissions.map(sub => (
+                      <div
+                        key={sub._id}
+                        onClick={() => setEvalData({ ...evalData, currentSubmission: sub, marks: sub.marksObtained || "" })}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${evalData.currentSubmission?._id === sub._id ? "bg-blue-50 border-blue-200" : "hover:bg-slate-50"
+                          }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-medium">{sub.student?.user?.fullName || "Student"}</p>
+                            <p className="text-xs text-slate-500">{new Date(sub.submittedAt).toLocaleString()}</p>
+                          </div>
+                          <Badge variant={sub.status === "evaluated" ? "success" : "warning"}>
+                            {sub.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Evaluation Panel */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-sm">Evaluation Panel</h4>
+                {evalData.currentSubmission ? (
+                  <div className="space-y-4">
+                    <div className="bg-slate-50 p-4 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-blue-600" />
+                        <div>
+                          <p className="text-sm font-medium">Submission File</p>
+                          <p className="text-xs text-slate-500 uppercase">{evalData.currentSubmission.fileType || "File"}</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => window.open(evalData.currentSubmission.fileUrl, '_blank')}>
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Marks (Max: {selectedAssessment.totalMarks})</label>
+                      <Input
+                        type="number"
+                        max={selectedAssessment.totalMarks}
+                        value={evalData.marks}
+                        onChange={e => setEvalData({ ...evalData, marks: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Feedback</label>
+                      <Textarea
+                        rows={4}
+                        value={evalData.feedback}
+                        onChange={e => setEvalData({ ...evalData, feedback: e.target.value })}
+                        placeholder="Provide constructive feedback..."
+                      />
+                    </div>
+
+                    <Button className="w-full" onClick={handleEvaluate}>
+                      Submit Evaluation
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center border-2 border-dashed rounded-lg p-12 text-slate-400">
+                    Select a submission to evaluate
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

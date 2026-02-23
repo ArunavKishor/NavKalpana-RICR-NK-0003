@@ -3,7 +3,6 @@ import User from "../models/userModel.js";
 import Batch from "../models/batchModel.js";
 import Attendance from "../models/attendanceModel.js";
 import Submission from "../models/submissionModel.js";
-import Assessment from "../models/assessmentModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -454,169 +453,64 @@ export const updateStudentProfile = async (req, res) => {
 
 export const getStudentProgress = async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).populate("batches");
-
-    if (!student || !student.isActive) {
-      return res.status(404).json({ message: "Resource not found" });
+    const studentId = req.params.id;
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
     }
 
-    const batchIds = student.batches.map((b) => b._id);
+    // 1. Attendance Metrics
+    const attendanceRecords = await Attendance.find({ student: studentId });
+    const totalSessions = attendanceRecords.length;
+    const presentCount = attendanceRecords.filter(r => r.status === "present").length;
+    const absentCount = attendanceRecords.filter(r => r.status === "absent").length;
+    const lateCount = attendanceRecords.filter(r => r.status === "late").length;
 
-    // Get student submissions
-    const submissions = await Submission.find({
-      student: student._id,
-    }).populate("assessment");
+    const attendancePercentage = totalSessions === 0
+      ? 0
+      : Number((( (presentCount + (lateCount * 0.5)) / totalSessions) * 100).toFixed(2));
 
-    // Calculate module-wise completion
-    const assessmentsByBatch = {};
-    const submissionsByBatch = {};
+    // 2. Assessment Metrics
+    const submissions = await Submission.find({ student: studentId }).populate("assessment");
+    const totalSubmissions = submissions.length;
+    const evaluatedSubmissions = submissions.filter(s => s.status === "evaluated");
 
-    submissions.forEach((sub) => {
-      if (sub.assessment) {
-        const batchId = sub.assessment.batch.toString();
-        if (!submissionsByBatch[batchId]) {
-          submissionsByBatch[batchId] = {
-            total: 0,
-            completed: 0,
-            evaluated: 0,
-          };
-        }
-        submissionsByBatch[batchId].total += 1;
-        if (sub.submittedAt) submissionsByBatch[batchId].completed += 1;
-        if (sub.submissionStatus === "evaluated")
-          submissionsByBatch[batchId].evaluated += 1;
-      }
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    evaluatedSubmissions.forEach(s => {
+      totalScore += s.marksObtained || 0;
+      maxPossibleScore += s.assessment?.totalMarks || 0;
     });
 
-    // Calculate overall progress
-    const totalAssessments = submissions.length;
-    const completedAssessments = submissions.filter(
-      (s) => s.submittedAt,
-    ).length;
-    const evaluatedAssessments = submissions.filter(
-      (s) => s.submissionStatus === "evaluated",
-    ).length;
+    const averageGrade = maxPossibleScore === 0 ? 0 : Number(((totalScore / maxPossibleScore) * 100).toFixed(2));
 
-    const progressPercentage =
-      totalAssessments === 0
-        ? 0
-        : ((completedAssessments / totalAssessments) * 100).toFixed(2);
-    const evaluationPercentage =
-      totalAssessments === 0
-        ? 0
-        : ((evaluatedAssessments / totalAssessments) * 100).toFixed(2);
+    // 3. OGI (Overall Growth Index) Calculation
+    // Logic: 40% Attendance, 60% Academic Performance
+    const ogi = Number(((attendancePercentage * 0.4) + (averageGrade * 0.6)).toFixed(2));
 
     res.status(200).json({
       message: "Student progress retrieved successfully",
       data: {
-        totalAssessments,
-        completedAssessments,
-        evaluatedAssessments,
-        progressPercentage: Number(progressPercentage),
-        evaluationPercentage: Number(evaluationPercentage),
-        submissionsByBatch,
-      },
+        attendance: {
+          percentage: attendancePercentage,
+          present: presentCount,
+          absent: absentCount,
+          late: lateCount,
+          total: totalSessions
+        },
+        academics: {
+          averageGrade,
+          totalSubmissions,
+          evaluated: evaluatedSubmissions.length,
+          totalScore,
+          maxPossibleScore
+        },
+        ogi,
+        status: student.status
+      }
     });
   } catch (error) {
     console.error("Get Student Progress Error:", error);
     res.status(500).json({ message: "Failed to retrieve student progress" });
-  }
-};
-
-export const getStudentAttendance = async (req, res) => {
-  try {
-    const student = await Student.findById(req.params.id);
-
-    if (!student || !student.isActive) {
-      return res.status(404).json({ message: "Resource not found" });
-    }
-
-    const records = await Attendance.find({
-      student: student._id,
-    }).populate("batch", "name course");
-
-    const total = records.length;
-    const present = records.filter((r) => r.status === "present").length;
-    const absent = records.filter((r) => r.status === "absent").length;
-    const late = records.filter((r) => r.status === "late").length;
-    const percentage =
-      total === 0 ? 0 : (((present + late) / total) * 100).toFixed(2);
-
-    // Group by batch
-    const attendanceByBatch = {};
-    records.forEach((record) => {
-      const batchId = record.batch._id.toString();
-      if (!attendanceByBatch[batchId]) {
-        attendanceByBatch[batchId] = {
-          batchName: record.batch.name,
-          course: record.batch.course,
-          total: 0,
-          present: 0,
-          absent: 0,
-          late: 0,
-          percentage: 0,
-        };
-      }
-      attendanceByBatch[batchId].total += 1;
-      if (record.status === "present") attendanceByBatch[batchId].present += 1;
-      if (record.status === "absent") attendanceByBatch[batchId].absent += 1;
-      if (record.status === "late") attendanceByBatch[batchId].late += 1;
-    });
-
-    // Calculate percentages for each batch
-    Object.values(attendanceByBatch).forEach((batch) => {
-      if (batch.total > 0) {
-        batch.percentage = Number(
-          (((batch.present + batch.late) / batch.total) * 100).toFixed(2),
-        );
-      }
-    });
-
-    res.status(200).json({
-      message: "Student attendance retrieved successfully",
-      data: {
-        total,
-        present,
-        absent,
-        late,
-        percentage: Number(percentage),
-        records,
-        attendanceByBatch,
-      },
-    });
-  } catch (error) {
-    console.error("Get Student Attendance Error:", error);
-    res.status(500).json({ message: "Failed to retrieve student attendance" });
-  }
-};
-
-export const uploadProfilePhoto = async (req, res) => {
-  try {
-    const userId = req.user._id;
-
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const student = await Student.findOne({ user: userId });
-    if (!student) {
-      return res.status(404).json({ message: "Student record not found" });
-    }
-
-    // Cloudinary path is already set by multer middleware
-    student.profilePhoto = req.file.path;
-    await student.save();
-
-    res.status(200).json({
-      message: "Profile photo uploaded successfully",
-      data: {
-        fileUrl: req.file.path,
-        fileName: req.file.originalname,
-        profilePhoto: student.profilePhoto,
-      },
-    });
-  } catch (error) {
-    console.error("Upload Profile Photo Error:", error);
-    res.status(500).json({ message: "Failed to upload profile photo" });
   }
 };

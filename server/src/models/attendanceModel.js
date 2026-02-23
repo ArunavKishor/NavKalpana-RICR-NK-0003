@@ -41,7 +41,7 @@ const attendanceSchema = new mongoose.Schema(
     },
     remarks: {
       type: String,
-      required: [true, "Remarks are mandatory"],
+      required: [true, "Remarks are required"],
       trim: true,
     },
     submittedAt: {

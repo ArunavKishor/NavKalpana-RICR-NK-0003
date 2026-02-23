@@ -10,9 +10,7 @@ import {
   unenrollStudentFromBatch,
   getStudentProfile,
   updateStudentProfile,
-  getStudentProgress,
-  getStudentAttendance,
-  uploadProfilePhoto,
+  getStudentProgress
 } from "../controllers/studentController.js";
 
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
@@ -54,11 +52,11 @@ router
   .put(updateStudent)
   .delete(deleteStudent);
 
-router.route("/:id/batches").get(getStudentBatches);
+router.route("/:id/progress")
+  .get(getStudentProgress);
 
-router.route("/:id/enroll").post(enrollStudentInBatch);
-
-router.route("/:id/unenroll").delete(unenrollStudentFromBatch);
+router.route("/:id/batches")
+  .get(getStudentBatches);
 
 router.route("/:id/progress").get(getStudentProgress);
 

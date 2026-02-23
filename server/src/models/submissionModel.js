@@ -18,6 +18,24 @@ const submissionSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    fileUrl: {
+      type: String,
+      required: [true, "File URL is required"],
+    },
+    fileType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG"],
+    },
+    isLateSubmission: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["submitted", "late-submitted", "evaluated"],
+      default: "submitted",
+      index: true,
+    },
     marksObtained: {
       type: Number,
       min: [0, "Marks obtained cannot be negative"],

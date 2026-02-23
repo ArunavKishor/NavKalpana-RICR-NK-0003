@@ -78,9 +78,9 @@ export const createAttendance = async (req, res) => {
 
     for (const record of recordsInput) {
       const { student, batch, date, status, notes, remarks } = record;
-      if (!student || !batch || !date || !status) {
+      if (!student || !batch || !date || !status || !remarks) {
         return res.status(400).json({
-          message: "student, batch, date, and status are required",
+          message: "student, batch, date, status, and remarks are required",
         });
       }
 
@@ -176,17 +176,26 @@ export const updateAttendance = async (req, res) => {
       return res.status(404).json({ message: "Resource not found" });
     }
 
-    // Check 10-minute edit time-lock
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    const recordDate = new Date(record.date);
-    const today = new Date();
-    const isSameDay = recordDate.toDateString() === today.toDateString();
-    const withinTimeLock = record.submittedAt > tenMinutesAgo;
+    // Time-lock validation: only allow edit within 10 minutes of original submission
+    const now = new Date();
+    const submittedAt = record.submittedAt || record.createdAt;
+    const diffInMinutes = (now - new Date(submittedAt)) / (1000 * 60);
 
-    if (!isSameDay || !withinTimeLock) {
+    if (diffInMinutes > 10) {
       return res.status(403).json({
-        message:
-          "Cannot edit attendance. Only within 10 minutes of marking on same date.",
+        message: "Attendance can only be edited within 10 minutes of submission.",
+      });
+    }
+
+    // Same-day validation: only allow edit on the same day the attendance was marked for
+    const recordDate = new Date(record.date);
+    if (
+      recordDate.getFullYear() !== now.getFullYear() ||
+      recordDate.getMonth() !== now.getMonth() ||
+      recordDate.getDate() !== now.getDate()
+    ) {
+      return res.status(403).json({
+        message: "Attendance can only be edited on the same day it was recorded.",
       });
     }
 
@@ -307,5 +316,49 @@ export const getBatchAttendanceStats = async (req, res) => {
   } catch (error) {
     console.error("Get Batch Attendance Stats Error:", error);
     res.status(500).json({ message: "Failed to retrieve attendance stats" });
+  }
+};
+
+export const exportAttendance = async (req, res) => {
+  try {
+    const { batch } = req.query;
+
+    if (!batch) {
+      return res.status(400).json({ message: "Batch ID is required for export" });
+    }
+
+    const records = await Attendance.find({ batch })
+      .populate("student", "enrollmentId")
+      .populate({
+         path: "student",
+         populate: { path: "user", select: "fullName email" }
+      })
+      .sort({ date: -1 });
+
+    if (records.length === 0) {
+      return res.status(404).json({ message: "No attendance records found to export" });
+    }
+
+    // CSV Header
+    let csvData = "Date,Student Name,Enrollment ID,Status,Remarks\n";
+
+    // CSV Rows
+    records.forEach((record) => {
+      const date = record.date.toISOString().split("T")[0];
+      const studentName = record.student?.user?.fullName || "N/A";
+      const enrollmentId = record.student?.enrollmentId || "N/A";
+      const status = record.status;
+      const remarks = `"${(record.remarks || "").replace(/"/g, '""')}"`;
+
+      csvData += `${date},${studentName},${enrollmentId},${status},${remarks}\n`;
+    });
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename=attendance_export_${batch}.csv`);
+
+    res.status(200).send(csvData);
+  } catch (error) {
+    console.error("Export Attendance Error:", error);
+    res.status(500).json({ message: "Failed to export attendance" });
   }
 };

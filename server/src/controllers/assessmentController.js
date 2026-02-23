@@ -10,7 +10,7 @@ import {
 
 export const createAssessment = async (req, res) => {
   try {
-    const { title, description, type, batch, dueDate, totalMarks, status } =
+    const { title, description, type, submissionType, batch, dueDate, totalMarks, status } =
       req.body;
 
     if (dueDate && new Date(dueDate) <= new Date()) {
@@ -23,6 +23,7 @@ export const createAssessment = async (req, res) => {
       title,
       description,
       type,
+      submissionType,
       batch,
       dueDate,
       totalMarks,
@@ -239,17 +240,17 @@ export const submitAssessment = async (req, res) => {
     }
 
     const submissionDate = submittedAt ? new Date(submittedAt) : new Date();
-    const isLate = submissionDate > assessment.dueDate;
+    const isLateSubmission = submissionDate > assessment.dueDate;
+    const status = isLateSubmission ? "late-submitted" : "submitted";
 
     const submission = await Submission.create({
       student: student._id,
       assessment: assessment._id,
       submittedAt: submissionDate,
-      fileUrl: req.file ? req.file.path : "",
-      fileName: req.file ? req.file.originalname : "",
-      fileType: assessment.submissionType || "PDF",
-      isLateSubmission: isLate,
-      submissionStatus: isLate ? "late-submitted" : "submitted",
+      fileUrl: req.file ? req.file.path : req.body.fileUrl,
+      fileType: req.body.fileType,
+      isLateSubmission,
+      status,
     });
 
     res.status(201).json({
@@ -298,7 +299,7 @@ export const gradeSubmission = async (req, res) => {
     if (feedback !== undefined) submission.feedback = feedback;
     submission.gradedBy = req.user._id;
     submission.gradedAt = new Date();
-    submission.submissionStatus = "evaluated";
+    submission.status = "evaluated";
     await submission.save();
 
     res.status(200).json({
