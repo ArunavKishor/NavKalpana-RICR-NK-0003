@@ -319,6 +319,55 @@ export const gradeSubmission = async (req, res) => {
   }
 };
 
+export const evaluateSubmission = async (req, res) => {
+  try {
+    const { id, submissionId } = req.params;
+    const { marks, feedback } = req.body;
+
+    if (marks === undefined || marks === null) {
+      return res.status(400).json({ message: "marks is required" });
+    }
+
+    const assessment = await Assessment.findById(id);
+    if (!assessment || !assessment.isActive) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+
+    if (marks > assessment.totalMarks) {
+      return res.status(400).json({
+        message: `Marks cannot exceed ${assessment.totalMarks}`,
+      });
+    }
+
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    submission.marksObtained = marks;
+    submission.feedback = feedback || "";
+    submission.submissionStatus = "evaluated";
+    submission.gradedBy = req.user._id;
+    submission.gradedAt = new Date();
+    await submission.save();
+
+    res.status(200).json({
+      message: "Submission evaluated successfully",
+      data: submission,
+    });
+  } catch (error) {
+    const validationErrors = formatValidationErrors(error);
+    if (validationErrors) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+    console.error("Evaluate Submission Error:", error);
+    res.status(500).json({ message: "Failed to evaluate submission" });
+  }
+};
+
 export const getAssessmentStatistics = async (req, res) => {
   try {
     const assessment = await Assessment.findById(req.params.id);

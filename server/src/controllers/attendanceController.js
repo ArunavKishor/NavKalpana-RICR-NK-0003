@@ -84,6 +84,13 @@ export const createAttendance = async (req, res) => {
         });
       }
 
+      // Validate remarks field (mandatory)
+      if (!remarks || !remarks.trim()) {
+        return res.status(400).json({
+          message: "Remarks field is mandatory",
+        });
+      }
+
       const recordDate = new Date(date);
       recordDate.setHours(0, 0, 0, 0);
 
