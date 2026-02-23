@@ -239,16 +239,17 @@ export const submitAssessment = async (req, res) => {
     }
 
     const submissionDate = submittedAt ? new Date(submittedAt) : new Date();
-    if (submissionDate > assessment.dueDate) {
-      return res
-        .status(400)
-        .json({ message: "Submission is past the due date" });
-    }
+    const isLate = submissionDate > assessment.dueDate;
 
     const submission = await Submission.create({
       student: student._id,
       assessment: assessment._id,
       submittedAt: submissionDate,
+      fileUrl: req.file ? req.file.path : "",
+      fileName: req.file ? req.file.originalname : "",
+      fileType: assessment.submissionType || "PDF",
+      isLateSubmission: isLate,
+      submissionStatus: isLate ? "late-submitted" : "submitted",
     });
 
     res.status(201).json({
@@ -297,6 +298,7 @@ export const gradeSubmission = async (req, res) => {
     if (feedback !== undefined) submission.feedback = feedback;
     submission.gradedBy = req.user._id;
     submission.gradedAt = new Date();
+    submission.submissionStatus = "evaluated";
     await submission.save();
 
     res.status(200).json({
@@ -313,6 +315,55 @@ export const gradeSubmission = async (req, res) => {
     }
     console.error("Grade Submission Error:", error);
     res.status(500).json({ message: "Failed to grade submission" });
+  }
+};
+
+export const evaluateSubmission = async (req, res) => {
+  try {
+    const { id, submissionId } = req.params;
+    const { marks, feedback } = req.body;
+
+    if (marks === undefined || marks === null) {
+      return res.status(400).json({ message: "marks is required" });
+    }
+
+    const assessment = await Assessment.findById(id);
+    if (!assessment || !assessment.isActive) {
+      return res.status(404).json({ message: "Assessment not found" });
+    }
+
+    if (marks > assessment.totalMarks) {
+      return res.status(400).json({
+        message: `Marks cannot exceed ${assessment.totalMarks}`,
+      });
+    }
+
+    const submission = await Submission.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    submission.marksObtained = marks;
+    submission.feedback = feedback || "";
+    submission.submissionStatus = "evaluated";
+    submission.gradedBy = req.user._id;
+    submission.gradedAt = new Date();
+    await submission.save();
+
+    res.status(200).json({
+      message: "Submission evaluated successfully",
+      data: submission,
+    });
+  } catch (error) {
+    const validationErrors = formatValidationErrors(error);
+    if (validationErrors) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+    console.error("Evaluate Submission Error:", error);
+    res.status(500).json({ message: "Failed to evaluate submission" });
   }
 };
 

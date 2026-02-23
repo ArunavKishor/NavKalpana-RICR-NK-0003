@@ -77,10 +77,17 @@ export const createAttendance = async (req, res) => {
     const created = [];
 
     for (const record of recordsInput) {
-      const { student, batch, date, status, notes } = record;
+      const { student, batch, date, status, notes, remarks } = record;
       if (!student || !batch || !date || !status) {
         return res.status(400).json({
           message: "student, batch, date, and status are required",
+        });
+      }
+
+      // Validate remarks field (mandatory)
+      if (!remarks || !remarks.trim()) {
+        return res.status(400).json({
+          message: "Remarks field is mandatory",
         });
       }
 
@@ -114,7 +121,9 @@ export const createAttendance = async (req, res) => {
         date: recordDate,
         status,
         notes,
+        remarks,
         markedBy: req.user._id,
+        submittedAt: new Date(),
       });
       created.push(createdRecord);
     }
@@ -167,7 +176,21 @@ export const updateAttendance = async (req, res) => {
       return res.status(404).json({ message: "Resource not found" });
     }
 
-    const fields = ["status", "notes"];
+    // Check 10-minute edit time-lock
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const recordDate = new Date(record.date);
+    const today = new Date();
+    const isSameDay = recordDate.toDateString() === today.toDateString();
+    const withinTimeLock = record.submittedAt > tenMinutesAgo;
+
+    if (!isSameDay || !withinTimeLock) {
+      return res.status(403).json({
+        message:
+          "Cannot edit attendance. Only within 10 minutes of marking on same date.",
+      });
+    }
+
+    const fields = ["status", "notes", "remarks"];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) {
         record[field] = req.body[field];
