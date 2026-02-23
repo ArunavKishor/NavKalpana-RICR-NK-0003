@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaGithub, FaLinkedin, FaEdit } from "react-icons/fa";
 import api from "../../config/api";
 import toast from "react-hot-toast";
+import ImageUploadComponent from "../../components/common/ImageUploadComponent";
 
 const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -15,6 +16,7 @@ const StudentProfile = () => {
     enrollmentId: "",
     github: "",
     linkedin: "",
+    profilePhoto: null,
   });
 
   const [tempData, setTempData] = useState(student);
@@ -43,6 +45,13 @@ const StudentProfile = () => {
     setTempData({ ...tempData, [e.target.name]: e.target.value });
   };
 
+  const handlePhotoUploadSuccess = (photoUrl) => {
+    // Update both student and tempData with the new photo URL
+    setStudent((prev) => ({ ...prev, profilePhoto: photoUrl }));
+    setTempData((prev) => ({ ...prev, profilePhoto: photoUrl }));
+    // No need to refresh, data persists immediately
+  };
+
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -65,13 +74,16 @@ const StudentProfile = () => {
   };
 
   if (loading && !student.name) {
-    return <div className="p-6 text-center text-gray-500 min-h-screen">Loading profile...</div>;
+    return (
+      <div className="p-6 text-center text-gray-500 min-h-screen">
+        Loading profile...
+      </div>
+    );
   }
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow p-8">
-
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">My Profile</h2>
@@ -107,19 +119,22 @@ const StudentProfile = () => {
 
         {/* Profile Content */}
         <div className="grid md:grid-cols-3 gap-8">
-
-          {/* Avatar */}
+          {/* Avatar with Upload */}
           <div className="flex flex-col items-center">
-            <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600">
-              {student.name ? student.name.charAt(0).toUpperCase() : "?"}
-            </div>
+            <ImageUploadComponent
+              imageUrl={student.profilePhoto}
+              onUploadSuccess={handlePhotoUploadSuccess}
+              type="avatar"
+              acceptedFormats={["image/jpeg", "image/png", "image/gif"]}
+              maxSize={5}
+              endpoint="/api/students/me/upload-photo"
+            />
             <p className="mt-4 text-lg font-semibold">{student.name}</p>
             <p className="text-gray-500 text-sm">{student.course}</p>
           </div>
 
           {/* Info Section */}
           <div className="md:col-span-2 space-y-4">
-
             <InputField
               label="Full Name"
               name="name"
@@ -128,11 +143,7 @@ const StudentProfile = () => {
               onChange={handleChange}
             />
 
-            <InputField
-              label="Email"
-              value={student.email}
-              disabled
-            />
+            <InputField label="Email" value={student.email} disabled />
 
             <InputField
               label="Phone"
@@ -165,7 +176,6 @@ const StudentProfile = () => {
               onChange={handleChange}
               placeholder="https://linkedin.com/in/username"
             />
-
           </div>
         </div>
       </div>
@@ -173,7 +183,14 @@ const StudentProfile = () => {
   );
 };
 
-const InputField = ({ label, name, value, disabled, onChange, placeholder }) => (
+const InputField = ({
+  label,
+  name,
+  value,
+  disabled,
+  onChange,
+  placeholder,
+}) => (
   <div>
     <label className="text-sm text-gray-500">{label}</label>
     <input
@@ -183,8 +200,11 @@ const InputField = ({ label, name, value, disabled, onChange, placeholder }) => 
       disabled={disabled}
       onChange={onChange}
       placeholder={placeholder}
-      className={`w-full border rounded-lg p-2 mt-1 ${disabled ? "bg-gray-100" : "focus:outline-none focus:ring-2 focus:ring-blue-400"
-        }`}
+      className={`w-full border rounded-lg p-2 mt-1 ${
+        disabled
+          ? "bg-gray-100"
+          : "focus:outline-none focus:ring-2 focus:ring-blue-400"
+      }`}
     />
   </div>
 );

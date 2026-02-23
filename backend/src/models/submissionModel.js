@@ -18,6 +18,24 @@ const submissionSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    fileUrl: {
+      type: String,
+      required: [true, "File URL is required"],
+    },
+    fileType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG"],
+    },
+    isLateSubmission: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["submitted", "late-submitted", "evaluated"],
+      default: "submitted",
+      index: true,
+    },
     marksObtained: {
       type: Number,
       min: [0, "Marks obtained cannot be negative"],
@@ -32,6 +50,28 @@ const submissionSchema = new mongoose.Schema(
     },
     gradedAt: {
       type: Date,
+    },
+    fileUrl: {
+      type: String,
+      default: "",
+    },
+    fileName: {
+      type: String,
+      default: "",
+    },
+    fileType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG", "Video", "Text"],
+      default: "PDF",
+    },
+    isLateSubmission: {
+      type: Boolean,
+      default: false,
+    },
+    submissionStatus: {
+      type: String,
+      enum: ["submitted", "late-submitted", "evaluated"],
+      default: "submitted",
     },
   },
   {

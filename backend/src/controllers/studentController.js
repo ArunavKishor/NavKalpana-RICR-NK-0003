@@ -1,6 +1,8 @@
 import Student from "../models/studentModel.js";
 import User from "../models/userModel.js";
 import Batch from "../models/batchModel.js";
+import Attendance from "../models/attendanceModel.js";
+import Submission from "../models/submissionModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -24,15 +26,8 @@ const buildStudentSearchFilter = async (search) => {
 export const createStudent = async (req, res) => {
   let user = null;
   try {
-    const {
-      userId,
-      fullName,
-      email,
-      password,
-      phone,
-      enrollmentDate,
-      status,
-    } = req.body;
+    const { userId, fullName, email, password, phone, enrollmentDate, status } =
+      req.body;
 
     if (userId) {
       user = await User.findById(userId);
@@ -96,11 +91,11 @@ export const createStudent = async (req, res) => {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      code: error.code
+      code: error.code,
     });
     res.status(500).json({
       message: "Failed to create student. Please check server logs.",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -299,7 +294,10 @@ export const enrollStudentInBatch = async (req, res) => {
       student.batches.push(batch._id);
     }
 
-    student.enrollmentHistory.push({ batch: batch._id, enrolledAt: new Date() });
+    student.enrollmentHistory.push({
+      batch: batch._id,
+      enrolledAt: new Date(),
+    });
     await student.save();
 
     res.status(200).json({
@@ -338,7 +336,8 @@ export const unenrollStudentFromBatch = async (req, res) => {
       .reverse()
       .find(
         (entry) =>
-          entry.batch.toString() === batch._id.toString() && !entry.unenrolledAt,
+          entry.batch.toString() === batch._id.toString() &&
+          !entry.unenrolledAt,
       );
     if (latestHistory) {
       latestHistory.unenrolledAt = new Date();
@@ -375,7 +374,8 @@ export const getStudentProfile = async (req, res) => {
     }
 
     // Determine the student's actual course if enrolled in a batch
-    const course = student.batches?.length > 0 ? student.batches[0].course : "Not Assigned";
+    const course =
+      student.batches?.length > 0 ? student.batches[0].course : "Not Assigned";
 
     res.status(200).json({
       message: "Student profile retrieved successfully",
@@ -386,8 +386,8 @@ export const getStudentProfile = async (req, res) => {
         course: course,
         enrollmentId: student.enrollmentId,
         github: student.github || "",
-        linkedin: student.linkedin || ""
-      }
+        linkedin: student.linkedin || "",
+      },
     });
   } catch (error) {
     console.error("Get Student Profile Error:", error);
@@ -400,7 +400,10 @@ export const updateStudentProfile = async (req, res) => {
     const userId = req.user._id;
     const { name, phone, github, linkedin } = req.body;
 
-    const student = await Student.findOne({ user: userId }).populate("user", "fullName email");
+    const student = await Student.findOne({ user: userId }).populate(
+      "user",
+      "fullName email",
+    );
 
     if (!student) {
       return res.status(404).json({ message: "Student record not found" });
@@ -425,7 +428,10 @@ export const updateStudentProfile = async (req, res) => {
       .populate("user", "fullName email")
       .populate("batches", "course");
 
-    const course = updatedStudent.batches?.length > 0 ? updatedStudent.batches[0].course : "Not Assigned";
+    const course =
+      updatedStudent.batches?.length > 0
+        ? updatedStudent.batches[0].course
+        : "Not Assigned";
 
     res.status(200).json({
       message: "Student profile updated successfully",
@@ -436,12 +442,128 @@ export const updateStudentProfile = async (req, res) => {
         course: course,
         enrollmentId: updatedStudent.enrollmentId,
         github: updatedStudent.github || "",
-        linkedin: updatedStudent.linkedin || ""
-      }
+        linkedin: updatedStudent.linkedin || "",
+      },
     });
-
   } catch (error) {
     console.error("Update Student Profile Error:", error);
     res.status(500).json({ message: "Failed to update student profile" });
+  }
+};
+
+export const getStudentProgress = async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // 1. Attendance Metrics
+    const attendanceRecords = await Attendance.find({ student: studentId });
+    const totalSessions = attendanceRecords.length;
+    const presentCount = attendanceRecords.filter(r => r.status === "present").length;
+    const absentCount = attendanceRecords.filter(r => r.status === "absent").length;
+    const lateCount = attendanceRecords.filter(r => r.status === "late").length;
+
+    const attendancePercentage = totalSessions === 0
+      ? 0
+      : Number((( (presentCount + (lateCount * 0.5)) / totalSessions) * 100).toFixed(2));
+
+    // 2. Assessment Metrics
+    const submissions = await Submission.find({ student: studentId }).populate("assessment");
+    const totalSubmissions = submissions.length;
+    const evaluatedSubmissions = submissions.filter(s => s.status === "evaluated");
+
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    evaluatedSubmissions.forEach(s => {
+      totalScore += s.marksObtained || 0;
+      maxPossibleScore += s.assessment?.totalMarks || 0;
+    });
+
+    const averageGrade = maxPossibleScore === 0 ? 0 : Number(((totalScore / maxPossibleScore) * 100).toFixed(2));
+
+    // 3. OGI (Overall Growth Index) Calculation
+    // Logic: 40% Attendance, 60% Academic Performance
+    const ogi = Number(((attendancePercentage * 0.4) + (averageGrade * 0.6)).toFixed(2));
+
+    res.status(200).json({
+      message: "Student progress retrieved successfully",
+      data: {
+        attendance: {
+          percentage: attendancePercentage,
+          present: presentCount,
+          absent: absentCount,
+          late: lateCount,
+          total: totalSessions
+        },
+        academics: {
+          averageGrade,
+          totalSubmissions,
+          evaluated: evaluatedSubmissions.length,
+          totalScore,
+          maxPossibleScore
+        },
+        ogi,
+        status: student.status
+      }
+    });
+  } catch (error) {
+    console.error("Get Student Progress Error:", error);
+    res.status(500).json({ message: "Failed to retrieve student progress" });
+  }
+};
+
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const student = await Student.findOne({ user: userId });
+    if (!student) {
+      return res.status(404).json({ message: "Student record not found" });
+    }
+
+    student.profilePhoto = req.file.path;
+    await student.save();
+
+    res.status(200).json({
+      message: "Profile photo uploaded successfully",
+      data: {
+        fileUrl: req.file.path,
+        fileName: req.file.originalname,
+        profilePhoto: student.profilePhoto,
+      },
+    });
+  } catch (error) {
+    console.error("Upload Profile Photo Error:", error);
+    res.status(500).json({ message: "Failed to upload profile photo" });
+  }
+};
+
+export const getStudentAttendance = async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const records = await Attendance.find({ student: studentId }).populate(
+      "batch",
+      "name course",
+    );
+
+    res.status(200).json({
+      message: "Student attendance retrieved successfully",
+      data: { records },
+    });
+  } catch (error) {
+    console.error("Get Student Attendance Error:", error);
+    res.status(500).json({ message: "Failed to retrieve attendance" });
   }
 };

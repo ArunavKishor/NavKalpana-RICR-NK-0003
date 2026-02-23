@@ -191,10 +191,7 @@ export const getTrends = async (req, res) => {
     }, {});
 
     const weeks = Array.from(
-      new Set([
-        ...Object.keys(attendanceByWeek),
-        ...Object.keys(scoreByWeek),
-      ]),
+      new Set([...Object.keys(attendanceByWeek), ...Object.keys(scoreByWeek)]),
     ).sort();
 
     const trends = weeks.map((week) => {
@@ -204,8 +201,7 @@ export const getTrends = async (req, res) => {
         attendance.total === 0
           ? 0
           : Number(((attendance.attended / attendance.total) * 100).toFixed(2));
-      const averageScore =
-        scores.count === 0 ? 0 : scores.total / scores.count;
+      const averageScore = scores.count === 0 ? 0 : scores.total / scores.count;
       return {
         week,
         attendancePercentage,
@@ -220,5 +216,97 @@ export const getTrends = async (req, res) => {
   } catch (error) {
     console.error("Get Trends Error:", error);
     res.status(500).json({ message: "Failed to retrieve trends" });
+  }
+};
+
+export const getTeacherStats = async (req, res) => {
+  try {
+    const teacherId = req.user._id;
+
+    // Get all batches for teacher
+    const batches = await Batch.find({ createdBy: teacherId, isActive: true });
+    const batchIds = batches.map((b) => b._id);
+
+    // Count total students enrolled in teacher's batches
+    const totalStudents = await Student.countDocuments({
+      batches: { $in: batchIds },
+      isActive: true,
+    });
+
+    // Count pending assignments (not yet evaluated)
+    const pendingAssignments = await Assessment.countDocuments({
+      batch: { $in: batchIds },
+      type: "assignment",
+      status: "published",
+      isActive: true,
+    });
+
+    // Count completed grades (evaluated submissions)
+    const completedGrades = await Submission.countDocuments({
+      assessment: { $in: batchIds },
+      submissionStatus: "evaluated",
+    });
+
+    // Count active batches (ongoing)
+    const activeBatches = batches.filter((b) => b.status === "ongoing").length;
+
+    res.status(200).json({
+      message: "Teacher statistics retrieved successfully",
+      data: {
+        totalStudents,
+        pendingAssignments,
+        completedGrades,
+        activeBatches,
+      },
+    });
+  } catch (error) {
+    console.error("Get Teacher Stats Error:", error);
+    res.status(500).json({ message: "Failed to retrieve teacher statistics" });
+  }
+};
+
+export const getTeacherPerformance = async (req, res) => {
+  try {
+    const teacherId = req.user._id;
+    const batches = await Batch.find({ createdBy: teacherId, isActive: true });
+    const batchIds = batches.map((b) => b._id);
+
+    // Get weekly performance data
+    const fromDate = daysAgo(42);
+    const submissions = await Submission.find({
+      assessment: { $in: batchIds },
+      submittedAt: { $gte: fromDate },
+      marksObtained: { $ne: null },
+    });
+
+    const scoreByWeek = submissions.reduce((acc, submission) => {
+      const week = getWeekStart(submission.submittedAt);
+      if (!acc[week]) acc[week] = { total: 0, count: 0 };
+      acc[week].total += submission.marksObtained || 0;
+      acc[week].count += 1;
+      return acc;
+    }, {});
+
+    const performanceData = Object.keys(scoreByWeek)
+      .sort()
+      .map((week) => {
+        const avgScore =
+          scoreByWeek[week].count === 0
+            ? 0
+            : scoreByWeek[week].total / scoreByWeek[week].count;
+        return {
+          week,
+          averageScore: Number(avgScore.toFixed(2)),
+          submissionCount: scoreByWeek[week].count,
+        };
+      });
+
+    res.status(200).json({
+      message: "Teacher performance retrieved successfully",
+      data: { performanceData },
+    });
+  } catch (error) {
+    console.error("Get Teacher Performance Error:", error);
+    res.status(500).json({ message: "Failed to retrieve teacher performance" });
   }
 };

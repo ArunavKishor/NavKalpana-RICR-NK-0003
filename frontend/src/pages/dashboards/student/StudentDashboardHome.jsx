@@ -1,20 +1,18 @@
 import React from "react";
 import { FaClipboardList, FaCalendarCheck, FaBook } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
+import { getGreeting } from "@/lib/utils";
 
 const StudentDashboardHome = () => {
+  const { user } = useAuth();
   const student = {
-    name: "Rahul Sharma",
+    name: user?.fullName || "Student",
     attendance: 82,
     pendingAssignments: 2,
     upcomingQuizzes: 1,
   };
 
-  const hours = new Date().getHours();
-  let greeting = "Hello";
-
-  if (hours < 12) greeting = "Good Morning";
-  else if (hours < 18) greeting = "Good Afternoon";
-  else greeting = "Good Evening";
+  const greeting = getGreeting();
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">

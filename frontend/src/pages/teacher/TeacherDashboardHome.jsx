@@ -22,6 +22,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import { getGreeting } from "@/lib/utils";
 
 const StatCard = ({ icon, label, value, color }) => (
   <motion.div
@@ -38,6 +39,7 @@ const StatCard = ({ icon, label, value, color }) => (
 
 const TeacherDashboardHome = () => {
   const { user } = useAuth();
+  const greeting = getGreeting();
   const [stats, setStats] = useState({
     totalStudents: 0,
     pendingAssignments: 0,
@@ -157,6 +159,16 @@ const TeacherDashboardHome = () => {
 
   return (
     <div className="w-full space-y-8">
+      {/* Greeting Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          {greeting}, {user?.fullName || "Teacher"}! 👋
+        </h1>
+        <p className="text-slate-500 font-medium">
+          Here's what's happening in your classes today.
+        </p>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
@@ -191,9 +203,9 @@ const TeacherDashboardHome = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-4">
             Class Performance (Weekly)
           </h3>
-          <div className="h-64 w-full flex-1">
+          <div className="h-64 w-full" style={{ minHeight: '250px' }}>
             {performanceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <BarChart data={performanceData}>
                   <CartesianGrid
                     strokeDasharray="3 3"

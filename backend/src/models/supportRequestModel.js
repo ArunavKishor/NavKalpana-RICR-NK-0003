@@ -73,6 +73,15 @@ const supportRequestSchema = new mongoose.Schema(
     closedAt: {
       type: Date,
     },
+    solutionFileUrl: {
+      type: String,
+      trim: true,
+    },
+    backupClassSchedule: {
+      date: Date,
+      topic: String,
+      meetingLink: String,
+    },
   },
   {
     timestamps: true,

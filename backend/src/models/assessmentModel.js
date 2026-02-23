@@ -22,6 +22,11 @@ const assessmentSchema = new mongoose.Schema(
       },
       index: true,
     },
+    submissionType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG", "Any"],
+      default: "Any",
+    },
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
@@ -56,6 +61,11 @@ const assessmentSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    submissionType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG", "Video", "Text"],
+      default: "PDF",
     },
   },
   {
