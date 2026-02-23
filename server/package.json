@@ -6,8 +6,8 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
     "seed:admin": "node ./src/seeders/seedAdmin.js",
     "seed:students": "node ./src/seeders/seedStudents.js"
   },
