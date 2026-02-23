@@ -57,6 +57,11 @@ const assessmentSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    submissionType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG", "Video", "Text"],
+      default: "PDF",
+    },
   },
   {
     timestamps: true,

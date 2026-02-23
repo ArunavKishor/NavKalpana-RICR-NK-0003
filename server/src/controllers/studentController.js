@@ -1,6 +1,9 @@
 import Student from "../models/studentModel.js";
 import User from "../models/userModel.js";
 import Batch from "../models/batchModel.js";
+import Attendance from "../models/attendanceModel.js";
+import Submission from "../models/submissionModel.js";
+import Assessment from "../models/assessmentModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -24,15 +27,8 @@ const buildStudentSearchFilter = async (search) => {
 export const createStudent = async (req, res) => {
   let user = null;
   try {
-    const {
-      userId,
-      fullName,
-      email,
-      password,
-      phone,
-      enrollmentDate,
-      status,
-    } = req.body;
+    const { userId, fullName, email, password, phone, enrollmentDate, status } =
+      req.body;
 
     if (userId) {
       user = await User.findById(userId);
@@ -96,11 +92,11 @@ export const createStudent = async (req, res) => {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      code: error.code
+      code: error.code,
     });
     res.status(500).json({
       message: "Failed to create student. Please check server logs.",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -299,7 +295,10 @@ export const enrollStudentInBatch = async (req, res) => {
       student.batches.push(batch._id);
     }
 
-    student.enrollmentHistory.push({ batch: batch._id, enrolledAt: new Date() });
+    student.enrollmentHistory.push({
+      batch: batch._id,
+      enrolledAt: new Date(),
+    });
     await student.save();
 
     res.status(200).json({
@@ -338,7 +337,8 @@ export const unenrollStudentFromBatch = async (req, res) => {
       .reverse()
       .find(
         (entry) =>
-          entry.batch.toString() === batch._id.toString() && !entry.unenrolledAt,
+          entry.batch.toString() === batch._id.toString() &&
+          !entry.unenrolledAt,
       );
     if (latestHistory) {
       latestHistory.unenrolledAt = new Date();
@@ -375,7 +375,8 @@ export const getStudentProfile = async (req, res) => {
     }
 
     // Determine the student's actual course if enrolled in a batch
-    const course = student.batches?.length > 0 ? student.batches[0].course : "Not Assigned";
+    const course =
+      student.batches?.length > 0 ? student.batches[0].course : "Not Assigned";
 
     res.status(200).json({
       message: "Student profile retrieved successfully",
@@ -386,8 +387,8 @@ export const getStudentProfile = async (req, res) => {
         course: course,
         enrollmentId: student.enrollmentId,
         github: student.github || "",
-        linkedin: student.linkedin || ""
-      }
+        linkedin: student.linkedin || "",
+      },
     });
   } catch (error) {
     console.error("Get Student Profile Error:", error);
@@ -400,7 +401,10 @@ export const updateStudentProfile = async (req, res) => {
     const userId = req.user._id;
     const { name, phone, github, linkedin } = req.body;
 
-    const student = await Student.findOne({ user: userId }).populate("user", "fullName email");
+    const student = await Student.findOne({ user: userId }).populate(
+      "user",
+      "fullName email",
+    );
 
     if (!student) {
       return res.status(404).json({ message: "Student record not found" });
@@ -425,7 +429,10 @@ export const updateStudentProfile = async (req, res) => {
       .populate("user", "fullName email")
       .populate("batches", "course");
 
-    const course = updatedStudent.batches?.length > 0 ? updatedStudent.batches[0].course : "Not Assigned";
+    const course =
+      updatedStudent.batches?.length > 0
+        ? updatedStudent.batches[0].course
+        : "Not Assigned";
 
     res.status(200).json({
       message: "Student profile updated successfully",
@@ -436,12 +443,149 @@ export const updateStudentProfile = async (req, res) => {
         course: course,
         enrollmentId: updatedStudent.enrollmentId,
         github: updatedStudent.github || "",
-        linkedin: updatedStudent.linkedin || ""
-      }
+        linkedin: updatedStudent.linkedin || "",
+      },
     });
-
   } catch (error) {
     console.error("Update Student Profile Error:", error);
     res.status(500).json({ message: "Failed to update student profile" });
+  }
+};
+
+export const getStudentProgress = async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id).populate("batches");
+
+    if (!student || !student.isActive) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
+    const batchIds = student.batches.map((b) => b._id);
+
+    // Get student submissions
+    const submissions = await Submission.find({
+      student: student._id,
+    }).populate("assessment");
+
+    // Calculate module-wise completion
+    const assessmentsByBatch = {};
+    const submissionsByBatch = {};
+
+    submissions.forEach((sub) => {
+      if (sub.assessment) {
+        const batchId = sub.assessment.batch.toString();
+        if (!submissionsByBatch[batchId]) {
+          submissionsByBatch[batchId] = {
+            total: 0,
+            completed: 0,
+            evaluated: 0,
+          };
+        }
+        submissionsByBatch[batchId].total += 1;
+        if (sub.submittedAt) submissionsByBatch[batchId].completed += 1;
+        if (sub.submissionStatus === "evaluated")
+          submissionsByBatch[batchId].evaluated += 1;
+      }
+    });
+
+    // Calculate overall progress
+    const totalAssessments = submissions.length;
+    const completedAssessments = submissions.filter(
+      (s) => s.submittedAt,
+    ).length;
+    const evaluatedAssessments = submissions.filter(
+      (s) => s.submissionStatus === "evaluated",
+    ).length;
+
+    const progressPercentage =
+      totalAssessments === 0
+        ? 0
+        : ((completedAssessments / totalAssessments) * 100).toFixed(2);
+    const evaluationPercentage =
+      totalAssessments === 0
+        ? 0
+        : ((evaluatedAssessments / totalAssessments) * 100).toFixed(2);
+
+    res.status(200).json({
+      message: "Student progress retrieved successfully",
+      data: {
+        totalAssessments,
+        completedAssessments,
+        evaluatedAssessments,
+        progressPercentage: Number(progressPercentage),
+        evaluationPercentage: Number(evaluationPercentage),
+        submissionsByBatch,
+      },
+    });
+  } catch (error) {
+    console.error("Get Student Progress Error:", error);
+    res.status(500).json({ message: "Failed to retrieve student progress" });
+  }
+};
+
+export const getStudentAttendance = async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+
+    if (!student || !student.isActive) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
+    const records = await Attendance.find({
+      student: student._id,
+    }).populate("batch", "name course");
+
+    const total = records.length;
+    const present = records.filter((r) => r.status === "present").length;
+    const absent = records.filter((r) => r.status === "absent").length;
+    const late = records.filter((r) => r.status === "late").length;
+    const percentage =
+      total === 0 ? 0 : (((present + late) / total) * 100).toFixed(2);
+
+    // Group by batch
+    const attendanceByBatch = {};
+    records.forEach((record) => {
+      const batchId = record.batch._id.toString();
+      if (!attendanceByBatch[batchId]) {
+        attendanceByBatch[batchId] = {
+          batchName: record.batch.name,
+          course: record.batch.course,
+          total: 0,
+          present: 0,
+          absent: 0,
+          late: 0,
+          percentage: 0,
+        };
+      }
+      attendanceByBatch[batchId].total += 1;
+      if (record.status === "present") attendanceByBatch[batchId].present += 1;
+      if (record.status === "absent") attendanceByBatch[batchId].absent += 1;
+      if (record.status === "late") attendanceByBatch[batchId].late += 1;
+    });
+
+    // Calculate percentages for each batch
+    Object.values(attendanceByBatch).forEach((batch) => {
+      if (batch.total > 0) {
+        batch.percentage = Number(
+          (((batch.present + batch.late) / batch.total) * 100).toFixed(2),
+        );
+      }
+    });
+
+    res.status(200).json({
+      message: "Student attendance retrieved successfully",
+      data: {
+        total,
+        present,
+        absent,
+        late,
+        percentage: Number(percentage),
+        records,
+        attendanceByBatch,
+      },
+    });
+  } catch (error) {
+    console.error("Get Student Attendance Error:", error);
+    res.status(500).json({ message: "Failed to retrieve student attendance" });
   }
 };
