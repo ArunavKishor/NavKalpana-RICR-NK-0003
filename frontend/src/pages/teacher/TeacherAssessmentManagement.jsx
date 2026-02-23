@@ -1,12 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Trash2, Eye, Edit, X, FileText, Download, CheckCircle, Clock } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Trash2,
+  Eye,
+  Edit,
+  X,
+  FileText,
+  Download,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,6 +43,7 @@ const TeacherAssessmentManagement = () => {
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [submissions, setSubmissions] = useState([]);
   const [batches, setBatches] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -27,12 +51,12 @@ const TeacherAssessmentManagement = () => {
     batch: "",
     dueDate: "",
     totalMarks: 100,
-    submissionType: "PDF"
+    submissionType: "PDF",
   });
   const [evalData, setEvalData] = useState({
     marks: "",
     feedback: "",
-    currentSubmission: null
+    currentSubmission: null,
   });
 
   useEffect(() => {
@@ -90,7 +114,9 @@ const TeacherAssessmentManagement = () => {
   const handleViewSubmissions = async (assessment) => {
     setSelectedAssessment(assessment);
     try {
-      const { data } = await api.get(`/api/assessments/${assessment._id}/submissions`);
+      const { data } = await api.get(
+        `/api/assessments/${assessment._id}/submissions`,
+      );
       setSubmissions(data?.data?.submissions || []);
       setShowEvaluation(true);
     } catch (err) {
@@ -101,25 +127,66 @@ const TeacherAssessmentManagement = () => {
   const handleCreateAssessment = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/api/assessments", {
-        ...formData,
-        type: activeTab === "assignments" ? "assignment" : "quiz"
-      });
-      toast.success("Assessment created successfully");
+      if (editingId) {
+        await api.put(`/api/assessments/${editingId}`, {
+          ...formData,
+          type: activeTab === "assignments" ? "assignment" : "quiz",
+        });
+        toast.success("Assessment updated successfully");
+      } else {
+        await api.post("/api/assessments", {
+          ...formData,
+          type: activeTab === "assignments" ? "assignment" : "quiz",
+        });
+        toast.success("Assessment created successfully");
+      }
       setShowForm(false);
+      setEditingId(null);
+      setFormData({
+        title: "",
+        description: "",
+        type: "assignment",
+        batch: "",
+        dueDate: "",
+        totalMarks: 100,
+        submissionType: "PDF",
+      });
       loadAssessments();
     } catch (err) {
-      toast.error("Failed to create assessment");
+      toast.error(
+        editingId
+          ? "Failed to update assessment"
+          : "Failed to create assessment",
+      );
     }
+  };
+
+  const handleEditAssessment = (assessment) => {
+    setEditingId(assessment._id);
+    setFormData({
+      title: assessment.title || "",
+      description: assessment.description || "",
+      type: assessment.type || "assignment",
+      batch: assessment.batch?._id || assessment.batch || "",
+      dueDate: assessment.dueDate
+        ? new Date(assessment.dueDate).toISOString().split("T")[0]
+        : "",
+      totalMarks: assessment.totalMarks || 100,
+      submissionType: assessment.submissionType || "PDF",
+    });
+    setShowForm(true);
   };
 
   const handleEvaluate = async () => {
     if (!evalData.currentSubmission) return;
     try {
-      await api.post(`/api/assessments/${selectedAssessment._id}/submissions/${evalData.currentSubmission._id}/evaluate`, {
-        marksObtained: Number(evalData.marks),
-        feedback: evalData.feedback
-      });
+      await api.post(
+        `/api/assessments/${selectedAssessment._id}/submissions/${evalData.currentSubmission._id}/evaluate`,
+        {
+          marksObtained: Number(evalData.marks),
+          feedback: evalData.feedback,
+        },
+      );
       toast.success("Submission graded");
       setEvalData({ marks: "", feedback: "", currentSubmission: null });
       handleViewSubmissions(selectedAssessment);
@@ -140,7 +207,22 @@ const TeacherAssessmentManagement = () => {
             Create and manage assignments and quizzes
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="w-full md:w-auto">
+        <Button
+          onClick={() => {
+            setEditingId(null);
+            setFormData({
+              title: "",
+              description: "",
+              type: "assignment",
+              batch: "",
+              dueDate: "",
+              totalMarks: 100,
+              submissionType: "PDF",
+            });
+            setShowForm(true);
+          }}
+          className="w-full md:w-auto"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create Assessment
         </Button>
@@ -150,19 +232,21 @@ const TeacherAssessmentManagement = () => {
       <div className="flex gap-4 border-b border-slate-200 pb-0">
         <button
           onClick={() => setActiveTab("assignments")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "assignments"
-            ? "text-blue-600 border-blue-600"
-            : "text-slate-500 border-transparent hover:text-slate-700"
-            }`}
+          className={`px-4 py-3 font-medium transition-all border-b-2 ${
+            activeTab === "assignments"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-500 border-transparent hover:text-slate-700"
+          }`}
         >
           Assignments
         </button>
         <button
           onClick={() => setActiveTab("quizzes")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "quizzes"
-            ? "text-blue-600 border-blue-600"
-            : "text-slate-500 border-transparent hover:text-slate-700"
-            }`}
+          className={`px-4 py-3 font-medium transition-all border-b-2 ${
+            activeTab === "quizzes"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-500 border-transparent hover:text-slate-700"
+          }`}
         >
           Quizzes
         </button>
@@ -221,12 +305,13 @@ const TeacherAssessmentManagement = () => {
                           {assessment.title}
                         </h3>
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${assessment.status === "active"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : assessment.status === "draft"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-slate-100 text-slate-700"
-                            }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            assessment.status === "active"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : assessment.status === "draft"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-slate-100 text-slate-700"
+                          }`}
                         >
                           {assessment.status || "active"}
                         </span>
@@ -263,6 +348,14 @@ const TeacherAssessmentManagement = () => {
                       >
                         <Eye className="w-4 h-4 mr-1" />
                         View
+                      </Button>
+                      <Button
+                        onClick={() => handleEditAssessment(assessment)}
+                        variant="outline"
+                        size="sm"
+                        className="text-blue-600 hover:bg-blue-50 whitespace-nowrap"
+                      >
+                        <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         onClick={() => handleDelete(assessment._id)}
@@ -338,7 +431,8 @@ const TeacherAssessmentManagement = () => {
       {/* Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
-          <strong>Note:</strong> Quizzes are managed through the dedicated Quiz Builder component.
+          <strong>Note:</strong> Quizzes are managed through the dedicated Quiz
+          Builder component.
         </p>
       </div>
 
@@ -346,7 +440,10 @@ const TeacherAssessmentManagement = () => {
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New {activeTab === "assignments" ? "Assignment" : "Quiz"}</DialogTitle>
+            <DialogTitle>
+              {editingId ? "Edit" : "Create New"}{" "}
+              {activeTab === "assignments" ? "Assignment" : "Quiz"}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateAssessment} className="space-y-4">
             <div className="space-y-2">
@@ -354,7 +451,9 @@ const TeacherAssessmentManagement = () => {
               <Input
                 required
                 value={formData.title}
-                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="Assessment title"
               />
             </div>
@@ -363,20 +462,28 @@ const TeacherAssessmentManagement = () => {
               <Textarea
                 required
                 value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Instructions for students"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Batch</label>
-                <Select onValueChange={val => setFormData({ ...formData, batch: val })}>
+                <Select
+                  onValueChange={(val) =>
+                    setFormData({ ...formData, batch: val })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Batch" />
                   </SelectTrigger>
                   <SelectContent>
-                    {batches.map(b => (
-                      <SelectItem key={b._id} value={b._id}>{b.name}</SelectItem>
+                    {batches.map((b) => (
+                      <SelectItem key={b._id} value={b._id}>
+                        {b.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -387,7 +494,9 @@ const TeacherAssessmentManagement = () => {
                   type="date"
                   required
                   value={formData.dueDate}
-                  onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dueDate: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -398,13 +507,21 @@ const TeacherAssessmentManagement = () => {
                   type="number"
                   required
                   value={formData.totalMarks}
-                  onChange={e => setFormData({ ...formData, totalMarks: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, totalMarks: e.target.value })
+                  }
                 />
               </div>
               {activeTab === "assignments" && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Allowed File Type</label>
-                  <Select onValueChange={val => setFormData({ ...formData, submissionType: val })}>
+                  <label className="text-sm font-medium">
+                    Allowed File Type
+                  </label>
+                  <Select
+                    onValueChange={(val) =>
+                      setFormData({ ...formData, submissionType: val })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Any" />
                     </SelectTrigger>
@@ -418,8 +535,19 @@ const TeacherAssessmentManagement = () => {
               )}
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button type="submit">Create Assessment</Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingId(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                {editingId ? "Update Assessment" : "Create Assessment"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -439,21 +567,40 @@ const TeacherAssessmentManagement = () => {
                 <h4 className="font-semibold text-sm">Student Submissions</h4>
                 <div className="space-y-2">
                   {submissions.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-8">No submissions yet</p>
+                    <p className="text-sm text-slate-500 text-center py-8">
+                      No submissions yet
+                    </p>
                   ) : (
-                    submissions.map(sub => (
+                    submissions.map((sub) => (
                       <div
                         key={sub._id}
-                        onClick={() => setEvalData({ ...evalData, currentSubmission: sub, marks: sub.marksObtained || "" })}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${evalData.currentSubmission?._id === sub._id ? "bg-blue-50 border-blue-200" : "hover:bg-slate-50"
-                          }`}
+                        onClick={() =>
+                          setEvalData({
+                            ...evalData,
+                            currentSubmission: sub,
+                            marks: sub.marksObtained || "",
+                          })
+                        }
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                          evalData.currentSubmission?._id === sub._id
+                            ? "bg-blue-50 border-blue-200"
+                            : "hover:bg-slate-50"
+                        }`}
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm font-medium">{sub.student?.user?.fullName || "Student"}</p>
-                            <p className="text-xs text-slate-500">{new Date(sub.submittedAt).toLocaleString()}</p>
+                            <p className="text-sm font-medium">
+                              {sub.student?.user?.fullName || "Student"}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {new Date(sub.submittedAt).toLocaleString()}
+                            </p>
                           </div>
-                          <Badge variant={sub.status === "evaluated" ? "success" : "warning"}>
+                          <Badge
+                            variant={
+                              sub.status === "evaluated" ? "success" : "warning"
+                            }
+                          >
                             {sub.status}
                           </Badge>
                         </div>
@@ -473,22 +620,37 @@ const TeacherAssessmentManagement = () => {
                         <FileText className="w-8 h-8 text-blue-600" />
                         <div>
                           <p className="text-sm font-medium">Submission File</p>
-                          <p className="text-xs text-slate-500 uppercase">{evalData.currentSubmission.fileType || "File"}</p>
+                          <p className="text-xs text-slate-500 uppercase">
+                            {evalData.currentSubmission.fileType || "File"}
+                          </p>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => window.open(evalData.currentSubmission.fileUrl, '_blank')}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          window.open(
+                            evalData.currentSubmission.fileUrl,
+                            "_blank",
+                          )
+                        }
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Download
                       </Button>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Marks (Max: {selectedAssessment.totalMarks})</label>
+                      <label className="text-sm font-medium">
+                        Marks (Max: {selectedAssessment.totalMarks})
+                      </label>
                       <Input
                         type="number"
                         max={selectedAssessment.totalMarks}
                         value={evalData.marks}
-                        onChange={e => setEvalData({ ...evalData, marks: e.target.value })}
+                        onChange={(e) =>
+                          setEvalData({ ...evalData, marks: e.target.value })
+                        }
                       />
                     </div>
 
@@ -497,7 +659,9 @@ const TeacherAssessmentManagement = () => {
                       <Textarea
                         rows={4}
                         value={evalData.feedback}
-                        onChange={e => setEvalData({ ...evalData, feedback: e.target.value })}
+                        onChange={(e) =>
+                          setEvalData({ ...evalData, feedback: e.target.value })
+                        }
                         placeholder="Provide constructive feedback..."
                       />
                     </div>
@@ -516,7 +680,7 @@ const TeacherAssessmentManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div >
+    </div>
   );
 };
 
