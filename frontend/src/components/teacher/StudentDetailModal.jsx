@@ -115,11 +115,11 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                                     </div>
                                 </div>
 
-                                <div className="h-64 w-full">
+                                <div className="h-64 w-full" style={{ minHeight: '250px' }}>
                                     <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
                                         <TrendingUp className="w-4 h-4" /> Growth Trend
                                     </h4>
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                         <BarChart data={[
                                             { name: "Attendance", value: progressData?.attendance?.percentage },
                                             { name: "Academic", value: progressData?.academics?.averageGrade },

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import api from "@/config/Api";
 import { PlusCircle, MessageSquarePlus, UserPlus } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { getGreeting } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -17,6 +19,8 @@ import {
 /* ------------------ COMPONENT ------------------ */
 
 const DashboardHome = () => {
+  const { user } = useAuth();
+  const greeting = getGreeting();
   const [stats, setStats] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -106,6 +110,16 @@ const DashboardHome = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Greeting Header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          {greeting}, {user?.fullName || "Admin"}! 👋
+        </h1>
+        <p className="text-slate-500 font-medium">
+          Welcome back to the command center.
+        </p>
+      </div>
+
       {loading && (
         <div className="text-sm text-slate-500">Loading dashboard...</div>
       )}
