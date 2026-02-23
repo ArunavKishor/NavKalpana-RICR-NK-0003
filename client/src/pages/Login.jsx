@@ -53,13 +53,13 @@ const Login = () => {
         return;
       }
 
-      if (role !== "admin" && role !== "teacher") {
-        toast.error("Access denied. Admins and Teachers only.");
+      if (role !== "admin" && role !== "teacher" && role !== "student") {
+        toast.error("Access denied.");
         sessionStorage.removeItem("Token");
         return;
       }
 
-      toast.success(`Welcome ${role === "admin" ? "Admin" : "Teacher"}`);
+      toast.success(`Welcome ${role === "admin" ? "Admin" : role === "teacher" ? "Teacher" : "Student"}`);
 
       setUser(user);
       setIsLogin(true);
@@ -73,6 +73,8 @@ const Login = () => {
         navigate("/admin-dashboard");
       } else if (role === "teacher") {
         navigate("/teacher-dashboard");
+      } else if (role === "student") {
+        navigate("/student-dashboard");
       }
       handleClearForm();
     } catch (error) {
@@ -97,7 +99,7 @@ const Login = () => {
               Sign in to mindrise
             </h1>
             <p className="text-slate-500 text-sm sm:text-base mt-2 text-center font-medium">
-              Access your administration panel
+              Access your account
             </p>
 
             <form
@@ -118,7 +120,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
-                  placeholder="Enter admin email"
+                  placeholder="Enter email"
                   className="w-full mt-1.5 sm:mt-2 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
                              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
                              outline-none transition-all bg-white"
@@ -185,8 +187,7 @@ const Login = () => {
           </div>
 
           <p className="text-center text-slate-400 mt-6 sm:mt-8 text-xs font-medium">
-            © {new Date().getFullYear()} Mindrise Administration. All rights
-            reserved.
+            © {new Date().getFullYear()} Mindrise. All rights reserved.
           </p>
         </div>
       </div>

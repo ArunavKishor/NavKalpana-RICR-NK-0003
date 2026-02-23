@@ -8,27 +8,22 @@ import {
   getStudentBatches,
   enrollStudentInBatch,
   unenrollStudentFromBatch,
+  getStudentProfile,
+  updateStudentProfile
 } from "../controllers/studentController.js";
 
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 
-/* =====================================
-   ✅ CREATE ROUTER (THIS WAS MISSING)
-===================================== */
 const router = express.Router();
 
-/* =====================================
-   AUTH PROTECTION (All routes protected)
-===================================== */
 router.use(protect);
 
-/* =====================================
-   STUDENT DASHBOARD
-===================================== */
-router
-  .route("/me/dashboard")
-  .get(authorize("student", "admin"), getStudentDashboard);
+// Student specific routes
+router.route("/me/dashboard").get(authorize("student", "admin"), getStudentDashboard);
+router.route("/me")
+  .get(authorize("student", "admin"), getStudentProfile)
+  .put(authorize("student", "admin"), updateStudentProfile);
 
 /* =====================================
    ADMIN / TEACHER ONLY ROUTES

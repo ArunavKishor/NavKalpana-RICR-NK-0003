@@ -82,6 +82,4 @@ const startServer = async () => {
     console.error("❌ Server Startup Failed:", error);
     process.exit(1);
   }
-};
-
-startServer();
+});

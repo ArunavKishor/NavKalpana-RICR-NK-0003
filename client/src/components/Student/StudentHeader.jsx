@@ -90,7 +90,9 @@ const StudentHeader = ({ toggleSidebar, isSidebarOpen }) => {
                 <AvatarImage
                   src={`https://ui-avatars.com/api/?name=${user?.fullName || "Student"}&background=2563eb&color=fff`}
                 />
-                <AvatarFallback>ST</AvatarFallback>
+                <AvatarFallback>
+                  {user?.fullName ? user.fullName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "ST"}
+                </AvatarFallback>
               </Avatar>
 
               <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
@@ -100,11 +102,11 @@ const StudentHeader = ({ toggleSidebar, isSidebarOpen }) => {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => navigate("/student-dashboard/profile")}
+            >
               Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Help & Support
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
