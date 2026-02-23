@@ -11,6 +11,8 @@ import {
   Calendar,
   Pencil,
   Trash2,
+  CheckCircle2,
+  Send,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,10 @@ const SupportRequests = () => {
   const [requestToDelete, setRequestToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [studentOptions, setStudentOptions] = useState([]);
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [replyRequest, setReplyRequest] = useState(null);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [isSendingReply, setIsSendingReply] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -188,6 +194,54 @@ const SupportRequests = () => {
       );
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleResolve = async (request) => {
+    if (!window.confirm(`Mark "${request.subject}" as resolved?`)) return;
+    try {
+      await api.put(`/api/support/${request._id}/resolve`);
+      toast.success("Request marked as resolved");
+      await loadSupportRequests();
+    } catch (err) {
+      console.error("Resolve failed:", err);
+      toast.error(err.response?.data?.message || "Failed to resolve request");
+    }
+  };
+
+  const openReplyModal = async (request) => {
+    try {
+      const { data } = await api.get(`/api/support/${request._id}`);
+      setReplyRequest(data?.data || request);
+    } catch {
+      setReplyRequest(request);
+    }
+    setReplyMessage("");
+    setReplyModalOpen(true);
+  };
+
+  const handleSendReply = async () => {
+    if (!replyMessage.trim()) {
+      toast.error("Please enter a reply message");
+      return;
+    }
+    try {
+      setIsSendingReply(true);
+      const { data } = await api.post(
+        `/api/support/${replyRequest._id}/respond`,
+        {
+          message: replyMessage.trim(),
+        },
+      );
+      toast.success("Reply sent successfully");
+      setReplyRequest(data?.data || replyRequest);
+      setReplyMessage("");
+      await loadSupportRequests();
+    } catch (err) {
+      console.error("Reply failed:", err);
+      toast.error(err.response?.data?.message || "Failed to send reply");
+    } finally {
+      setIsSendingReply(false);
     }
   };
 
@@ -449,6 +503,23 @@ const SupportRequests = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <button
+                      className="flex items-center gap-1 text-slate-600 hover:text-slate-800 font-semibold text-sm"
+                      onClick={() => openReplyModal(request)}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Reply
+                    </button>
+                    {normalizeStatus(request.status) !== "RESOLVED" &&
+                      normalizeStatus(request.status) !== "CLOSED" && (
+                        <button
+                          className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
+                          onClick={() => handleResolve(request)}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Resolve
+                        </button>
+                      )}
+                    <button
                       className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm"
                       onClick={() => openEditModal(request)}
                     >
@@ -502,6 +573,121 @@ const SupportRequests = () => {
         description={`Are you sure you want to delete "${requestToDelete?.subject}"? This action cannot be undone.`}
         isLoading={isDeleting}
       />
+
+      {/* Reply Thread Modal */}
+      {replyModalOpen && replyRequest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setReplyModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-200 flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-slate-900 truncate">
+                  {replyRequest.subject}
+                </h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-sm text-slate-500">
+                    {replyRequest.student?.user?.fullName || "Student"}
+                  </span>
+                  <Badge
+                    className={`${getPriorityColor(replyRequest.priority?.toUpperCase())} text-xs`}
+                  >
+                    {replyRequest.priority?.toUpperCase()}
+                  </Badge>
+                  <Badge
+                    className={`${getStatusColor(normalizeStatus(replyRequest.status))} border text-xs`}
+                  >
+                    {normalizeStatus(replyRequest.status)}
+                  </Badge>
+                </div>
+              </div>
+              <button
+                onClick={() => setReplyModalOpen(false)}
+                className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 ml-2"
+              >
+                <span className="text-xl leading-none">&times;</span>
+              </button>
+            </div>
+
+            {/* Original Description */}
+            <div className="px-5 py-3 bg-slate-50 border-b border-slate-200">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                Original Request
+              </p>
+              <p className="text-sm text-slate-700">
+                {replyRequest.description}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                {new Date(replyRequest.createdAt).toLocaleString()}
+              </p>
+            </div>
+
+            {/* Responses Thread */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+              {!replyRequest.responses ||
+              replyRequest.responses.length === 0 ? (
+                <div className="text-center py-8 text-slate-400">
+                  <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">
+                    No replies yet. Be the first to respond.
+                  </p>
+                </div>
+              ) : (
+                replyRequest.responses.map((resp, idx) => (
+                  <div key={idx} className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <User className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 bg-blue-50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-slate-900">
+                          Teacher / Admin
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {new Date(resp.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-700">{resp.message}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Reply Input */}
+            <div className="p-4 border-t border-slate-200 bg-white rounded-b-xl">
+              <div className="flex gap-2">
+                <textarea
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  placeholder="Type your reply..."
+                  rows={2}
+                  className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendReply();
+                    }
+                  }}
+                />
+                <button
+                  onClick={handleSendReply}
+                  disabled={isSendingReply || !replyMessage.trim()}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors self-end"
+                >
+                  <Send className="w-4 h-4" />
+                  {isSendingReply ? "Sending..." : "Send"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

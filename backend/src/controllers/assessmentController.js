@@ -10,8 +10,19 @@ import {
 
 export const createAssessment = async (req, res) => {
   try {
-    const { title, description, type, submissionType, batch, dueDate, totalMarks, status } =
-      req.body;
+    const {
+      title,
+      description,
+      type,
+      submissionType,
+      batch,
+      dueDate,
+      totalMarks,
+      status,
+      questions,
+      duration,
+      attemptLimit,
+    } = req.body;
 
     if (dueDate && new Date(dueDate) <= new Date()) {
       return res.status(400).json({
@@ -19,7 +30,8 @@ export const createAssessment = async (req, res) => {
       });
     }
 
-    const assessment = await Assessment.create({
+    // Build assessment data
+    const assessmentData = {
       title,
       description,
       type,
@@ -30,7 +42,18 @@ export const createAssessment = async (req, res) => {
       status,
       pdfUrl: req.file ? req.file.path : "",
       createdBy: req.user._id,
-    });
+    };
+
+    // Add quiz-specific fields
+    if (type === "quiz") {
+      if (questions && Array.isArray(questions)) {
+        assessmentData.questions = questions;
+      }
+      if (duration) assessmentData.duration = duration;
+      if (attemptLimit) assessmentData.attemptLimit = attemptLimit;
+    }
+
+    const assessment = await Assessment.create(assessmentData);
 
     res.status(201).json({
       message: "Assessment created successfully",
@@ -142,6 +165,9 @@ export const updateAssessment = async (req, res) => {
       "dueDate",
       "totalMarks",
       "status",
+      "questions",
+      "duration",
+      "attemptLimit",
     ];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) {
