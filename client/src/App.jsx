@@ -20,6 +20,9 @@ import Login from "./pages/Login";
 
 import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
+import TeacherBatchManagement from "./pages/teacher/TeacherBatchManagement";
+import TeacherBatchDetail from "./pages/teacher/TeacherBatchDetail";
+import TeacherAssessmentManagement from "./pages/teacher/TeacherAssessmentManagement";
 import QuizManagement from "./pages/teacher/QuizManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -83,9 +86,14 @@ const App = () => {
             }
           >
             <Route index element={<TeacherDashboardHome />} />
-            <Route path="assessments" element={<AssessmentManagement />} />
-            <Route path="quizzes" element={<QuizManagement />} />
+            <Route path="batches" element={<TeacherBatchManagement />} />
+            <Route path="batches/:batchId" element={<TeacherBatchDetail />} />
+            <Route
+              path="assessments"
+              element={<TeacherAssessmentManagement />}
+            />
             <Route path="students" element={<StudentManagement />} />
+            <Route path="quizzes" element={<QuizManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
 
