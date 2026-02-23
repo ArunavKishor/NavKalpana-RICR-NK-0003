@@ -13,6 +13,9 @@ import {
   Trash2,
   CheckCircle2,
   Send,
+  Upload,
+  X,
+  FileText,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +53,19 @@ const SupportRequests = () => {
   const [replyModalOpen, setReplyModalOpen] = useState(false);
   const [replyRequest, setReplyRequest] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
+  const [replyFile, setReplyFile] = useState(null);
   const [isSendingReply, setIsSendingReply] = useState(false);
+  const [resolveModalOpen, setResolveModalOpen] = useState(false);
+  const [resolveRequest, setResolveRequest] = useState(null);
+  const [resolveMessage, setResolveMessage] = useState("");
+  const [resolveFile, setResolveFile] = useState(null);
+  const [isResolving, setIsResolving] = useState(false);
+  const [backupClassModalOpen, setBackupClassModalOpen] = useState(false);
+  const [backupClassRequest, setBackupClassRequest] = useState(null);
+  const [backupClassDate, setBackupClassDate] = useState("");
+  const [backupClassTopic, setBackupClassTopic] = useState("");
+  const [backupClassLink, setBackupClassLink] = useState("");
+  const [isSchedulingBackupClass, setIsSchedulingBackupClass] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -197,15 +212,70 @@ const SupportRequests = () => {
     }
   };
 
-  const handleResolve = async (request) => {
-    if (!window.confirm(`Mark "${request.subject}" as resolved?`)) return;
+  const handleResolve = (request) => {
+    setResolveRequest(request);
+    setResolveMessage("");
+    setResolveFile(null);
+    setResolveModalOpen(true);
+  };
+
+  const handleConfirmResolve = async () => {
     try {
-      await api.put(`/api/support/${request._id}/resolve`);
+      setIsResolving(true);
+      const formData = new FormData();
+      formData.append("status", "resolved");
+      if (resolveMessage.trim()) {
+        formData.append("message", resolveMessage.trim());
+      }
+      if (resolveFile) {
+        formData.append("file", resolveFile);
+      }
+
+      await api.put(`/api/support/${resolveRequest._id}/resolve`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       toast.success("Request marked as resolved");
+      setResolveModalOpen(false);
       await loadSupportRequests();
     } catch (err) {
       console.error("Resolve failed:", err);
       toast.error(err.response?.data?.message || "Failed to resolve request");
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
+  const handleScheduleBackupClass = (request) => {
+    setBackupClassRequest(request);
+    setBackupClassDate("");
+    setBackupClassTopic("");
+    setBackupClassLink("");
+    setBackupClassModalOpen(true);
+  };
+
+  const handleConfirmBackupClass = async () => {
+    if (!backupClassDate || !backupClassTopic.trim()) {
+      toast.error("Date and topic are required");
+      return;
+    }
+
+    try {
+      setIsSchedulingBackupClass(true);
+      await api.post(`/api/support/${backupClassRequest._id}/backup-class`, {
+        date: backupClassDate,
+        topic: backupClassTopic.trim(),
+        meetingLink: backupClassLink.trim() || undefined,
+      });
+      toast.success("Backup class scheduled successfully");
+      setBackupClassModalOpen(false);
+      await loadSupportRequests();
+    } catch (err) {
+      console.error("Schedule backup class failed:", err);
+      toast.error(err.response?.data?.message || "Failed to schedule backup class");
+    } finally {
+      setIsSchedulingBackupClass(false);
     }
   };
 
@@ -217,25 +287,36 @@ const SupportRequests = () => {
       setReplyRequest(request);
     }
     setReplyMessage("");
+    setReplyFile(null);
     setReplyModalOpen(true);
   };
 
   const handleSendReply = async () => {
-    if (!replyMessage.trim()) {
-      toast.error("Please enter a reply message");
+    if (!replyMessage.trim() && !replyFile) {
+      toast.error("Please enter a message or attach a file");
       return;
     }
     try {
       setIsSendingReply(true);
+      const formData = new FormData();
+      formData.append("message", replyMessage.trim() || "");
+      if (replyFile) {
+        formData.append("file", replyFile);
+      }
+
       const { data } = await api.post(
         `/api/support/${replyRequest._id}/respond`,
+        formData,
         {
-          message: replyMessage.trim(),
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
       );
       toast.success("Reply sent successfully");
       setReplyRequest(data?.data || replyRequest);
       setReplyMessage("");
+      setReplyFile(null);
       await loadSupportRequests();
     } catch (err) {
       console.error("Reply failed:", err);
@@ -511,13 +592,22 @@ const SupportRequests = () => {
                     </button>
                     {normalizeStatus(request.status) !== "RESOLVED" &&
                       normalizeStatus(request.status) !== "CLOSED" && (
-                        <button
-                          className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
-                          onClick={() => handleResolve(request)}
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          Resolve
-                        </button>
+                        <>
+                          <button
+                            className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-semibold text-sm"
+                            onClick={() => handleResolve(request)}
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Resolve
+                          </button>
+                          <button
+                            className="flex items-center gap-1 text-amber-600 hover:text-amber-700 font-semibold text-sm"
+                            onClick={() => handleScheduleBackupClass(request)}
+                          >
+                            <Calendar className="w-4 h-4" />
+                            Backup Class
+                          </button>
+                        </>
                       )}
                     <button
                       className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-semibold text-sm"
@@ -660,7 +750,7 @@ const SupportRequests = () => {
             </div>
 
             {/* Reply Input */}
-            <div className="p-4 border-t border-slate-200 bg-white rounded-b-xl">
+            <div className="p-4 border-t border-slate-200 bg-white rounded-b-xl space-y-3">
               <div className="flex gap-2">
                 <textarea
                   value={replyMessage}
@@ -677,11 +767,226 @@ const SupportRequests = () => {
                 />
                 <button
                   onClick={handleSendReply}
-                  disabled={isSendingReply || !replyMessage.trim()}
+                  disabled={isSendingReply || (!replyMessage.trim() && !replyFile)}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors self-end"
                 >
                   <Send className="w-4 h-4" />
                   {isSendingReply ? "Sending..." : "Send"}
+                </button>
+              </div>
+              
+              {/* File Upload Section */}
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer transition-colors">
+                  <Upload className="w-4 h-4" />
+                  <span>Attach File</span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => setReplyFile(e.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,image/*"
+                  />
+                </label>
+                {replyFile && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-blue-600 max-w-[200px] truncate">
+                      {replyFile.name}
+                    </span>
+                    <button
+                      onClick={() => setReplyFile(null)}
+                      className="ml-1 text-blue-400 hover:text-blue-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resolve Modal */}
+      {resolveModalOpen && resolveRequest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setResolveModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-900">
+                Resolve Request
+              </h3>
+              <button
+                onClick={() => setResolveModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm font-medium text-slate-900">
+                {resolveRequest.subject}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {resolveRequest.student?.user?.fullName || "Student"}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Resolution Notes (Optional)
+                </label>
+                <textarea
+                  value={resolveMessage}
+                  onChange={(e) => setResolveMessage(e.target.value)}
+                  placeholder="Add any final notes or solution details..."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  rows="3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Attach Solution File
+                </label>
+                <label className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 cursor-pointer transition-colors">
+                  <Upload className="w-4 h-4" />
+                  <span>Choose File</span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => setResolveFile(e.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,image/*"
+                  />
+                </label>
+                {resolveFile && (
+                  <div className="flex items-center gap-2 px-3 py-2 mt-2 bg-blue-50 rounded-lg border border-blue-200">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-blue-600 max-w-[200px] truncate">
+                      {resolveFile.name}
+                    </span>
+                    <button
+                      onClick={() => setResolveFile(null)}
+                      className="ml-1 text-blue-400 hover:text-blue-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setResolveModalOpen(false)}
+                  className="flex-1 px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmResolve}
+                  disabled={isResolving}
+                  className="flex-1 px-4 py-2 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:bg-slate-300 transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  {isResolving ? "Resolving..." : "Mark as Resolved"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Backup Class Modal */}
+      {backupClassModalOpen && backupClassRequest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setBackupClassModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-900">
+                Schedule Backup Class
+              </h3>
+              <button
+                onClick={() => setBackupClassModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm font-medium text-slate-900">
+                {backupClassRequest.subject}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {backupClassRequest.student?.user?.fullName || "Student"}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Class Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={backupClassDate}
+                  onChange={(e) => setBackupClassDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Topic / Subject <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={backupClassTopic}
+                  onChange={(e) => setBackupClassTopic(e.target.value)}
+                  placeholder="e.g., Chapter 5 Revision"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Meeting Link (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={backupClassLink}
+                  onChange={(e) => setBackupClassLink(e.target.value)}
+                  placeholder="https://meet.google.com/..."
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setBackupClassModalOpen(false)}
+                  className="flex-1 px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmBackupClass}
+                  disabled={isSchedulingBackupClass}
+                  className="flex-1 px-4 py-2 text-white bg-amber-600 rounded-lg hover:bg-amber-700 disabled:bg-slate-300 transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
+                  {isSchedulingBackupClass ? "Scheduling..." : "Schedule Class"}
                 </button>
               </div>
             </div>
@@ -690,7 +995,6 @@ const SupportRequests = () => {
       )}
     </div>
   );
-};
 
 const StatsCard = ({ icon, label, value }) => (
   <Card className="border-none shadow-sm">

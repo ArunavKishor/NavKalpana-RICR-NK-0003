@@ -111,7 +111,7 @@ const QuizManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -128,7 +128,7 @@ const QuizManagement = () => {
               setEditingQuiz(null);
               setShowCreateForm(true);
             }}
-            className="py-3 px-6 bg-gradient-to-r from-orange-400 to-pink-500 hover:shadow-lg text-white font-semibold rounded-lg flex items-center gap-2 transition-all duration-200"
+            className="py-3 px-6 bg-linear-to-r from-orange-400 to-pink-500 hover:shadow-lg text-white font-semibold rounded-lg flex items-center gap-2 transition-all duration-200"
           >
             <Plus size={20} />
             Create New Quiz
