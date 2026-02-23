@@ -74,11 +74,11 @@ cd NavKalpana-RICR-NK-0003
 ### 2. Setup Backend
 
 ```bash
-cd server
+cd backend
 pnpm install
 ```
 
-Create a `.env` file in the `server/` directory:
+Create a `.env` file in the `backend/` directory:
 
 ```env
 PORT=4500
@@ -103,11 +103,11 @@ pnpm dev
 ### 3. Setup Frontend
 
 ```bash
-cd client
+cd frontend
 pnpm install
 ```
 
-Create a `.env` file in the `client/` directory:
+Create a `.env` file in the `frontend/` directory:
 
 ```env
 VITE_API_URL=http://localhost:4500
@@ -122,7 +122,7 @@ pnpm dev
 ### 4. Seed Admin User (Optional)
 
 ```bash
-cd server
+cd backend
 pnpm run seed:admin
 ```
 
@@ -166,7 +166,7 @@ pnpm run seed:admin
 
 ```
 NavKalpana/
-├── client/                   # Frontend (React + Vite)
+├── frontend/                 # Frontend (React + Vite)
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
 │   │   ├── pages/            # Page-level components
@@ -174,7 +174,7 @@ NavKalpana/
 │   │   └── lib/              # Utilities
 │   └── package.json
 │
-├── server/                   # Backend (Express + MongoDB)
+├── backend/                  # Backend (Express + MongoDB)
 │   ├── server.js             # Entry point
 │   └── src/
 │       ├── config/           # DB & Cloudinary config
@@ -187,9 +187,9 @@ NavKalpana/
 │
 ├── docs/                     # Documentation
 │   ├── problem-statement.md
-│   ├── architecture-diagram.png
+│   ├── architecture-diagram.md
 │   ├── api-documentation.md
-│   └── presentation.pptx
+│   └── presentation.md
 │
 └── README.md
 ```
