@@ -12,10 +12,12 @@ import {
   updateStudentProfile,
   getStudentProgress,
   getStudentAttendance,
+  uploadProfilePhoto,
 } from "../controllers/studentController.js";
 
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
+import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -29,6 +31,15 @@ router
   .route("/me")
   .get(authorize("student", "admin"), getStudentProfile)
   .put(authorize("student", "admin"), updateStudentProfile);
+
+// Student profile photo upload
+router
+  .route("/me/upload-photo")
+  .post(
+    authorize("student", "admin"),
+    upload.single("file"),
+    uploadProfilePhoto,
+  );
 
 /* =====================================
    ADMIN / TEACHER ONLY ROUTES

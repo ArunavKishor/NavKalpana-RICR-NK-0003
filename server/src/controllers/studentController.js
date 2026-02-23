@@ -589,3 +589,34 @@ export const getStudentAttendance = async (req, res) => {
     res.status(500).json({ message: "Failed to retrieve student attendance" });
   }
 };
+
+export const uploadProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const student = await Student.findOne({ user: userId });
+    if (!student) {
+      return res.status(404).json({ message: "Student record not found" });
+    }
+
+    // Cloudinary path is already set by multer middleware
+    student.profilePhoto = req.file.path;
+    await student.save();
+
+    res.status(200).json({
+      message: "Profile photo uploaded successfully",
+      data: {
+        fileUrl: req.file.path,
+        fileName: req.file.originalname,
+        profilePhoto: student.profilePhoto,
+      },
+    });
+  } catch (error) {
+    console.error("Upload Profile Photo Error:", error);
+    res.status(500).json({ message: "Failed to upload profile photo" });
+  }
+};

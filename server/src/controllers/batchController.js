@@ -281,3 +281,33 @@ export const getBatchAttendance = async (req, res) => {
     res.status(500).json({ message: "Failed to retrieve attendance" });
   }
 };
+
+export const uploadCoverImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const batch = await Batch.findById(id);
+    if (!batch || !batch.isActive) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    batch.coverImage = req.file.path;
+    await batch.save();
+
+    res.status(200).json({
+      message: "Batch cover image uploaded successfully",
+      data: {
+        fileUrl: req.file.path,
+        fileName: req.file.originalname,
+        coverImage: batch.coverImage,
+      },
+    });
+  } catch (error) {
+    console.error("Upload Cover Image Error:", error);
+    res.status(500).json({ message: "Failed to upload cover image" });
+  }
+};
