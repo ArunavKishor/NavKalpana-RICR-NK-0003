@@ -1,5 +1,23 @@
 import mongoose from "mongoose";
 
+const answerSchema = new mongoose.Schema(
+  {
+    questionId: {
+      type: String,
+      required: true,
+    },
+    selectedAnswer: {
+      type: Number,
+      required: true,
+    },
+    isCorrect: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false },
+);
+
 const submissionSchema = new mongoose.Schema(
   {
     student: {
@@ -18,18 +36,27 @@ const submissionSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // File submission fields (for assignments)
     fileUrl: {
       type: String,
-      required: [true, "File URL is required"],
+      default: "",
+    },
+    fileName: {
+      type: String,
+      default: "",
     },
     fileType: {
       type: String,
-      enum: ["PDF", "Image", "JPG"],
+      enum: ["PDF", "Image", "JPG", "Video", "Text"],
+      default: "PDF",
     },
     isLateSubmission: {
       type: Boolean,
       default: false,
     },
+    // Quiz answer submission fields
+    answers: [answerSchema],
+    // Grading fields
     status: {
       type: String,
       enum: ["submitted", "late-submitted", "evaluated"],
@@ -50,28 +77,6 @@ const submissionSchema = new mongoose.Schema(
     },
     gradedAt: {
       type: Date,
-    },
-    fileUrl: {
-      type: String,
-      default: "",
-    },
-    fileName: {
-      type: String,
-      default: "",
-    },
-    fileType: {
-      type: String,
-      enum: ["PDF", "Image", "JPG", "Video", "Text"],
-      default: "PDF",
-    },
-    isLateSubmission: {
-      type: Boolean,
-      default: false,
-    },
-    submissionStatus: {
-      type: String,
-      enum: ["submitted", "late-submitted", "evaluated"],
-      default: "submitted",
     },
   },
   {
