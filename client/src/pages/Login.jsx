@@ -40,7 +40,9 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      console.log("📤 Sending login request with:", formData);
       const res = await api.post("/api/auth/login", formData);
+      console.log("✅ Login response:", res.data);
       toast.success(res.data.message);
 
       const user = res?.data?.data;
@@ -76,6 +78,9 @@ const Login = () => {
       }
       handleClearForm();
     } catch (error) {
+      console.error("❌ Login error:", error);
+      console.error("❌ Error response:", error?.response?.data);
+      console.error("❌ Status code:", error?.response?.status);
       toast.error(error?.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
@@ -90,8 +95,6 @@ const Login = () => {
 
         <div className="w-full max-w-md flex-1 flex flex-col justify-center">
           <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-lg sm:rounded-2xl p-6 sm:p-10 border border-gray-100">
-
-
             <h1 className="text-2xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 text-center mb-1">
               Sign in to mindrise
             </h1>
@@ -193,15 +196,23 @@ const Login = () => {
       <footer className="w-full py-6 mt-auto border-t border-slate-100/50 bg-white/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-800 tracking-tight">mindrise</span>
+            <span className="text-sm font-semibold text-slate-800 tracking-tight">
+              mindrise
+            </span>
             <span className="text-slate-300 text-sm">|</span>
             <span className="text-xs text-slate-500">Empowering Education</span>
           </div>
 
           <div className="flex items-center gap-6 text-xs font-medium text-slate-500">
-            <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">Help Center</a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">
+              Privacy Policy
+            </a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">
+              Terms of Service
+            </a>
+            <a href="#" className="hover:text-indigo-600 transition-colors">
+              Help Center
+            </a>
           </div>
         </div>
       </footer>
