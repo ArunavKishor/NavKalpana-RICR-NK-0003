@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
-import { GraduationCap, FileText, CheckCircle, Users } from "lucide-react";
+import { GraduationCap, FileText, CheckCircle, Users, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import {
     BarChart,
@@ -161,11 +161,11 @@ const TeacherDashboardHome = () => {
                             </a>
 
                             <a
-                                href="/teacher-dashboard/students"
-                                className="w-full bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-blue-200"
+                                href="/teacher-dashboard/attendance"
+                                className="w-full bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-emerald-200"
                             >
-                                <Users className="w-6 h-6" />
-                                <span className="text-sm font-semibold">My Students</span>
+                                <CheckCircle className="w-6 h-6" />
+                                <span className="text-sm font-semibold">Attendance</span>
                             </a>
                         </div>
                     </div>
@@ -187,13 +187,13 @@ const TeacherDashboardHome = () => {
                             </a>
 
                             <a
-                                href="/teacher-dashboard/students?action=view"
-                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 group transition-all"
+                                href="/teacher-dashboard/support"
+                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-purple-600 group transition-all"
                             >
-                                <div className="p-2.5 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100">
-                                    <Users className="w-5 h-5" />
+                                <div className="p-2.5 rounded-md bg-purple-50 text-purple-600 group-hover:bg-purple-100">
+                                    <MessageSquare className="w-5 h-5" />
                                 </div>
-                                <span className="text-sm font-medium">Review Student Progress</span>
+                                <span className="text-sm font-medium">Support Requests</span>
                             </a>
                         </div>
                     </div>

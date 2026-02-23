@@ -14,6 +14,10 @@ const batchSchema = new mongoose.Schema(
       required: [true, "Course is required"],
       trim: true,
     },
+    image: {
+      type: String,
+      default: "",
+    },
     startDate: {
       type: Date,
       required: [true, "Start date is required"],

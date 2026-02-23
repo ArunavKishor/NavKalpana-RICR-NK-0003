@@ -11,6 +11,7 @@ import {
   getAssessmentStatistics,
 } from "../controllers/assessmentController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
+import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -19,11 +20,11 @@ router.use(protect);
 router
   .route("/")
   .get(authorize("admin", "teacher"), getAssessments)
-  .post(authorize("admin", "teacher"), createAssessment);
+  .post(authorize("admin", "teacher"), upload.single("pdf"), createAssessment);
 router
   .route("/:id")
   .get(authorize("admin", "teacher"), getAssessmentById)
-  .put(authorize("admin", "teacher"), updateAssessment)
+  .put(authorize("admin", "teacher"), upload.single("pdf"), updateAssessment)
   .delete(authorize("admin", "teacher"), deleteAssessment);
 router
   .route("/:id/submissions")

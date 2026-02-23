@@ -6,6 +6,8 @@ import {
     GraduationCap,
     LifeBuoy,
     BookOpen,
+    CheckCircle,
+    MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -14,7 +16,8 @@ const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/teacher-dashboard" },
     { icon: FileText, label: "Assessment Management", href: "/teacher-dashboard/assessments" },
     { icon: BookOpen, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
-    { icon: GraduationCap, label: "Student Management", href: "/teacher-dashboard/students" },
+    { icon: CheckCircle, label: "Attendance", href: "/teacher-dashboard/attendance" },
+    { icon: MessageSquare, label: "Support Requests", href: "/teacher-dashboard/support" },
 ];
 
 const TeacherSidebar = ({ isOpen }) => {

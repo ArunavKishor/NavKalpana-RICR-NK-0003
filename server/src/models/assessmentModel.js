@@ -32,6 +32,10 @@ const assessmentSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Due date is required"],
     },
+    pdfUrl: {
+      type: String,
+      default: "",
+    },
     totalMarks: {
       type: Number,
       required: [true, "Total marks is required"],

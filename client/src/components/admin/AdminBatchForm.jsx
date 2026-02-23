@@ -14,6 +14,7 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
         schedule: "",
         maxStudents: 1,
     });
+    const [imageFile, setImageFile] = useState(null);
 
     useEffect(() => {
         if (initialData) {
@@ -41,6 +42,7 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
                 maxStudents: 1,
             });
         }
+        setImageFile(null);
     }, [initialData]);
 
     const handleChange = (e) => {
@@ -53,7 +55,7 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        onSubmit({ ...formData, imageFile });
     };
 
     return (
@@ -164,6 +166,17 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
                     value={formData.schedule}
                     onChange={handleChange}
                     required
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="image">Batch Cover Image (Optional)</Label>
+                <Input
+                    id="image"
+                    name="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files[0])}
                 />
             </div>
 

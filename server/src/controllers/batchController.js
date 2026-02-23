@@ -43,6 +43,7 @@ export const createBatch = async (req, res) => {
       instructor,
       schedule,
       maxStudents,
+      image: req.file ? req.file.path : "",
       createdBy: req.user._id,
       students: [],
     });
@@ -173,6 +174,10 @@ export const updateBatch = async (req, res) => {
         batch[field] = req.body[field];
       }
     });
+
+    if (req.file) {
+      batch.image = req.file.path;
+    }
 
     batch.status = batch.computeStatus(new Date());
     await batch.save();

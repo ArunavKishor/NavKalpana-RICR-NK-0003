@@ -29,6 +29,7 @@ const AssessmentForm = ({
         totalMarks: 1,
         status: "draft",
     });
+    const [pdfFile, setPdfFile] = useState(null);
 
     useEffect(() => {
         if (initialData) {
@@ -54,6 +55,7 @@ const AssessmentForm = ({
                 status: "draft",
             });
         }
+        setPdfFile(null);
     }, [initialData]);
 
     const handleChange = (e) => {
@@ -70,7 +72,7 @@ const AssessmentForm = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        onSubmit({ ...formData, pdfFile });
     };
 
     return (
@@ -166,6 +168,17 @@ const AssessmentForm = ({
                         required
                     />
                 </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="pdf">Assessment PDF Document (Optional)</Label>
+                <Input
+                    id="pdf"
+                    name="pdf"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => setPdfFile(e.target.files[0])}
+                />
             </div>
 
             <div className="space-y-2">

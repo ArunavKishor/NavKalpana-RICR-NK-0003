@@ -1,15 +1,15 @@
-const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../config/cloudinary");
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "batches",
-    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    folder: "hac_uploads",
+    resource_type: "auto",
   },
 });
-
+  
 const upload = multer({ storage });
 
-module.exports = upload;
+export default upload;

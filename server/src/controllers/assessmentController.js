@@ -27,6 +27,7 @@ export const createAssessment = async (req, res) => {
       dueDate,
       totalMarks,
       status,
+      pdfUrl: req.file ? req.file.path : "",
       createdBy: req.user._id,
     });
 
@@ -146,6 +147,10 @@ export const updateAssessment = async (req, res) => {
         assessment[field] = req.body[field];
       }
     });
+
+    if (req.file) {
+      assessment.pdfUrl = req.file.path;
+    }
 
     await assessment.save();
 

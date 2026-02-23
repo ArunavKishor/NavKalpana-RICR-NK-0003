@@ -14,10 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
-import Modal from "@/components/admin/Modal";
-import AssessmentForm from "@/components/admin/AssessmentForm";
-import DeleteConfirmationDialog from "@/components/admin/DeleteConfirmationDialog";
-import SubmissionListModal from "@/components/admin/SubmissionListModal";
+import Modal from "@/components/admin/AdminModal";
+import AssessmentForm from "@/components/admin/AdminAssessmentForm";
+import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
+import SubmissionListModal from "@/components/admin/AdminSubmissionListModal";
 
 const AssessmentManagement = () => {
   const [activeTab, setActiveTab] = useState("assignments");
@@ -39,9 +39,19 @@ const AssessmentManagement = () => {
   const filteredData =
     activeTab === "assignments" ? assignments : quizzes;
 
+  const [batches, setBatches] = useState([]);
+
   useEffect(() => {
     loadAssessments();
+    loadBatches();
   }, []);
+
+  const loadBatches = async () => {
+    try {
+      const res = await api.get("/api/batches");
+      setBatches(res.data?.data?.batches || []);
+    } catch (err) { }
+  };
 
   const loadAssessments = async () => {
     try {
@@ -93,6 +103,40 @@ const AssessmentManagement = () => {
     }
   };
 
+  const handleAssessmentFormSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      const formDataToSend = new FormData();
+      Object.keys(data).forEach(key => {
+        if (key === 'pdfFile') {
+          if (data.pdfFile) formDataToSend.append('pdf', data.pdfFile);
+        } else if (key === 'totalMarks') {
+          formDataToSend.append(key, Number(data[key]));
+        } else if (data[key] !== undefined && data[key] !== null) {
+          formDataToSend.append(key, data[key]);
+        }
+      });
+
+      if (modalMode === "create") {
+        await api.post("/api/assessments", formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success("Assessment created successfully");
+      } else {
+        await api.put(`/api/assessments/${selectedAssessment._id}`, formDataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success("Assessment updated successfully");
+      }
+      setIsModalOpen(false);
+      await loadAssessments();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save assessment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "published":
@@ -107,7 +151,7 @@ const AssessmentManagement = () => {
 
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 max-w-[1600px] mx-auto">
-      
+
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
@@ -133,21 +177,19 @@ const AssessmentManagement = () => {
         <div className="flex bg-white border rounded-lg p-1 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab("assignments")}
-            className={`flex-1 px-4 py-2 rounded-md text-sm ${
-              activeTab === "assignments"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600"
-            }`}
+            className={`flex-1 px-4 py-2 rounded-md text-sm ${activeTab === "assignments"
+              ? "bg-blue-50 text-blue-600"
+              : "text-slate-600"
+              }`}
           >
             Assignments
           </button>
           <button
             onClick={() => setActiveTab("quizzes")}
-            className={`flex-1 px-4 py-2 rounded-md text-sm ${
-              activeTab === "quizzes"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600"
-            }`}
+            className={`flex-1 px-4 py-2 rounded-md text-sm ${activeTab === "quizzes"
+              ? "bg-blue-50 text-blue-600"
+              : "text-slate-600"
+              }`}
           >
             Quizzes
           </button>
@@ -170,7 +212,7 @@ const AssessmentManagement = () => {
           {filteredData.map((item) => (
             <Card key={item._id} className="shadow-sm hover:shadow-md transition">
               <CardContent className="p-5 space-y-4">
-                
+
                 {/* Title */}
                 <div className="flex justify-between gap-3">
                   <h3 className="font-bold text-lg truncate">
@@ -273,7 +315,10 @@ const AssessmentManagement = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <AssessmentForm
           initialData={selectedAssessment}
+          onSubmit={handleAssessmentFormSubmit}
+          onCancel={() => setIsModalOpen(false)}
           isLoading={isSubmitting}
+          batches={batches}
         />
       </Modal>
 
