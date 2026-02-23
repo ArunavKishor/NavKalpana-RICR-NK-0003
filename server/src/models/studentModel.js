@@ -62,6 +62,14 @@ const studentSchema = new mongoose.Schema(
         },
       },
     ],
+    github: {
+      type: String,
+      trim: true,
+    },
+    linkedin: {
+      type: String,
+      trim: true,
+    },
     isActive: {
       type: Boolean,
       default: true,

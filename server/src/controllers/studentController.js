@@ -361,3 +361,87 @@ export const unenrollStudentFromBatch = async (req, res) => {
     res.status(500).json({ message: "Failed to unenroll student" });
   }
 };
+
+export const getStudentProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const student = await Student.findOne({ user: userId })
+      .populate("user", "fullName email")
+      .populate("batches", "course");
+
+    if (!student) {
+      return res.status(404).json({ message: "Student record not found" });
+    }
+
+    // Determine the student's actual course if enrolled in a batch
+    const course = student.batches?.length > 0 ? student.batches[0].course : "Not Assigned";
+
+    res.status(200).json({
+      message: "Student profile retrieved successfully",
+      data: {
+        name: student.user.fullName,
+        email: student.user.email,
+        phone: student.phone || "",
+        course: course,
+        enrollmentId: student.enrollmentId,
+        github: student.github || "",
+        linkedin: student.linkedin || ""
+      }
+    });
+  } catch (error) {
+    console.error("Get Student Profile Error:", error);
+    res.status(500).json({ message: "Failed to retrieve student profile" });
+  }
+};
+
+export const updateStudentProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, phone, github, linkedin } = req.body;
+
+    const student = await Student.findOne({ user: userId }).populate("user", "fullName email");
+
+    if (!student) {
+      return res.status(404).json({ message: "Student record not found" });
+    }
+
+    if (phone !== undefined) student.phone = phone;
+    if (github !== undefined) student.github = github;
+    if (linkedin !== undefined) student.linkedin = linkedin;
+
+    await student.save();
+
+    if (name) {
+      const user = await User.findById(student.user._id);
+      if (user) {
+        user.fullName = name;
+        await user.save();
+      }
+    }
+
+    // Retrieve again to send updated full valid data
+    const updatedStudent = await Student.findOne({ user: userId })
+      .populate("user", "fullName email")
+      .populate("batches", "course");
+
+    const course = updatedStudent.batches?.length > 0 ? updatedStudent.batches[0].course : "Not Assigned";
+
+    res.status(200).json({
+      message: "Student profile updated successfully",
+      data: {
+        name: updatedStudent.user.fullName,
+        email: updatedStudent.user.email,
+        phone: updatedStudent.phone || "",
+        course: course,
+        enrollmentId: updatedStudent.enrollmentId,
+        github: updatedStudent.github || "",
+        linkedin: updatedStudent.linkedin || ""
+      }
+    });
+
+  } catch (error) {
+    console.error("Update Student Profile Error:", error);
+    res.status(500).json({ message: "Failed to update student profile" });
+  }
+};

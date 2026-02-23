@@ -11,7 +11,7 @@ import {
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const StudentSidebar = () => {
+const StudentSidebar = ({ isOpen }) => {
   const location = useLocation();
 
   const sidebarItems = [
@@ -25,7 +25,7 @@ const StudentSidebar = () => {
   return (
     <motion.div
       initial={{ x: -100 }}
-      animate={{ x: 0 }}
+      animate={{ x: isOpen ? 0 : -260 }}
       transition={{ duration: 0.3 }}
       className={cn(
         "fixed top-0 left-0 z-50 h-screen bg-white text-slate-800 flex flex-col",

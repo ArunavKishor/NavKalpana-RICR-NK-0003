@@ -8,14 +8,21 @@ import {
   getStudentBatches,
   enrollStudentInBatch,
   unenrollStudentFromBatch,
+  getStudentProfile,
+  updateStudentProfile
 } from "../controllers/studentController.js";
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
+
+const router = express.Router();
 
 router.use(protect);
 
 // Student specific routes
 router.route("/me/dashboard").get(authorize("student", "admin"), getStudentDashboard);
+router.route("/me")
+  .get(authorize("student", "admin"), getStudentProfile)
+  .put(authorize("student", "admin"), updateStudentProfile);
 
 // Admin/Teacher routes
 router.use(authorize("admin", "teacher"));

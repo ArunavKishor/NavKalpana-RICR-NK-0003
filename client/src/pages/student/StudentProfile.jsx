@@ -1,34 +1,72 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaGithub, FaLinkedin, FaEdit } from "react-icons/fa";
+import api from "../../config/api";
+import toast from "react-hot-toast";
 
 const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [student, setStudent] = useState({
-    name: "Rahul Sharma",
-    email: "rahul@gmail.com",
-    phone: "9876543210",
-    course: "Web Development",
-    enrollmentId: "NK-2026-001",
-    github: "https://github.com/rahul",
-    linkedin: "https://linkedin.com/in/rahul",
+    name: "",
+    email: "",
+    phone: "",
+    course: "",
+    enrollmentId: "",
+    github: "",
+    linkedin: "",
   });
 
   const [tempData, setTempData] = useState(student);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/api/students/me");
+      if (res.data.data) {
+        setStudent(res.data.data);
+        setTempData(res.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile", error);
+      toast.error("Could not load profile data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setTempData({ ...tempData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    setStudent(tempData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const res = await api.put("/api/students/me", tempData);
+      setStudent(res.data.data);
+      setTempData(res.data.data);
+      setIsEditing(false);
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      toast.error("Could not update profile.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
     setTempData(student);
     setIsEditing(false);
   };
+
+  if (loading && !student.name) {
+    return <div className="p-6 text-center text-gray-500 min-h-screen">Loading profile...</div>;
+  }
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -42,6 +80,7 @@ const StudentProfile = () => {
             <button
               onClick={() => setIsEditing(true)}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              disabled={loading}
             >
               <FaEdit />
               Edit
@@ -50,13 +89,15 @@ const StudentProfile = () => {
             <div className="flex gap-3">
               <button
                 onClick={handleSave}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                disabled={loading}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
               >
-                Save
+                {loading ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={handleCancel}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                disabled={loading}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -70,7 +111,7 @@ const StudentProfile = () => {
           {/* Avatar */}
           <div className="flex flex-col items-center">
             <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600">
-              {student.name.charAt(0)}
+              {student.name ? student.name.charAt(0).toUpperCase() : "?"}
             </div>
             <p className="mt-4 text-lg font-semibold">{student.name}</p>
             <p className="text-gray-500 text-sm">{student.course}</p>
@@ -113,6 +154,7 @@ const StudentProfile = () => {
               value={tempData.github}
               disabled={!isEditing}
               onChange={handleChange}
+              placeholder="https://github.com/username"
             />
 
             <InputField
@@ -121,6 +163,7 @@ const StudentProfile = () => {
               value={tempData.linkedin}
               disabled={!isEditing}
               onChange={handleChange}
+              placeholder="https://linkedin.com/in/username"
             />
 
           </div>
@@ -130,7 +173,7 @@ const StudentProfile = () => {
   );
 };
 
-const InputField = ({ label, name, value, disabled, onChange }) => (
+const InputField = ({ label, name, value, disabled, onChange, placeholder }) => (
   <div>
     <label className="text-sm text-gray-500">{label}</label>
     <input
@@ -139,9 +182,9 @@ const InputField = ({ label, name, value, disabled, onChange }) => (
       value={value}
       disabled={disabled}
       onChange={onChange}
-      className={`w-full border rounded-lg p-2 mt-1 ${
-        disabled ? "bg-gray-100" : "focus:outline-none focus:ring-2 focus:ring-blue-400"
-      }`}
+      placeholder={placeholder}
+      className={`w-full border rounded-lg p-2 mt-1 ${disabled ? "bg-gray-100" : "focus:outline-none focus:ring-2 focus:ring-blue-400"
+        }`}
     />
   </div>
 );
