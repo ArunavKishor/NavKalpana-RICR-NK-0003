@@ -56,7 +56,7 @@ const BatchManagement = () => {
       console.error("Load batches failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load batches. Please try again.",
+        "Failed to load batches. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -148,16 +148,25 @@ const BatchManagement = () => {
 
     try {
       setIsSubmitting(true);
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        if (key === "imageFile") {
+          if (data.imageFile) formData.append("image", data.imageFile);
+        } else if (key === "maxStudents") {
+          formData.append(key, Number(data[key]));
+        } else if (data[key] !== undefined && data[key] !== null) {
+          formData.append(key, data[key]);
+        }
+      });
+
       if (modalMode === "create") {
-        await api.post("/api/batches", {
-          ...data,
-          maxStudents: Number(data.maxStudents),
+        await api.post("/api/batches", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Batch created successfully");
       } else {
-        await api.put(`/api/batches/${selectedBatch._id}`, {
-          ...data,
-          maxStudents: Number(data.maxStudents),
+        await api.put(`/api/batches/${selectedBatch._id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Batch updated successfully");
       }
@@ -176,7 +185,7 @@ const BatchManagement = () => {
       }
       toast.error(
         err.response?.data?.message ||
-          "Failed to save batch. Please try again.",
+        "Failed to save batch. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -203,7 +212,7 @@ const BatchManagement = () => {
       console.error("Delete batch failed:", err);
       toast.error(
         err.response?.data?.message ||
-          "Failed to delete batch. Please try again.",
+        "Failed to delete batch. Please try again.",
         { duration: 5000 },
       );
     } finally {
@@ -263,11 +272,10 @@ const BatchManagement = () => {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${
-                activeFilter === filter
+              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${activeFilter === filter
                   ? "bg-blue-600 text-white"
                   : "text-slate-600 hover:bg-slate-100"
-              }`}
+                }`}
             >
               {filter}
             </button>
@@ -330,9 +338,9 @@ const BatchManagement = () => {
                   <Calendar className="w-4 h-4" />
                   {batch.startDate
                     ? new Date(batch.startDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      })
+                      month: "short",
+                      year: "numeric",
+                    })
                     : "N/A"}
                 </div>
               </div>
@@ -390,6 +398,29 @@ const BatchManagement = () => {
           <p className="text-slate-600 text-sm">No batches found</p>
         </div>
       )}
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalMode === "create" ? "Create New Batch" : "Edit Batch"}
+      >
+        <BatchForm
+          initialData={selectedBatch}
+          onSubmit={handleBatchFormSubmit}
+          onCancel={() => setIsModalOpen(false)}
+          isLoading={isSubmitting}
+          errors={formErrors}
+        />
+      </Modal>
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Batch"
+        description={`Are you sure you want to delete "${batchToDelete?.name}"? This will permanently remove the batch and all its associations.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

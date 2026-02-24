@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { MdOutlineCameraAlt, MdClose } from "react-icons/md";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
+import Avatar from "@/components/shared/Avatar";
 
 /**
  * ImageUploadComponent
@@ -22,6 +23,8 @@ const ImageUploadComponent = ({
   acceptedFormats = ["image/jpeg", "image/png", "image/gif"],
   maxSize = 5,
   endpoint = "/api/students/me/upload-photo", // Can be customized per use case
+  fallbackName = "",
+  fallbackEmail = "",
 }) => {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -121,6 +124,13 @@ const ImageUploadComponent = ({
               />
             )}
           </>
+        ) : type === "avatar" ? (
+          <Avatar
+            name={fallbackName}
+            email={fallbackEmail}
+            size="xl"
+            className="w-full h-full rounded-none"
+          />
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-4xl mb-2">📷</div>
@@ -130,15 +140,13 @@ const ImageUploadComponent = ({
 
         {/* Overlay on Hover */}
         <div
-          className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${
-            hoverOpacity === 1 ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${hoverOpacity === 1 ? "opacity-100" : "opacity-0"
+            }`}
         >
           <div className="flex flex-col items-center">
             <MdOutlineCameraAlt
-              className={`text-white text-4xl mb-2 transition-transform ${
-                uploading ? "animate-spin" : ""
-              }`}
+              className={`text-white text-4xl mb-2 transition-transform ${uploading ? "animate-spin" : ""
+                }`}
             />
             <span className="text-white text-sm font-medium">
               {uploading ? "Uploading..." : "Click to upload"}

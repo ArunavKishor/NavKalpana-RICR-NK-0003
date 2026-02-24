@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "@/config/Api";
+import Avatar from "@/components/shared/Avatar";
 
 const AttendanceManagement = () => {
   const navigate = useNavigate();
@@ -71,7 +72,8 @@ const AttendanceManagement = () => {
           list.map((student) => ({
             id: student._id,
             name: student.user?.fullName || "Unknown",
-            avatar: `https://i.pravatar.cc/150?u=${student.user?.email || student._id}`,
+            email: student.user?.email || "",
+            profilePhoto: student.profilePhoto || "",
             status: null,
           })),
         );
@@ -80,7 +82,7 @@ const AttendanceManagement = () => {
         console.error("Load attendance data failed:", err);
         setError(
           err.response?.data?.message ||
-            "Failed to load batch attendance data.",
+          "Failed to load batch attendance data.",
         );
       } finally {
         setLoading(false);
@@ -112,7 +114,7 @@ const AttendanceManagement = () => {
       console.error("Submit attendance failed:", err);
       alert(
         err.response?.data?.message ||
-          "Failed to submit attendance. Please try again.",
+        "Failed to submit attendance. Please try again.",
       );
     }
   };
@@ -206,10 +208,11 @@ const AttendanceManagement = () => {
                     className="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition gap-4"
                   >
                     <div className="flex items-center gap-4">
-                      <img
-                        src={student.avatar}
-                        alt={student.name}
-                        className="w-12 h-12 rounded-full object-cover"
+                      <Avatar
+                        name={student.name}
+                        email={student.email}
+                        src={student.profilePhoto}
+                        size="lg"
                       />
                       <div>
                         <h3 className="font-semibold">{student.name}</h3>
@@ -222,15 +225,14 @@ const AttendanceManagement = () => {
                         <button
                           key={type}
                           onClick={() => markAttendance(student.id, type)}
-                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                            student.status === type
+                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${student.status === type
                               ? type === "present"
                                 ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
                                 : type === "absent"
-                                ? "bg-red-100 text-red-700 border-2 border-red-500"
-                                : "bg-orange-100 text-orange-700 border-2 border-orange-500"
+                                  ? "bg-red-100 text-red-700 border-2 border-red-500"
+                                  : "bg-orange-100 text-orange-700 border-2 border-orange-500"
                               : "bg-white border border-slate-200 text-slate-600"
-                          }`}
+                            }`}
                         >
                           {type === "present" && <CheckCircle2 className="w-4 h-4" />}
                           {type === "absent" && <XCircle className="w-4 h-4" />}

@@ -42,7 +42,7 @@ export const createBatch = async (req, res) => {
       endDate,
       instructor,
       schedule,
-      maxStudents,
+      maxStudents: maxStudents ? Number(maxStudents) : 0,
       image: req.file ? req.file.path : "",
       createdBy: req.user._id,
       students: [],
@@ -67,7 +67,10 @@ export const createBatch = async (req, res) => {
       return res.status(409).json({ message: "Resource already exists" });
     }
     console.error("Create Batch Error:", error);
-    res.status(500).json({ message: "Failed to create batch" });
+    res.status(500).json({
+      message: "Failed to create batch",
+      error: error.message
+    });
   }
 };
 
