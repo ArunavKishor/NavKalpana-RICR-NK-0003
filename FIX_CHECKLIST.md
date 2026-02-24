@@ -15,6 +15,7 @@
 
 ### Current Code (BUGGY)
 
+
 ```javascript
 // @desc    Register a new user
 // @route   POST /api/auth/register
