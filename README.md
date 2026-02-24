@@ -1,6 +1,6 @@
 <div align="center">
 
-# Mindrise
+# Mind Rise
 
 ### 🎓 Classroom Intelligence & Resource Management Platform
 
@@ -15,9 +15,9 @@
 
 ---
 
-## 📖 Problem Statement
+## 📖 Problem Statement — Mind Rise
 
-Traditional educational institutions depend on fragmented, manual processes for attendance, assessments, and student tracking. **NavKalpana** solves this by providing a unified, real-time platform with:
+Traditional educational institutions depend on fragmented, manual processes for attendance, assessments, and student tracking. **Mind Rise** solves this by providing a unified, real-time platform with:
 
 - **Automated Attendance** with edit-lock safeguards and CSV export
 - **Assessment Lifecycle Management** — creation, submission tracking, late detection, and in-app grading
@@ -38,7 +38,7 @@ Traditional educational institutions depend on fragmented, manual processes for 
 | Punit             | Frontend Developer            |
 | Pradeep           | Backend Developer             |
 
-> **Team Name:** Mindrise | **Project Code:** RICR-NK-0003
+> **Team Name:** NavKalpana (Project: Mind Rise) | **Project Code:** RICR-NK-0003
 
 ---
 
@@ -162,10 +162,10 @@ pnpm run seed:admin
 
 ---
 
-## 📂 Project Structure
+## 📂 Project Structure (Mind Rise)
 
 ```
-NavKalpana/
+Mind-Rise/
 ├── frontend/                 # Frontend (React + Vite)
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
@@ -196,7 +196,7 @@ NavKalpana/
 
 ---
 
-## 🔮 Future Improvements
+## 🔮 Future Improvements for Mind Rise
 
 - **Real-time Notifications** — Push notifications for assessment deadlines and support responses using WebSockets
 - **AI-powered Analytics** — Predictive analytics for identifying at-risk students using ML models
@@ -217,6 +217,6 @@ This project is built for educational purposes as part of the RICR program.
 
 <div align="center">
 
-**Built with ❤️ by Team NavKalpana**
+**Built with ❤️ by Team NavKalpana for Mind Rise**
 
 </div>

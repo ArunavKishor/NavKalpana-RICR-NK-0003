@@ -198,21 +198,19 @@ const TeacherAssessmentManagement = () => {
       <div className="flex gap-4 border-b border-slate-200 pb-0">
         <button
           onClick={() => setActiveTab("assignments")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${
-            activeTab === "assignments"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-500 border-transparent hover:text-slate-700"
-          }`}
+          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "assignments"
+            ? "text-blue-600 border-blue-600"
+            : "text-slate-500 border-transparent hover:text-slate-700"
+            }`}
         >
           Assignments
         </button>
         <button
           onClick={() => setActiveTab("quizzes")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${
-            activeTab === "quizzes"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-500 border-transparent hover:text-slate-700"
-          }`}
+          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "quizzes"
+            ? "text-blue-600 border-blue-600"
+            : "text-slate-500 border-transparent hover:text-slate-700"
+            }`}
         >
           Quizzes
         </button>
@@ -271,13 +269,12 @@ const TeacherAssessmentManagement = () => {
                           {assessment.title}
                         </h3>
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            assessment.status === "active"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : assessment.status === "draft"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-slate-100 text-slate-700"
-                          }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${assessment.status === "active"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : assessment.status === "draft"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-slate-100 text-slate-700"
+                            }`}
                         >
                           {assessment.status || "active"}
                         </span>
@@ -507,164 +504,163 @@ const TeacherAssessmentManagement = () => {
 
       {/* Submissions/Evaluation Modal */}
       <Dialog open={showEvaluation} onOpenChange={setShowEvaluation}>
-  <DialogContent className="max-w-5xl h-[85vh] p-0 overflow-hidden">
-    <DialogHeader className="px-6 py-4 border-b bg-white">
-      <DialogTitle className="text-lg font-semibold">
-        Submissions • {selectedAssessment?.title}
-      </DialogTitle>
-    </DialogHeader>
+        <DialogContent className="max-w-5xl h-[85vh] p-0 overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b bg-white">
+            <DialogTitle className="text-lg font-semibold">
+              Submissions • {selectedAssessment?.title}
+            </DialogTitle>
+          </DialogHeader>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 h-full">
-      {/* ================= SUBMISSION LIST ================= */}
-      <div className="border-r bg-slate-50/40 h-full overflow-y-auto">
-        <div className="p-5 space-y-4">
-          <h4 className="text-sm font-semibold text-slate-700">
-            Student Submissions
-          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+            {/* ================= SUBMISSION LIST ================= */}
+            <div className="border-r bg-slate-50/40 h-full overflow-y-auto">
+              <div className="p-5 space-y-4">
+                <h4 className="text-sm font-semibold text-slate-700">
+                  Student Submissions
+                </h4>
 
-          {submissions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <FileText className="w-10 h-10 mb-3 opacity-40" />
-              <p className="text-sm">No submissions yet</p>
+                {submissions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                    <FileText className="w-10 h-10 mb-3 opacity-40" />
+                    <p className="text-sm">No submissions yet</p>
+                  </div>
+                ) : (
+                  submissions.map((sub) => {
+                    const isActive =
+                      evalData.currentSubmission?._id === sub._id;
+
+                    return (
+                      <div
+                        key={sub._id}
+                        onClick={() =>
+                          setEvalData({
+                            ...evalData,
+                            currentSubmission: sub,
+                            marks: sub.marksObtained || "",
+                            feedback: sub.feedback || "",
+                          })
+                        }
+                        className={`group p-4 rounded-xl border cursor-pointer transition-all bg-white
+                    ${isActive
+                            ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
+                            : "hover:border-slate-300 hover:shadow-sm"
+                          }`}
+                      >
+                        <div className="flex justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-slate-800">
+                              {sub.student?.user?.fullName || "Student"}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">
+                              {new Date(sub.submittedAt).toLocaleString()}
+                            </p>
+                          </div>
+
+                          <Badge
+                            className={
+                              sub.status === "evaluated"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-amber-100 text-amber-700"
+                            }
+                          >
+                            {sub.status}
+                          </Badge>
+                        </div>
+
+                        {sub.marksObtained !== undefined && (
+                          <p className="text-xs text-slate-500 mt-2">
+                            Marks: <span className="font-medium">{sub.marksObtained}</span>
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          ) : (
-            submissions.map((sub) => {
-              const isActive =
-                evalData.currentSubmission?._id === sub._id;
 
-              return (
-                <div
-                  key={sub._id}
-                  onClick={() =>
-                    setEvalData({
-                      ...evalData,
-                      currentSubmission: sub,
-                      marks: sub.marksObtained || "",
-                      feedback: sub.feedback || "",
-                    })
-                  }
-                  className={`group p-4 rounded-xl border cursor-pointer transition-all bg-white
-                    ${
-                      isActive
-                        ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
-                        : "hover:border-slate-300 hover:shadow-sm"
-                    }`}
-                >
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">
-                        {sub.student?.user?.fullName || "Student"}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {new Date(sub.submittedAt).toLocaleString()}
-                      </p>
+            {/* ================= EVALUATION PANEL ================= */}
+            <div className="h-full overflow-y-auto bg-white">
+              <div className="p-6 space-y-5">
+                <h4 className="text-sm font-semibold text-slate-700">
+                  Evaluation Panel
+                </h4>
+
+                {evalData.currentSubmission ? (
+                  <>
+                    {/* File Card */}
+                    <div className="rounded-xl border bg-slate-50 p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium">
+                            Submission File
+                          </p>
+                          <p className="text-xs text-slate-500 uppercase">
+                            {evalData.currentSubmission.fileType || "File"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          window.open(
+                            evalData.currentSubmission.fileUrl,
+                            "_blank"
+                          )
+                        }
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
                     </div>
 
-                    <Badge
-                      className={
-                        sub.status === "evaluated"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-amber-100 text-amber-700"
-                      }
-                    >
-                      {sub.status}
-                    </Badge>
-                  </div>
+                    {/* Marks */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Marks (Max: {selectedAssessment.totalMarks})
+                      </label>
+                      <Input
+                        type="number"
+                        max={selectedAssessment.totalMarks}
+                        value={evalData.marks}
+                        onChange={(e) =>
+                          setEvalData({
+                            ...evalData,
+                            marks: e.target.value,
+                          })
+                        }
+                        className="h-11"
+                      />
+                    </div>
 
-                  {sub.marksObtained !== undefined && (
-                    <p className="text-xs text-slate-500 mt-2">
-                      Marks: <span className="font-medium">{sub.marksObtained}</span>
-                    </p>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* ================= EVALUATION PANEL ================= */}
-      <div className="h-full overflow-y-auto bg-white">
-        <div className="p-6 space-y-5">
-          <h4 className="text-sm font-semibold text-slate-700">
-            Evaluation Panel
-          </h4>
-
-          {evalData.currentSubmission ? (
-            <>
-              {/* File Card */}
-              <div className="rounded-xl border bg-slate-50 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium">
-                      Submission File
-                    </p>
-                    <p className="text-xs text-slate-500 uppercase">
-                      {evalData.currentSubmission.fileType || "File"}
-                    </p>
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    window.open(
-                      evalData.currentSubmission.fileUrl,
-                      "_blank"
-                    )
-                  }
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  View
-                </Button>
-              </div>
-
-              {/* Marks */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Marks (Max: {selectedAssessment.totalMarks})
-                </label>
-                <Input
-                  type="number"
-                  max={selectedAssessment.totalMarks}
-                  value={evalData.marks}
-                  onChange={(e) =>
-                    setEvalData({
-                      ...evalData,
-                      marks: e.target.value,
-                    })
-                  }
-                  className="h-11"
-                />
-              </div>
-
-              {/* Feedback */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Feedback
-                </label>
-                <Textarea
-                  rows={5}
-                  value={evalData.feedback}
-                  onChange={(e) =>
-                    setEvalData({
-                      ...evalData,
-                      feedback: e.target.value,
-                    })
-                  }
-                  placeholder="Provide constructive feedback..."
-                />
-              </div>
+                    {/* Feedback */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Feedback
+                      </label>
+                      <Textarea
+                        rows={5}
+                        value={evalData.feedback}
+                        onChange={(e) =>
+                          setEvalData({
+                            ...evalData,
+                            feedback: e.target.value,
+                          })
+                        }
+                        placeholder="Provide constructive feedback..."
+                      />
+                    </div>
 
                     <Button className="w-full" onClick={handleEvaluate}>
                       Submit Evaluation
                     </Button>
-                  </div>
+                  </>
                 ) : (
                   <div className="h-full flex items-center justify-center border-2 border-dashed rounded-lg p-12 text-slate-400">
                     Select a submission to evaluate

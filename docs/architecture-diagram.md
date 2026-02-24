@@ -1,45 +1,85 @@
-# NavKalpana System Architecture
+# Mind Rise System Architecture
 
-This diagram illustrates the high-level architecture and data flow of the **NavKalpana** platform.
+This document illustrates the high-level architecture and core data flows of the **Mind Rise** platform.
+
+## 1. High-Level System Diagram
 
 ```mermaid
 graph TD
     subgraph "Frontend (React + Vite)"
-        UI["User Interface (Tailwind CSS)"]
-        RT["React Router (Nav)"]
-        State["Context API (Auth)"]
+        UI["UI Layer (Tailwind, Framer Motion)"]
+        RT["Routing (React Router)"]
+        State["State & Auth Context"]
     end
 
-    subgraph "Backend API (Node/Express)"
+    subgraph "Backend API (Node + Express)"
         Router["Express Routers"]
-        MW["Middleware (Auth/Upload)"]
-        Ctrl["Controllers (Logic)"]
-        Util["Utils (OGI/Pagination)"]
+        MW["Middleware (Auth, Upload, Helmet, Rate Limit)"]
+        Ctrl["Controllers (Business Logic)"]
+        Util["Utils (OGI, Aggregations)"]
     end
 
     subgraph "External Services"
         DB[("MongoDB Atlas")]
-        CDN["Cloudinary Storage"]
+        CDN["Cloudinary (File Storage)"]
     end
 
     %% Interactions
     UI --> RT
     RT --> State
-    State -- API Calls (Axios) --> Router
+    State -- Axios HTTP --> Router
     Router --> MW
     MW --> Ctrl
     Ctrl --> Util
-    Ctrl -- Query --> DB
-    Ctrl -- Upload --> CDN
-    CDN -- URL --> Ctrl
-    DB -- Data --> Ctrl
-    Ctrl -- JSON --> State
+    Ctrl -- Queries --> DB
+    Ctrl -- Uploads --> CDN
+    CDN -- File URLs --> Ctrl
+    DB -- Documents --> Ctrl
+    Ctrl -- JSON API --> State
 ```
 
-### Key Components:
+## 2. Teacher Module Flow (Mind Rise)
 
-1.  **Frontend**: Built with React 19 and Vite for a lightning-fast developer experience and smooth UI.
-2.  **Backend**: Express.js server handling RESTful APIs, with JWT-based protection for routes.
-3.  **Database**: MongoDB Atlas provides a scalable, cloud-native NoSQL database for flexible schemas like Assessments and Attendance.
-4.  **Security**: Middleware-driven authentication ensures that students and teachers can only access their respective data.
-5.  **Analytics**: The computation of **OGI (Overall Growth Index)** happens in the backend via specialized utilities to ensure consistency.
+```mermaid
+flowchart LR
+    TLogin["Teacher Login Page"] --> AuthAPI["POST /api/auth/login"]
+    AuthAPI --> JWT["JWT + HttpOnly Cookie"]
+    JWT --> TDashboard["Teacher Dashboard"]
+
+    TDashboard --> KPIs["Dashboard KPIs & Charts"]
+    TDashboard --> TBatches["Batch Management"]
+    TDashboard --> TAssess["Assessment Management"]
+    TDashboard --> TStudents["Student Management Views"]
+    TDashboard --> TSupport["Support Requests"]
+
+    TBatches --> BatchAPI["/api/batches, /api/attendance"]
+    TAssess --> AssessAPI["/api/assessments"]
+    TStudents --> StudAPI["/api/students, /api/dashboard/performance"]
+    TSupport --> SupportAPI["/api/support"]
+
+    BatchAPI --> DB
+    AssessAPI --> DB
+    StudAPI --> DB
+    SupportAPI --> DB
+```
+
+## 3. Key Components
+
+1. **Frontend**
+   - React 19 + Vite
+   - Tailwind CSS + Framer Motion + Recharts
+   - Role-aware routing for Admin, Teacher, and Student dashboards
+
+2. **Backend**
+   - Express 5 server with modular routers (`auth`, `students`, `batches`, `attendance`, `assessments`, `support`, `dashboard`, `teachers`, `contact`)
+   - JWT-based authentication and role-based authorization middleware
+   - Helmet + rate limiting for baseline security
+
+3. **Database**
+   - MongoDB Atlas storing Users, Students, Teachers, Batches, Attendance, Assessments, Submissions, SupportRequests, etc.
+
+4. **Storage**
+   - Cloudinary used for assignment uploads, support attachments, and batch images, integrated via Multer + CloudinaryStorage with a 10MB upload limit.
+
+5. **Analytics**
+   - Overall Growth Index (OGI), attendance summaries, quiz/assignment analytics, and teacher KPIs computed in backend utilities and exposed via `/api/dashboard/*` and student/teacher detail endpoints.

@@ -1,4 +1,4 @@
-# MINDRISE  — API Documentation
+# Mind Rise — API Documentation
 
 > **Base URL:** `http://localhost:4500/api`
 > **Authentication:** JWT Bearer Token (sent via cookie or `Authorization` header)
@@ -11,9 +11,9 @@
 |--------|---------------------|------|--------------------------------|
 | POST   | `/register`         | —    | Register a new user            |
 | POST   | `/login`            | —    | Login and receive JWT token    |
-| POST   | `/genOtp`           | —    | Generate OTP for verification  |
-| POST   | `/verifyOtp`        | —    | Verify OTP                     |
-| POST   | `/forgetPasword`    | —    | Reset password via OTP         |
+| POST   | `/genOtp`           | —    | **Temporarily disabled** — returns 501 Not Implemented |
+| POST   | `/verifyOtp`        | —    | **Temporarily disabled** — returns 501 Not Implemented |
+| POST   | `/forgetPasword`    | —    | **Temporarily disabled** — returns 501 Not Implemented |
 | POST   | `/logout`           | ✅   | Logout and clear token         |
 | GET    | `/me`               | ✅   | Get currently logged-in user   |
 
@@ -86,10 +86,19 @@
 
 | Method | Endpoint         | Auth          | Description                           |
 |--------|------------------|---------------|---------------------------------------|
-| GET    | `/stats`         | Admin/Teacher | Total students, batches, assessments  |
+| GET    | `/stats`         | Admin/Teacher | Global statistics (admin/teacher)     |
 | GET    | `/performance`   | Admin/Teacher | Class-wide performance analytics      |
 | GET    | `/deadlines`     | Admin/Teacher | Upcoming assessment deadlines         |
 | GET    | `/trends`        | Admin/Teacher | Growth trends over time               |
+
+### 6.1 Teacher-specific dashboard endpoints
+
+Some implementations also expose teacher-focused endpoints (if present in the codebase), for example:
+
+| Method | Endpoint                | Auth    | Description                                      |
+|--------|-------------------------|---------|--------------------------------------------------|
+| GET    | `/teacher/stats`       | Teacher | KPIs for a single teacher (batches, students)    |
+| GET    | `/teacher/performance` | Teacher | Weekly performance data for teacher’s assessments|
 
 ---
 
@@ -149,4 +158,4 @@ All errors return the following JSON structure:
 
 ---
 
-*Generated from the NavKalpana codebase — Last updated: February 2026*
+*Generated from the Mind Rise codebase — Last updated: February 2026*
