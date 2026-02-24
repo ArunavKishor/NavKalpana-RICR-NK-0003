@@ -183,7 +183,7 @@ const TeacherAssessmentManagement = () => {
     <div className="space-y-8 pb-10">
       {/* Dynamic Header Section */}
       <section className="relative overflow-hidden group rounded-[2.5rem] bg-slate-950 px-6 py-10 sm:px-12 sm:py-16 shadow-2xl shadow-indigo-100/50">
-        <div className="absolute top-0 right-0 -mt-24 -mr-24 w-[32rem] h-[32rem] bg-linear-to-br from-indigo-500/20 via-purple-500/10 to-transparent rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
+        <div className="absolute top-0 right-0 -mt-24 -mr-24 w-lg h-128 bg-linear-to-br from-indigo-500/20 via-purple-500/10 to-transparent rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="space-y-4">
@@ -272,7 +272,7 @@ const TeacherAssessmentManagement = () => {
                 {/* Visual Type Indicator */}
                 <div className="flex-1 space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
-                    <Badge className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] border-none shadow-sm ${
+                    <Badge className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-none shadow-sm ${
                       assessment.status === "active" ? "bg-emerald-500 text-white" : "bg-warning-500 text-white"
                     }`}>
                       {assessment.status || "active"}
@@ -305,7 +305,7 @@ const TeacherAssessmentManagement = () => {
                 </div>
 
                 {/* Engagement Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-2 bg-slate-50 rounded-[2rem] border border-slate-100 lg:w-[450px]">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-2 bg-slate-50 rounded-[2rem] border border-slate-100 lg:w-112.5">
                    {[
                      { label: 'Submitted', value: assessment.submissions?.filter(s => s.status === 'submitted').length || 0, color: 'text-indigo-600' },
                      { label: 'Evaluation', value: assessment.submissions?.filter(s => s.status === 'pending').length || 0, color: 'text-orange-500' },
@@ -355,7 +355,7 @@ const TeacherAssessmentManagement = () => {
             
             <div className="space-y-2">
               <label className="text-xs font-black uppercase text-slate-400 tracking-widest">Procedural Instructions</label>
-              <Textarea required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Comprehensive details for students..." className="rounded-2xl border-slate-200 bg-slate-50/50 min-h-[120px] font-medium" />
+              <Textarea required value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Comprehensive details for students..." className="rounded-2xl border-slate-200 bg-slate-50/50 min-h-30 font-medium" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -388,9 +388,9 @@ const TeacherAssessmentManagement = () => {
 
       {/* Grade Hub Implementation */}
       <Dialog open={showEvaluation} onOpenChange={setShowEvaluation}>
-        <DialogContent className="max-w-[70rem] h-[90vh] p-0 border-none shadow-3xl rounded-[3rem] overflow-hidden flex flex-col sm:flex-row">
+        <DialogContent className="max-w-280 h-[90vh] p-0 border-none shadow-3xl rounded-[3rem] overflow-hidden flex flex-col sm:flex-row">
           {/* Left: Metadata & List */}
-          <div className="w-full sm:w-[400px] flex flex-col border-r border-slate-100 bg-slate-50/50">
+          <div className="w-full sm:w-100 flex flex-col border-r border-slate-100 bg-slate-50/50">
              <div className="p-8 bg-white border-b border-slate-100">
                 <h2 className="text-xl font-black text-slate-900 mb-1 truncate">{selectedAssessment?.title}</h2>
                 <div className="flex items-center gap-2">

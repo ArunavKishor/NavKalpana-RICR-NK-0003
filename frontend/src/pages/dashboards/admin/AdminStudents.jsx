@@ -230,8 +230,8 @@ const StudentManagement = () => {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-12 space-y-8">
       {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rose-100/20 blur-[120px] rounded-full -z-10" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-100/20 blur-[120px] rounded-full -z-10" />
+      <div className="absolute top-0 right-0 w-125 h-125 bg-rose-100/20 blur-[120px] rounded-full -z-10" />
+      <div className="absolute bottom-0 left-0 w-125 h-125 bg-indigo-100/20 blur-[120px] rounded-full -z-10" />
 
       {/* Header Section */}
       <div className="relative">

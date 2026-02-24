@@ -125,7 +125,7 @@ const QuizManagement = () => {
     <div className="space-y-10 pb-20">
       {/* High-Impact Header Section */}
       <section className="relative overflow-hidden group rounded-[2.5rem] bg-rose-600 px-6 py-10 sm:px-12 sm:py-16 shadow-2xl shadow-rose-200">
-        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-[36rem] h-[36rem] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none transition-transform group-hover:scale-110"></div>
+        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-xl h-144 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none transition-transform group-hover:scale-110"></div>
         
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
           <div className="space-y-6">
@@ -268,7 +268,7 @@ const QuizManagement = () => {
       {/* Quiz Preview Overlay */}
       <AnimatePresence>
         {previewQuiz && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-xl">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-xl">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
                         className="bg-white rounded-[4rem] shadow-4xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
                <div className="bg-slate-950 p-10 flex items-center justify-between">
@@ -318,7 +318,7 @@ const QuizManagement = () => {
       {/* Monitoring Hub Overlay */}
       <AnimatePresence>
         {monitorQuiz && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-xl">
+          <div className="fixed inset-0 z-100 flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-xl">
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
                         className="bg-white rounded-[4rem] shadow-4xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
                {/* Header */}
@@ -339,7 +339,7 @@ const QuizManagement = () => {
 
                <div className="flex-1 overflow-y-auto p-8 sm:p-12 bg-slate-50/50 space-y-12">
                   {monitorData.loading ? (
-                    <div className="h-[400px] flex flex-col items-center justify-center">
+                    <div className="h-100 flex flex-col items-center justify-center">
                        <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
                        <p className="font-black text-slate-400 uppercase tracking-widest text-[10px]">Accessing Secure Data Nodes...</p>
                     </div>
