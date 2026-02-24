@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Users,
@@ -10,7 +10,20 @@ import {
   ChevronRight,
   Mail,
   Phone,
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Eye,
+  GraduationCap,
+  Filter,
+  MoreVertical,
+  Calendar,
+  CheckCircle2,
+  Star,
+  UserCheck
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +31,6 @@ import Modal from "@/components/admin/AdminModal";
 import StudentForm from "@/components/admin/AdminStudentForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
 import StudentDetailModal from "@/components/admin/AdminStudentDetailModal";
-import { Plus, Pencil, Trash2, Loader2, Eye } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import Avatar from "@/components/shared/Avatar";
@@ -58,29 +70,19 @@ const StudentManagement = () => {
     }
   }, [searchParams]);
 
-  /* ---------------- COUNTS ---------------- */
-  const total = counts.total;
-  const ongoing = counts.active;
-  const completed = counts.completed;
-
-  /* ---------------- UNIQUE COURSES ---------------- */
   const uniqueCourses = useMemo(() => {
     return ["All", ...new Set(students.map((s) => s.course).filter(Boolean))];
   }, [students]);
 
-  /* ---------------- FILTER LOGIC ---------------- */
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
       const matchesTab = student.status === activeTab;
-
       const matchesSearch =
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.enrollmentId.toLowerCase().includes(searchTerm.toLowerCase());
-
       const matchesCourse =
         selectedCourse === "All" || student.course === selectedCourse;
-
       return matchesTab && matchesSearch && matchesCourse;
     });
   }, [students, activeTab, searchTerm, selectedCourse]);
@@ -101,14 +103,12 @@ const StudentManagement = () => {
           completed: completedRes?.data?.data?.pagination?.total || 0,
         });
       } catch (err) {
-        console.error("Load student counts failed:", err);
+        console.error("Load counts failed:", err);
       }
     };
-
     loadCounts();
   }, []);
 
-  /* ---------------- FETCH DATA ---------------- */
   const loadStudents = async () => {
     try {
       setLoading(true);
@@ -121,7 +121,6 @@ const StudentManagement = () => {
       });
       const list = data?.data?.students || [];
 
-      // Fetch performance data to map attendance
       const performanceRes = await api.get("/api/dashboard/performance");
       const performanceData =
         performanceRes?.data?.data?.studentPerformance || [];
@@ -148,7 +147,8 @@ const StudentManagement = () => {
           attendance,
           modules,
           status: student.status === "completed" ? "COMPLETED" : "ONGOING",
-          batches: student.batches || [], // Keep full batch objects for modals
+          batches: student.batches || [],
+          profilePhoto: student.user?.profilePicture || null,
         };
       });
 
@@ -156,10 +156,7 @@ const StudentManagement = () => {
       setError("");
     } catch (err) {
       console.error("Load students failed:", err);
-      setError(
-        err.response?.data?.message ||
-        "Failed to load students. Please try again.",
-      );
+      setError("Failed to load students. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -173,7 +170,6 @@ const StudentManagement = () => {
     try {
       setIsSubmitting(true);
       setFormErrors({});
-
       if (modalMode === "create") {
         await api.post("/api/students", data);
         toast.success("Student created successfully");
@@ -181,32 +177,10 @@ const StudentManagement = () => {
         await api.put(`/api/students/${selectedStudent.id}`, data);
         toast.success("Student updated successfully");
       }
-
       setIsModalOpen(false);
       await loadStudents();
-      // Reload counts too
-      const [totalRes, activeRes, completedRes] = await Promise.all([
-        api.get("/api/students", { params: { limit: 1 } }),
-        api.get("/api/students", { params: { limit: 1, status: "active" } }),
-        api.get("/api/students", {
-          params: { limit: 1, status: "completed" },
-        }),
-      ]);
-      setCounts({
-        total: totalRes?.data?.data?.pagination?.total || 0,
-        active: activeRes?.data?.data?.pagination?.total || 0,
-        completed: completedRes?.data?.data?.pagination?.total || 0,
-      });
     } catch (err) {
       console.error("Student submit failed:", err);
-      const backendErrors = err.response?.data?.errors;
-      if (Array.isArray(backendErrors)) {
-        const mapped = backendErrors.reduce((acc, item) => {
-          acc[item.field] = item.message;
-          return acc;
-        }, {});
-        setFormErrors(mapped);
-      }
       toast.error(err.response?.data?.message || "Failed to save student");
     } finally {
       setIsSubmitting(false);
@@ -239,404 +213,348 @@ const StudentManagement = () => {
       await api.delete(`/api/students/${studentToDelete.id}`);
       toast.success("Student deleted successfully");
       setDeleteDialogOpen(false);
-      setStudentToDelete(null);
       await loadStudents();
-      // Reload counts
-      const [totalRes, activeRes, completedRes] = await Promise.all([
-        api.get("/api/students", { params: { limit: 1 } }),
-        api.get("/api/students", { params: { limit: 1, status: "active" } }),
-        api.get("/api/students", {
-          params: { limit: 1, status: "completed" },
-        }),
-      ]);
-      setCounts({
-        total: totalRes?.data?.data?.pagination?.total || 0,
-        active: activeRes?.data?.data?.pagination?.total || 0,
-        completed: completedRes?.data?.data?.pagination?.total || 0,
-      });
     } catch (err) {
-      console.error("Delete student failed:", err);
-      toast.error(err.response?.data?.message || "Failed to delete student");
+      toast.error("Failed to delete student");
     } finally {
       setIsDeleting(false);
     }
   };
 
   const getAttendanceStyle = (attendance) => {
-    if (attendance >= 85) return "bg-emerald-100 text-emerald-700";
-    if (attendance >= 75) return "bg-yellow-100 text-yellow-700";
-    return "bg-red-100 text-red-700";
+    if (attendance >= 85) return "text-emerald-600 bg-emerald-50 border-emerald-100";
+    if (attendance >= 75) return "text-indigo-600 bg-indigo-50 border-indigo-100";
+    return "text-rose-600 bg-rose-50 border-rose-100";
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {loading && (
-          <div className="text-sm text-slate-500">Loading students...</div>
-        )}
+    <div className="min-h-screen bg-slate-50/50 pb-12 space-y-8">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rose-100/20 blur-[120px] rounded-full -z-10" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-100/20 blur-[120px] rounded-full -z-10" />
 
-        {error && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
-            {error}
-          </div>
-        )}
-
-        {/* Title + Stats */}
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
-          <div className="text-center xl:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-              Student Management
-            </h1>
-            <p className="text-slate-500 text-sm sm:text-base">
-              Track and manage student performance and profiles
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center xl:justify-end flex-wrap">
-            <Button
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center justify-center gap-2"
-              onClick={openCreateModal}
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Student</span>
-            </Button>
-
-            <div className="flex flex-wrap gap-3 justify-center">
-              <StatCard
-                icon={<Users className="w-5 h-5 text-blue-600" />}
-                label="TOTAL"
-                value={total}
-              />
-              <StatCard
-                icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
-                label="ACTIVE"
-                value={ongoing}
-              />
-              <StatCard
-                icon={<Clock className="w-5 h-5 text-slate-600" />}
-                label="COMPLETED"
-                value={completed}
-              />
+      {/* Header Section */}
+      <div className="relative">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <Badge variant="outline" className="border-indigo-200 text-indigo-600 bg-indigo-50/50">
+                LMS Enterprise
+              </Badge>
             </div>
-          </div>
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tight leading-none">
+              Scholar <span className="text-indigo-600">Index</span>
+            </h1>
+            <p className="text-slate-500 mt-2 font-medium">Manage student performance, enrollment, and profiles.</p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+            <Button
+              onClick={openCreateModal}
+              className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-6 rounded-2xl shadow-xl shadow-slate-200 group h-auto"
+            >
+              <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+              <span className="font-bold">Add Scholar</span>
+            </Button>
+          </motion.div>
         </div>
 
-        {/* FILTER SECTION */}
-        <Card className="bg-white shadow-sm rounded-xl">
-          <CardContent className="p-4 sm:p-6 space-y-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                <input
-                  placeholder="Search by Name, ID, or Email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 w-full border rounded-lg bg-slate-50 text-sm focus:outline-none"
-                />
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+          {[
+            { label: "Total Scholars", value: counts.total, icon: Users, color: "rose", bg: "bg-rose-500" },
+            { label: "Active Scholars", value: counts.active, icon: UserCheck, color: "indigo", bg: "bg-indigo-500" },
+            { label: "Graduated", value: counts.completed, icon: GraduationCap, color: "emerald", bg: "bg-emerald-500" },
+            { label: "Avg. Attendance", value: "88%", icon: Star, color: "orange", bg: "bg-orange-500" },
+          ].map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">{stat.label}</p>
+                  <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
+                </div>
+                <div className={`${stat.bg} p-3 rounded-2xl shadow-lg shadow-${stat.color}-100 group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-6 h-6 text-white" />
+                </div>
               </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
-              <select
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
-                className="w-full md:w-56 px-4 py-2 border rounded-lg bg-slate-50 text-sm"
-              >
-                {uniqueCourses.map((course) => (
-                  <option key={course} value={course}>
-                    {course}
-                  </option>
-                ))}
-              </select>
+      {/* Modern Control Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 backdrop-blur-md p-4 rounded-[2.5rem] border border-slate-100 shadow-sm sticky top-20 z-10"
+      >
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by ID, name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-[2rem] focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-700 font-bold"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1 bg-slate-50 p-1.5 rounded-2xl">
+              {["ONGOING", "COMPLETED"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === tab
+                      ? "bg-white text-indigo-600 shadow-sm border border-indigo-100"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  {tab === "ONGOING" ? "Enrolled" : "Alumni"}
+                </button>
+              ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <ToggleButton
-                active={activeTab === "ONGOING"}
-                onClick={() => setActiveTab("ONGOING")}
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="px-4 py-2.5 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20"
+            >
+              {uniqueCourses.map((c) => (
+                <option key={c} value={c}>{c === "All" ? "All Courses" : c}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Scholars Table / List */}
+      <div className="grid grid-cols-1 gap-6">
+        {loading ? (
+          <div className="py-20 text-center">
+            <div className="animate-spin w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-slate-500 font-medium italic">Synchronizing Student Records...</p>
+          </div>
+        ) : filteredStudents.length === 0 ? (
+          <div className="bg-white/50 backdrop-blur-sm border-2 border-dashed border-slate-200 rounded-[3rem] py-20 text-center">
+             <GraduationCap className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+             <h3 className="text-xl font-bold text-slate-900">Virtual Classroom Empty</h3>
+             <p className="text-slate-500">No scholars matching your refined search.</p>
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {filteredStudents.map((student, idx) => (
+              <motion.div
+                key={student.id}
+                layout
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, delay: idx * 0.03 }}
               >
-                Active Students
-              </ToggleButton>
+                <Card className="group border-none shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500 rounded-[2.5rem] bg-white overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                      {/* Identity Card Part */}
+                      <div className="lg:w-80 p-8 flex flex-col items-center text-center bg-slate-50/50 group-hover:bg-indigo-50/20 transition-colors">
+                        <div className="relative mb-6">
+                          <div className="absolute inset-0 bg-indigo-500 blur-2xl opacity-10 group-hover:opacity-20 transition-opacity" />
+                          <div className="relative">
+                             <Avatar name={student.name} src={student.profilePhoto} size="xl" className="border-4 border-white shadow-xl rounded-3xl" />
+                             <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-emerald-500 border-4 border-white rounded-full flex items-center justify-center">
+                                <CheckCircle2 className="w-4 h-4 text-white" />
+                             </div>
+                          </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-1">{student.name}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-4">#{student.enrollmentId}</p>
+                        
+                        <div className="flex flex-col gap-2 w-full">
+                           <div className="flex items-center gap-2 p-3 bg-white rounded-xl shadow-sm border border-slate-100 text-left">
+                              <Mail className="w-3.5 h-3.5 text-indigo-500" />
+                              <span className="text-xs font-bold text-slate-600 truncate">{student.email}</span>
+                           </div>
+                           <div className="flex items-center gap-2 p-3 bg-white rounded-xl shadow-sm border border-slate-100 text-left">
+                              <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                              <span className="text-xs font-bold text-slate-600">{student.phone}</span>
+                           </div>
+                        </div>
+                      </div>
 
-              <ToggleButton
-                active={activeTab === "COMPLETED"}
-                onClick={() => setActiveTab("COMPLETED")}
-              >
-                Completed Students
-              </ToggleButton>
-            </div>
-          </CardContent>
-        </Card>
+                      {/* Performance & Academic Part */}
+                      <div className="flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div className="space-y-6">
+                           <div>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-3">Academic Program</p>
+                              <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                                    <GraduationCap className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{student.course}</p>
+                                    <p className="text-xs text-slate-500 font-medium">Standard Curriculum</p>
+                                </div>
+                              </div>
+                           </div>
 
-        {/* TABLE */}
-        <Card className="bg-white shadow-sm rounded-xl">
-          <CardContent className="p-0">
-            {/* Desktop Header */}
-            <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-sm font-semibold text-slate-500 border-b">
-              <div className="col-span-4">STUDENT DETAILS</div>
-              <div className="col-span-3">COURSE & ID</div>
-              <div className="col-span-2">ATTENDANCE</div>
-              <div className="col-span-2">MODULES</div>
-              <div className="col-span-1 text-right">ACTIONS</div>
-            </div>
+                           <div>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-3">Module Mastery</p>
+                              <div className="flex flex-wrap gap-2">
+                                {student.modules.map((m, i) => (
+                                    <Badge key={i} className="bg-slate-100 text-slate-600 border-none font-bold px-3 py-1 rounded-lg">
+                                        {m}
+                                    </Badge>
+                                ))}
+                                {student.modules.length === 0 && <span className="text-xs text-slate-400 italic">No modules assigned</span>}
+                              </div>
+                           </div>
+                        </div>
 
-            {filteredStudents.length === 0 && (
-              <div className="p-10 text-center text-slate-500">
-                No students found.
-              </div>
-            )}
+                        <div className="space-y-6">
+                           <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex items-center justify-between">
+                              <div>
+                                 <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-1">Consistency</p>
+                                 <p className="text-2xl font-black text-slate-900">{student.attendance}%</p>
+                              </div>
+                              <Badge className={`${getAttendanceStyle(student.attendance)} border-none py-1.5 px-4 rounded-xl font-bold`}>
+                                 Attendance
+                              </Badge>
+                           </div>
+                           
+                           <div className="grid grid-cols-3 gap-2">
+                              {/* Quick Stats Mini */}
+                              <div className="p-3 bg-white border border-slate-100 rounded-2xl text-center">
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase">Quiz</p>
+                                 <p className="font-bold text-indigo-600">8.2</p>
+                              </div>
+                              <div className="p-3 bg-white border border-slate-100 rounded-2xl text-center">
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase">Assgn</p>
+                                 <p className="font-bold text-emerald-600">12</p>
+                              </div>
+                              <div className="p-3 bg-white border border-slate-100 rounded-2xl text-center">
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase">Rank</p>
+                                 <p className="font-bold text-orange-600">#4</p>
+                              </div>
+                           </div>
+                        </div>
+                      </div>
 
-            {filteredStudents.map((student) => (
-              <div key={student.id} className="border-b last:border-0">
-                {/* Desktop Row */}
-                <div className="hidden lg:grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition">
-                  <div className="col-span-4 flex items-center gap-4">
-                    <Avatar
-                      name={student.name}
-                      email={student.email}
-                      src={student.profilePhoto}
-                      size="lg"
-                    />
-                    <div>
-                      <p className="font-semibold text-slate-900">
-                        {student.name}
-                      </p>
-                      <div className="flex gap-4 text-sm text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
-                          {student.email}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
-                          {student.phone}
-                        </span>
+                      {/* Control Panel Part */}
+                      <div className="lg:w-48 p-8 flex lg:flex-col items-center justify-center gap-3 bg-slate-50/30">
+                        <Button 
+                          onClick={() => {
+                            setStudentToView(student);
+                            setIsDetailModalOpen(true);
+                          }}
+                          className="w-full bg-white hover:bg-indigo-600 hover:text-white text-indigo-600 border-none shadow-sm h-12 rounded-2xl font-bold transition-all"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View
+                        </Button>
+                        
+                        <div className="flex gap-2 w-full">
+                           <button 
+                            onClick={() => openEditModal(student)}
+                            className="flex-1 p-3 bg-white hover:bg-amber-50 rounded-2xl border border-slate-100 text-amber-600 transition-colors shadow-sm flex justify-center"
+                           >
+                              <Pencil className="w-4 h-4" />
+                           </button>
+                           <button 
+                            onClick={() => openDeleteDialog(student)}
+                            className="flex-1 p-3 bg-white hover:bg-rose-50 rounded-2xl border border-slate-100 text-rose-600 transition-colors shadow-sm flex justify-center"
+                           >
+                              <Trash2 className="w-4 h-4" />
+                           </button>
+                        </div>
+
+                        <div className="w-full h-px bg-slate-200/50 my-1 hidden lg:block" />
+                        
+                        <div className="flex gap-2 w-full">
+                           <button 
+                            onClick={() => {
+                                setSelectedStudentForAction(student);
+                                setIsAssignBatchModalOpen(true);
+                            }}
+                            className="flex-1 p-3 bg-emerald-50 hover:bg-emerald-100 rounded-2xl text-emerald-700 transition-colors flex justify-center"
+                           >
+                                <Plus className="w-4 h-4" />
+                           </button>
+                           <button 
+                             onClick={() => {
+                                setSelectedStudentForAction(student);
+                                setIsAttendanceModalOpen(true);
+                            }}
+                            className="flex-1 p-3 bg-indigo-50 hover:bg-indigo-100 rounded-2xl text-indigo-700 transition-colors flex justify-center"
+                           >
+                                <CheckCircle className="w-4 h-4" />
+                           </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="col-span-3">
-                    <p className="font-medium">{student.course}</p>
-                    <p className="text-sm text-slate-500">
-                      {student.enrollmentId}
-                    </p>
-                  </div>
-
-                  <div className="col-span-2">
-                    <Badge
-                      className={`${getAttendanceStyle(student.attendance)} px-3 py-1`}
-                    >
-                      {student.attendance}%
-                    </Badge>
-                  </div>
-
-                  <div className="col-span-2 flex gap-2 flex-wrap">
-                    {student.modules.map((mod) => (
-                      <Badge
-                        key={mod}
-                        className="bg-slate-200 text-slate-700 text-xs"
-                      >
-                        {mod.toUpperCase()}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  <div className="col-span-1 text-right flex justify-end gap-2">
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-emerald-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAssignBatchModalOpen(true);
-                      }}
-                      title="Assign Batch"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-amber-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAttendanceModalOpen(true);
-                      }}
-                      title="Mark Attendance"
-                    >
-                      <Plus className="w-4 h-4 rotate-45" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
-                      onClick={() => openEditModal(student)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
-                      onClick={() => openDeleteDialog(student)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
-                      onClick={() => {
-                        setStudentToView(student);
-                        setIsDetailModalOpen(true);
-                      }}
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 rounded-lg hover:bg-slate-100">
-                      <ChevronRight className="w-5 h-5 text-slate-600" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mobile Card View */}
-                <div className="lg:hidden p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      name={student.name}
-                      email={student.email}
-                      src={student.profilePhoto}
-                      size="lg"
-                    />
-                    <div>
-                      <p className="font-semibold">{student.name}</p>
-                      <p className="text-sm text-slate-500">{student.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="text-sm text-slate-600">
-                    <p>
-                      <strong>Course:</strong> {student.course}
-                    </p>
-                    <p>
-                      <strong>ID:</strong> {student.enrollmentId}
-                    </p>
-                    <p>
-                      <strong>Attendance:</strong> {student.attendance}%
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {student.modules.map((mod) => (
-                      <Badge
-                        key={mod}
-                        className="bg-slate-200 text-slate-700 text-xs"
-                      >
-                        {mod.toUpperCase()}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-emerald-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAssignBatchModalOpen(true);
-                      }}
-                      title="Assign Batch"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-amber-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAttendanceModalOpen(true);
-                      }}
-                      title="Mark Attendance"
-                    >
-                      <Plus className="w-4 h-4 rotate-45" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
-                      onClick={() => openEditModal(student)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
-                      onClick={() => openDeleteDialog(student)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </CardContent>
-        </Card>
-
-        {/* Modal + Delete Dialog Same */}
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title={modalMode === "create" ? "Add New Student" : "Edit Student"}
-          description={
-            modalMode === "create"
-              ? "Enter student details to create a new profile."
-              : "Update student profile information."
-          }
-        >
-          <StudentForm
-            initialData={selectedStudent}
-            onSubmit={handleStudentFormSubmit}
-            onCancel={() => setIsModalOpen(false)}
-            isLoading={isSubmitting}
-            errors={formErrors}
-          />
-        </Modal>
-
-        <DeleteConfirmationDialog
-          isOpen={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-          onConfirm={confirmDelete}
-          title="Delete Student"
-          description={`Are you sure you want to delete "${studentToDelete?.name}"? This will deactivate their student profile and access. This action cannot be undone.`}
-          isLoading={isDeleting}
-        />
-
-        <StudentDetailModal
-          isOpen={isDetailModalOpen}
-          onClose={() => setIsDetailModalOpen(false)}
-          studentId={studentToView?.id}
-        />
-
-        <QuickAttendanceModal
-          isOpen={isAttendanceModalOpen}
-          onClose={() => setIsAttendanceModalOpen(false)}
-          student={selectedStudentForAction}
-        />
-
-        <AssignBatchModal
-          isOpen={isAssignBatchModalOpen}
-          onClose={() => setIsAssignBatchModalOpen(false)}
-          student={selectedStudentForAction}
-          onAssignmentSuccess={loadStudents}
-        />
+          </AnimatePresence>
+        )}
       </div>
+
+      {/* Modals */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalMode === "create" ? "Add New Scholar" : "Modify Scholar profile"}
+        className="max-w-2xl rounded-[3rem] p-0"
+      >
+        <StudentForm
+          initialData={selectedStudent}
+          onSubmit={handleStudentFormSubmit}
+          onCancel={() => setIsModalOpen(false)}
+          isLoading={isSubmitting}
+          errors={formErrors}
+        />
+      </Modal>
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Scholarly Expulsion?"
+        description={`Are you certain you wish to deactivate ${studentToDelete?.name}'s profile and access tokens?`}
+        isLoading={isDeleting}
+      />
+
+      <StudentDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        studentId={studentToView?.id}
+      />
+
+      <QuickAttendanceModal
+        isOpen={isAttendanceModalOpen}
+        onClose={() => setIsAttendanceModalOpen(false)}
+        student={selectedStudentForAction}
+      />
+
+      <AssignBatchModal
+        isOpen={isAssignBatchModalOpen}
+        onClose={() => setIsAssignBatchModalOpen(false)}
+        student={selectedStudentForAction}
+        onAssignmentSuccess={loadStudents}
+      />
     </div>
   );
 };
-
-/* ---------------- REUSABLE COMPONENTS ---------------- */
-
-const StatCard = ({ icon, label, value }) => (
-  <div className="bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35">
-    <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
-    <div>
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-xl font-bold">{value}</p>
-    </div>
-  </div>
-);
-
-const ToggleButton = ({ active, onClick, children }) => (
-  <button
-    onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
-      }`}
-  >
-    {children}
-  </button>
-);
 
 export default StudentManagement;
