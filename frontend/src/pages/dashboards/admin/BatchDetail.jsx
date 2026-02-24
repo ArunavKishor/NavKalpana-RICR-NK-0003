@@ -14,6 +14,7 @@ import {
     Save,
     FileText,
     Loader2,
+    Download,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,6 +75,28 @@ const BatchDetail = () => {
             loadBatchData();
         }
     }, [batchId]);
+
+    const handleExportAttendance = async () => {
+        try {
+            const response = await api.get(`/api/attendance/export?batch=${batchId}`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `attendance_${batch?.name || batchId}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Attendance exported successfully");
+        } catch (err) {
+            console.error("Export failed:", err);
+            toast.error(err.response?.data?.message || "Failed to export attendance");
+        }
+    };
 
     const handleSaveContent = async () => {
         try {
@@ -360,7 +383,18 @@ const BatchDetail = () => {
                 <TabsContent value="view-attendance">
                     <Card>
                         <CardContent className="p-6">
-                            <h2 className="text-xl font-bold mb-6">Attendance logs</h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold">Attendance Logs</h2>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleExportAttendance}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export CSV
+                                </Button>
+                            </div>
                             {attendanceHistory.length === 0 ? (
                                 <div className="p-12 text-center text-slate-500">
                                     <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-20" />

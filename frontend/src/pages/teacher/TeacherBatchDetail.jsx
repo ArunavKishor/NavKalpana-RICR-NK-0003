@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Calendar, Users, BookOpen, Zap } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Users, BookOpen, Zap, Download } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,29 @@ const TeacherBatchDetail = () => {
       toast.error(err.response?.data?.message || "Failed to save attendance");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleExportAttendance = async () => {
+    try {
+      const response = await api.get(`/api/attendance/export?batch=${batchId}`, {
+        responseType: 'blob'
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_${batch?.name || batchId}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Attendance exported successfully");
+    } catch (err) {
+      console.error("Export failed:", err);
+      toast.error(err.response?.data?.message || "Failed to export attendance");
     }
   };
 
@@ -361,9 +384,20 @@ const TeacherBatchDetail = () => {
 
       {activeTab === "attendance-history" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h3 className="font-semibold text-slate-900 mb-4">
-            Attendance History
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-900">
+              Attendance History
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportAttendance}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+          </div>
           {attendanceHistory.length === 0 ? (
             <p className="text-slate-500 text-center py-8">
               No attendance records yet
