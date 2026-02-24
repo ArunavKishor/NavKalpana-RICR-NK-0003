@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import Avatar from "./shared/Avatar";
 
 const StudentProfileModal = ({ student, onClose }) => {
   const [activeTab, setActiveTab] = useState("COURSE");
@@ -20,9 +21,12 @@ const StudentProfileModal = ({ student, onClose }) => {
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b">
           <div className="flex gap-4 items-center">
-            <img
-              src="https://i.pravatar.cc/80?img=1"
-              className="w-20 h-20 rounded-xl"
+            <Avatar
+              name={student.fullname}
+              email={student.email}
+              src={student.profilePhoto}
+              size="xl"
+              className="rounded-xl"
             />
             <div>
               <div className="flex items-center gap-3">
@@ -58,17 +62,16 @@ const StudentProfileModal = ({ student, onClose }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-3 text-sm font-medium border-b-2 transition ${
-                  activeTab === tab
+                className={`pb-3 text-sm font-medium border-b-2 transition ${activeTab === tab
                     ? "border-blue-600 text-blue-600"
                     : "border-transparent text-slate-500"
-                }`}
+                  }`}
               >
                 {tab === "COURSE"
                   ? "Course Information"
                   : tab === "PROGRESS"
-                  ? "Progress"
-                  : "Attendance"}
+                    ? "Progress"
+                    : "Attendance"}
               </button>
             )
           )}

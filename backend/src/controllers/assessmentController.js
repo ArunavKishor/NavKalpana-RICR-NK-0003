@@ -37,20 +37,21 @@ export const createAssessment = async (req, res) => {
       type,
       submissionType,
       batch,
-      dueDate,
-      totalMarks,
-      status,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      totalMarks: totalMarks ? Number(totalMarks) : 0,
+      status: status || "published",
       pdfUrl: req.file ? req.file.path : "",
       createdBy: req.user._id,
     };
 
     // Add quiz-specific fields
     if (type === "quiz") {
-      if (questions && Array.isArray(questions)) {
-        assessmentData.questions = questions;
+      // Questions might be a string due to multipart form data
+      if (questions) {
+        assessmentData.questions = typeof questions === 'string' ? JSON.parse(questions) : questions;
       }
-      if (duration) assessmentData.duration = duration;
-      if (attemptLimit) assessmentData.attemptLimit = attemptLimit;
+      if (duration) assessmentData.duration = Number(duration);
+      if (attemptLimit) assessmentData.attemptLimit = Number(attemptLimit);
     }
 
     const assessment = await Assessment.create(assessmentData);
@@ -71,7 +72,10 @@ export const createAssessment = async (req, res) => {
       return res.status(409).json({ message: "Resource already exists" });
     }
     console.error("Create Assessment Error:", error);
-    res.status(500).json({ message: "Failed to create assessment" });
+    res.status(500).json({
+      message: "Failed to create assessment",
+      error: error.message
+    });
   }
 };
 
