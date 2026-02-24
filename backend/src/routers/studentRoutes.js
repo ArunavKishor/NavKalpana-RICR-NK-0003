@@ -12,7 +12,7 @@ import {
   updateStudentProfile,
   getStudentProgress,
   uploadProfilePhoto,
-  getStudentAttendance,
+  getStudentAttendance
 } from "../controllers/studentController.js";
 
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
@@ -54,13 +54,11 @@ router
   .put(updateStudent)
   .delete(deleteStudent);
 
-router.route("/:id/progress").get(getStudentProgress);
+router.route("/:id/progress")
+  .get(getStudentProgress);
 
-router.route("/:id/batches").get(getStudentBatches);
-
-router.route("/:id/enroll").post(enrollStudentInBatch);
-
-router.route("/:id/unenroll").post(unenrollStudentFromBatch);
+router.route("/:id/batches")
+  .get(getStudentBatches);
 
 router.route("/:id/progress").get(getStudentProgress);
 

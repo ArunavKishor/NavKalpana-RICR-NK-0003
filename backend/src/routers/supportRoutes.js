@@ -7,7 +7,6 @@ import {
   respondToSupportRequest,
   resolveSupportRequest,
   getSupportStatistics,
-  scheduleBackupClass,
 } from "../controllers/supportController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 
@@ -15,10 +14,10 @@ const router = express.Router();
 
 router.use(protect);
 
-router
-  .route("/")
-  .get(authorize("admin", "teacher"), getSupportRequests)
-  .post(authorize("student", "admin"), createSupportRequest);
+router.route("/").get(authorize("admin", "teacher"), getSupportRequests).post(
+  authorize("student", "admin"),
+  createSupportRequest,
+);
 router
   .route("/statistics")
   .get(authorize("admin", "teacher"), getSupportStatistics);
@@ -32,9 +31,5 @@ router
 router
   .route("/:id/resolve")
   .put(authorize("admin", "teacher"), resolveSupportRequest);
-
-router
-  .route("/:id/backup-class")
-  .post(authorize("admin", "teacher"), scheduleBackupClass);
 
 export default router;

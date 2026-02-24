@@ -21,9 +21,6 @@ import StudentDetailModal from "@/components/admin/AdminStudentDetailModal";
 import { Plus, Pencil, Trash2, Loader2, Eye } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
-import Avatar from "@/components/shared/Avatar";
-import AssignBatchModal from "@/components/admin/AssignBatchModal";
-import QuickAttendanceModal from "@/components/admin/QuickAttendanceModal";
 
 const StudentManagement = () => {
   const [searchParams] = useSearchParams();
@@ -46,12 +43,8 @@ const StudentManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedStudentForAction, setSelectedStudentForAction] = useState(null);
-  const [isAssignBatchModalOpen, setIsAssignBatchModalOpen] = useState(false);
-  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
-  const [studentToView, setStudentToView] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
+  const [studentToView, setStudentToView] = useState(null);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -409,11 +402,10 @@ const StudentManagement = () => {
                 <div className="hidden lg:grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition">
 
                   <div className="col-span-4 flex items-center gap-4">
-                    <Avatar
-                      name={student.name}
-                      email={student.email}
-                      src={student.profilePhoto} // Using profilePhoto which might be available in student object
-                      size="lg"
+                    <img
+                      src={`https://i.pravatar.cc/50?u=${student.email}`}
+                      alt={student.name}
+                      className="w-12 h-12 rounded-full"
                     />
                     <div>
                       <p className="font-semibold text-slate-900">
@@ -458,26 +450,6 @@ const StudentManagement = () => {
 
                   <div className="col-span-1 text-right flex justify-end gap-2">
                     <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-emerald-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAssignBatchModalOpen(true);
-                      }}
-                      title="Assign Batch"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-amber-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAttendanceModalOpen(true);
-                      }}
-                      title="Mark Attendance"
-                    >
-                      <Plus className="w-4 h-4 rotate-45" />
-                    </button>
-                    <button
                       className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
                       onClick={() => openEditModal(student)}
                     >
@@ -516,11 +488,10 @@ const StudentManagement = () => {
                 <div className="lg:hidden p-4 space-y-3">
 
                   <div className="flex items-center gap-3">
-                    <Avatar
-                      name={student.name}
-                      email={student.email}
-                      src={student.profilePhoto}
-                      size="lg"
+                    <img
+                      src={`https://i.pravatar.cc/50?u=${student.email}`}
+                      alt={student.name}
+                      className="w-12 h-12 rounded-full"
                     />
                     <div>
                       <p className="font-semibold">{student.name}</p>
@@ -546,26 +517,6 @@ const StudentManagement = () => {
                   </div>
 
                   <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-emerald-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAssignBatchModalOpen(true);
-                      }}
-                      title="Assign Batch"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-amber-600"
-                      onClick={() => {
-                        setSelectedStudentForAction(student);
-                        setIsAttendanceModalOpen(true);
-                      }}
-                      title="Mark Attendance"
-                    >
-                      <Plus className="w-4 h-4 rotate-45" />
-                    </button>
                     <button
                       className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
                       onClick={() => openEditModal(student)}
@@ -623,18 +574,6 @@ const StudentManagement = () => {
           studentId={studentToView?.id}
         />
       </div>
-      <QuickAttendanceModal
-        isOpen={isAttendanceModalOpen}
-        onClose={() => setIsAttendanceModalOpen(false)}
-        student={selectedStudentForAction}
-      />
-
-      <AssignBatchModal
-        isOpen={isAssignBatchModalOpen}
-        onClose={() => setIsAssignBatchModalOpen(false)}
-        student={selectedStudentForAction}
-        onAssignmentSuccess={loadStudents}
-      />
     </div>
   );
 };

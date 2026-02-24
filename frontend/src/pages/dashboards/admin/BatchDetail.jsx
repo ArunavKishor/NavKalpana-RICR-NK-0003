@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
-import Avatar from "@/components/shared/Avatar";
 
 const BatchDetail = () => {
     const { batchId } = useParams();
@@ -275,11 +274,10 @@ const BatchDetail = () => {
                                     return (
                                         <div key={s._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
                                             <div className="flex items-center gap-3">
-                                                <Avatar
-                                                    name={s.user?.fullName}
-                                                    email={s.user?.email}
-                                                    src={s.profilePhoto}
-                                                    size="sm"
+                                                <img
+                                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.user?.fullName)}&background=random`}
+                                                    className="w-10 h-10 rounded-full"
+                                                    alt=""
                                                 />
                                                 <div>
                                                     <p className="font-semibold">{s.user?.fullName}</p>
@@ -416,11 +414,10 @@ const BatchDetail = () => {
                                 {students.map((s) => (
                                     <div key={s._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
                                         <div className="flex items-center gap-3">
-                                            <Avatar
-                                                name={s.user?.fullName}
-                                                email={s.user?.email}
-                                                src={s.profilePhoto}
-                                                size="sm"
+                                            <img
+                                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.user?.fullName)}&background=random`}
+                                                className="w-10 h-10 rounded-full"
+                                                alt=""
                                             />
                                             <p className="font-semibold">{s.user?.fullName}</p>
                                         </div>

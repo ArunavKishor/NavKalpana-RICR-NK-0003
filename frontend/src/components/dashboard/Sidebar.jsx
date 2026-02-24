@@ -5,7 +5,7 @@ import {
   Users,
   FileText,
   GraduationCap,
-  LifeBuoy,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -13,101 +13,151 @@ import { cn } from "@/lib/utils";
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
   { icon: Users, label: "Batch Management", href: "/admin/batches" },
-  { icon: FileText, label: "Assessment Management", href: "/admin/assessments" },
-  { icon: GraduationCap, label: "Student Management", href: "/admin/students" },
-  { icon: Users, label: "Teacher Management", href: "/admin/teachers" },
+  { icon: FileText, label: "Assessments", href: "/admin/assessments" },
+  { icon: GraduationCap, label: "Students", href: "/admin/students" },
+  { icon: Users, label: "Teachers", href: "/admin/teachers" },
 ];
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation();
 
   return (
-    <motion.div
-      initial={{ x: -100 }}
-      animate={{ x: isOpen ? 0 : -260 }}
-      transition={{ duration: 0.3 }}
+    <motion.aside
+      initial={false}
+      animate={{ x: isOpen ? 0 : -285 }}
+      transition={{
+        type: "spring",
+        stiffness: 110,
+        damping: 18,
+        mass: 0.8,
+      }}
       className={cn(
-        "fixed top-0 left-0 z-50 h-screen bg-white text-slate-800 flex flex-col",
-        "border-r border-slate-200 shadow-sm",
-        "w-64 sm:w-64",
-        "overflow-y-auto",
-        "transition-all duration-300"
+        "fixed top-3 left-3 z-50 h-[calc(100vh-24px)] w-64 rounded-3xl",
+        "bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden"
       )}
     >
-      {/* Logo */}
-      <div className="h-16 sm:h-20 px-4 sm:px-5 flex items-center border-b border-slate-100">
+      {/* LOGO */}
+      <div className="h-20 px-5 flex items-center border-b border-slate-100">
         <motion.div
-          whileHover={{ scale: 1.04 }}
-          className="flex items-center gap-3 group cursor-pointer"
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center gap-3 cursor-pointer"
         >
           <motion.div
-            animate={{ y: [0, -2, 0] }}
-            transition={{ repeat: Infinity, duration: 3 }}
-            className="relative"
+            whileHover={{ rotate: -5 }}
+            transition={{ type: "spring", stiffness: 200, damping: 10 }}
+            className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-sm"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 blur-lg opacity-40 group-hover:opacity-80 transition duration-300"></div>
-
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-              <GraduationCap className="text-white w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+            <GraduationCap className="text-white w-5 h-5" />
           </motion.div>
 
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm sm:text-base font-semibold text-slate-900 tracking-wide">
+          <div className="leading-tight">
+            <p className="font-semibold text-slate-900 tracking-wide">
               MindRise
-            </span>
-            <span className="text-xs text-slate-400">
+            </p>
+            <p className="text-xs text-slate-500">
               Admin Panel
-            </span>
+            </p>
           </div>
         </motion.div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-2 sm:px-3 py-4 sm:py-6 space-y-1">
+      {/* NAVIGATION */}
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {sidebarItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.href);
+          const isActive =
+            item.href === "/admin/dashboard"
+              ? location.pathname === item.href
+              : location.pathname.startsWith(item.href);
 
           return (
             <motion.div
               key={item.href}
-              whileHover={{ x: 4 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              whileHover={{ x: 3 }}
+              transition={{ type: "tween", duration: 0.18 }}
             >
               <Link
                 to={item.href}
                 className={cn(
-                  "relative flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all duration-200 group font-medium",
-                  isActive
-                    ? "bg-slate-900 text-white shadow-md"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                  "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium",
+                  "transition-colors duration-200 group"
                 )}
               >
+                {/* Active Background */}
                 {isActive && (
                   <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-r-lg"
+                    layoutId="adminSidebarActive"
+                    className="absolute inset-0 rounded-xl bg-indigo-600"
+                    transition={{
+                      type: "spring",
+                      stiffness: 120,
+                      damping: 20,
+                    }}
                   />
                 )}
 
-                <item.icon
+                {/* Icon Container */}
+                <div
                   className={cn(
-                    "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
+                    "relative z-10 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
                     isActive
-                      ? "text-white"
-                      : "text-slate-400 group-hover:text-slate-900"
+                      ? "bg-white/20"
+                      : "bg-slate-100 group-hover:bg-slate-200"
                   )}
-                />
+                >
+                  <item.icon
+                    className={cn(
+                      "w-4 h-4 transition-colors duration-200",
+                      isActive ? "text-white" : "text-slate-500"
+                    )}
+                  />
+                </div>
 
-                <span className="text-sm truncate">
+                {/* Label */}
+                <span
+                  className={cn(
+                    "relative z-10 flex-1 transition-colors duration-200",
+                    isActive ? "text-white" : "text-slate-700"
+                  )}
+                >
                   {item.label}
                 </span>
+
+                {/* Arrow Animation */}
+                <ChevronRight
+                  className={cn(
+                    "relative z-10 w-4 h-4 transition-all duration-200",
+                    isActive
+                      ? "text-white opacity-100"
+                      : "text-slate-400 opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0"
+                  )}
+                />
               </Link>
             </motion.div>
           );
         })}
       </nav>
-    </motion.div>
+
+      {/* FOOTER */}
+      <div className="p-4 border-t border-slate-100">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-xl bg-slate-50 p-3 cursor-pointer"
+        >
+          <p className="text-xs font-medium text-slate-700">
+            System Status
+          </p>
+
+          <div className="flex items-center gap-2 mt-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs text-slate-500">
+              All services operational
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    </motion.aside>
   );
 };
 

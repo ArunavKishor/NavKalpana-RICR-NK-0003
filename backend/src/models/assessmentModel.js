@@ -1,34 +1,5 @@
 import mongoose from "mongoose";
 
-const questionSchema = new mongoose.Schema(
-  {
-    question: {
-      type: String,
-      required: [true, "Question text is required"],
-      trim: true,
-    },
-    options: {
-      type: [String],
-      validate: {
-        validator: (v) => v.length === 4,
-        message: "Each question must have exactly 4 options",
-      },
-    },
-    correctAnswer: {
-      type: Number,
-      required: [true, "Correct answer index is required"],
-      min: 0,
-      max: 3,
-    },
-    explanation: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-  },
-  { _id: true },
-);
-
 const assessmentSchema = new mongoose.Schema(
   {
     title: {
@@ -53,8 +24,8 @@ const assessmentSchema = new mongoose.Schema(
     },
     submissionType: {
       type: String,
-      enum: ["PDF", "Image", "JPG", "Video", "Text", "Any"],
-      default: "PDF",
+      enum: ["PDF", "Image", "JPG", "Any"],
+      default: "Any",
     },
     batch: {
       type: mongoose.Schema.Types.ObjectId,
@@ -91,19 +62,10 @@ const assessmentSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    // Quiz-specific fields
-    questions: [questionSchema],
-    duration: {
-      type: Number,
-      min: [1, "Duration must be at least 1 minute"],
-      max: [300, "Duration must not exceed 300 minutes"],
-      default: 30,
-    },
-    attemptLimit: {
-      type: Number,
-      min: [1, "Attempt limit must be at least 1"],
-      max: [10, "Attempt limit must not exceed 10"],
-      default: 1,
+    submissionType: {
+      type: String,
+      enum: ["PDF", "Image", "JPG", "Video", "Text"],
+      default: "PDF",
     },
   },
   {
