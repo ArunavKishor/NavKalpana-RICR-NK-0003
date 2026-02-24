@@ -35,12 +35,23 @@ const AssessmentManagement = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState(null);
+  const [batches, setBatches] = useState([]);
 
   const filteredData = activeTab === "assignments" ? assignments : quizzes;
 
   useEffect(() => {
     loadAssessments();
+    loadBatches();
   }, []);
+
+  const loadBatches = async () => {
+    try {
+      const res = await api.get("/api/batches");
+      setBatches(res.data?.data?.batches || []);
+    } catch (err) {
+      console.error("Failed to load batches:", err);
+    }
+  };
 
   const loadAssessments = async () => {
     try {
@@ -92,6 +103,38 @@ const AssessmentManagement = () => {
     }
   };
 
+  const handleAssessmentSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      const formDataToSend = new FormData();
+
+      Object.keys(data).forEach((key) => {
+        if (key === "pdfFile") {
+          if (data.pdfFile) formDataToSend.append("pdf", data.pdfFile);
+        } else if (key === "questions") {
+          formDataToSend.append(key, JSON.stringify(data[key]));
+        } else if (data[key] !== undefined && data[key] !== null) {
+          formDataToSend.append(key, data[key]);
+        }
+      });
+
+      if (modalMode === "create") {
+        await api.post("/api/assessments", formDataToSend);
+        toast.success("Assessment created successfully");
+      } else {
+        await api.put(`/api/assessments/${selectedAssessment._id}`, formDataToSend);
+        toast.success("Assessment updated successfully");
+      }
+
+      setIsModalOpen(false);
+      loadAssessments();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save assessment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "published":
@@ -131,21 +174,19 @@ const AssessmentManagement = () => {
         <div className="flex bg-white border rounded-lg p-1 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab("assignments")}
-            className={`flex-1 px-4 py-2 rounded-md text-sm ${
-              activeTab === "assignments"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600"
-            }`}
+            className={`flex-1 px-4 py-2 rounded-md text-sm ${activeTab === "assignments"
+              ? "bg-blue-50 text-blue-600"
+              : "text-slate-600"
+              }`}
           >
             Assignments
           </button>
           <button
             onClick={() => setActiveTab("quizzes")}
-            className={`flex-1 px-4 py-2 rounded-md text-sm ${
-              activeTab === "quizzes"
-                ? "bg-blue-50 text-blue-600"
-                : "text-slate-600"
-            }`}
+            className={`flex-1 px-4 py-2 rounded-md text-sm ${activeTab === "quizzes"
+              ? "bg-blue-50 text-blue-600"
+              : "text-slate-600"
+              }`}
           >
             Quizzes
           </button>
@@ -269,7 +310,10 @@ const AssessmentManagement = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <AssessmentForm
           initialData={selectedAssessment}
+          onSubmit={handleAssessmentSubmit}
+          onCancel={() => setIsModalOpen(false)}
           isLoading={isSubmitting}
+          batches={batches}
         />
       </Modal>
 

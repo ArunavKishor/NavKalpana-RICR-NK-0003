@@ -273,8 +273,8 @@ const BatchManagement = () => {
               key={filter}
               onClick={() => setActiveFilter(filter)}
               className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${activeFilter === filter
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                ? "bg-blue-600 text-white"
+                : "text-slate-600 hover:bg-slate-100"
                 }`}
             >
               {filter}
@@ -303,12 +303,18 @@ const BatchManagement = () => {
             className="shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full"
           >
             {/* Image */}
-            <div className="relative h-40 xs:h-44 sm:h-48 md:h-52 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085"
-                alt={batch.name}
-                className="w-full h-full object-cover hover:scale-105 transition duration-300"
-              />
+            <div className="relative h-40 xs:h-44 sm:h-48 md:h-52 overflow-hidden bg-slate-100">
+              {batch.image ? (
+                <img
+                  src={batch.image}
+                  alt={batch.name}
+                  className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                  <BookOpen className="w-12 h-12" />
+                </div>
+              )}
               <div className="absolute top-3 right-3">
                 <Badge
                   className={`${getStatusColor(batch.status?.toUpperCase())} border text-xs`}
