@@ -9,19 +9,36 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, User, Mail, Phone, Calendar, BookOpen, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    Loader2, Mail, Phone, Calendar, BookOpen,
+    Clock, CheckCircle2, XCircle, Plus, Trash2,
+} from "lucide-react";
 import api from "@/config/Api";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
 
 const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
     const [student, setStudent] = useState(null);
     const [attendanceSummary, setAttendanceSummary] = useState([]);
     const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [availableBatches, setAvailableBatches] = useState([]);
+    const [selectedBatchId, setSelectedBatchId] = useState(null);
+    const [isAssigning, setIsAssigning] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false);
 
     useEffect(() => {
         if (isOpen && studentId) {
             fetchStudentDetails();
+            fetchAvailableBatches();
         }
     }, [isOpen, studentId]);
 
@@ -31,12 +48,12 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
             const [studentRes, summaryRes, historyRes] = await Promise.all([
                 api.get(`/api/students/${studentId}`),
                 api.get(`/api/attendance/student/${studentId}`),
-                api.get(`/api/attendance?student=${studentId}&limit=50`)
+                api.get(`/api/attendance?student=${studentId}&limit=50`),
             ]);
 
             setStudent(studentRes.data.data);
-            setAttendanceSummary(summaryRes.data.data.summaries);
-            setAttendanceHistory(historyRes.data.data.attendance);
+            setAttendanceSummary(summaryRes.data.data.summaries || []);
+            setAttendanceHistory(historyRes.data.data.records || []);
         } catch (error) {
             console.error("Failed to fetch student details:", error);
         } finally {
@@ -44,144 +61,283 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
         }
     };
 
+    const fetchAvailableBatches = async () => {
+        try {
+            const { data } = await api.get("/api/batches");
+            setAvailableBatches(data?.data?.batches || []);
+        } catch (error) {
+            console.error("Failed to fetch batches:", error);
+        }
+    };
+
+    const handleAssignBatch = async () => {
+        if (!selectedBatchId || selectedBatchId === "placeholder") {
+            toast.error("Please select a batch");
+            return;
+        }
+
+        // Check if already enrolled
+        const isAlreadyEnrolled = student?.batches?.some(
+            (b) => b._id === selectedBatchId
+        );
+        if (isAlreadyEnrolled) {
+            toast.error("Student is already enrolled in this batch");
+            return;
+        }
+
+        try {
+            setIsAssigning(true);
+            await api.post(`/api/students/${studentId}/enroll`, {
+                batchId: selectedBatchId,
+            });
+            toast.success("Student assigned to batch successfully");
+            setSelectedBatchId(null);
+            await fetchStudentDetails();
+        } catch (error) {
+            console.error("Failed to assign batch:", error);
+            toast.error(error.response?.data?.message || "Failed to assign batch");
+        } finally {
+            setIsAssigning(false);
+        }
+    };
+
+    const handleRemoveBatch = async (batchId) => {
+        try {
+            setIsRemoving(batchId);
+            await api.post(`/api/students/${studentId}/unenroll`, {
+                batchId: batchId,
+            });
+            toast.success("Student removed from batch successfully");
+            await fetchStudentDetails();
+        } catch (error) {
+            console.error("Failed to remove batch:", error);
+            toast.error(error.response?.data?.message || "Failed to remove batch");
+        } finally {
+            setIsRemoving(null);
+        }
+    };
+
+    // Filter out already enrolled batches from available options
+    const enrolledBatchIds = student?.batches?.map((b) => b._id) || [];
+    const unenrolledBatches = availableBatches.filter(
+        (b) => !enrolledBatchIds.includes(b._id)
+    );
+
     if (!isOpen) return null;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 bg-zinc-950 border-zinc-800 text-zinc-100">
-                <DialogHeader className="p-6 border-b border-zinc-800">
-                    <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                        {student?.user?.fullName || "Student Details"}
+            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 bg-white border border-slate-200 text-slate-900">
+                {/* Header */}
+                <DialogHeader className="p-6 border-b border-slate-200 bg-slate-50 rounded-t-xl">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg">
+                            {student?.user?.fullName?.[0] || "S"}
+                        </div>
+                        <div>
+                            <DialogTitle className="text-xl font-bold text-slate-900">
+                                {student?.user?.fullName || "Student Details"}
+                            </DialogTitle>
+                            <p className="text-sm text-slate-500 mt-0.5">
+                                {student?.enrollmentId || "—"}
+                            </p>
+                        </div>
                         {student?.status && (
-                            <Badge variant={student.status === 'active' ? 'default' : 'secondary'} className="uppercase text-xs">
+                            <Badge
+                                className={`ml-auto uppercase text-xs ${student.status === "active"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-slate-100 text-slate-600"
+                                    }`}
+                            >
                                 {student.status}
                             </Badge>
                         )}
-                    </DialogTitle>
+                    </div>
                 </DialogHeader>
 
                 {loading ? (
                     <div className="flex-1 flex items-center justify-center p-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                     </div>
                 ) : (
                     <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden">
-                        <div className="px-6 pt-4 border-b border-zinc-800">
+                        {/* Tab Nav */}
+                        <div className="px-6 border-b border-slate-200 bg-white">
                             <TabsList className="bg-transparent w-full justify-start gap-6 p-0 h-auto">
-                                <TabsTrigger
-                                    value="overview"
-                                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-500 rounded-none px-0 pb-3 text-zinc-400 data-[state=active]:text-indigo-400"
-                                >
-                                    Overview
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="progress"
-                                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-500 rounded-none px-0 pb-3 text-zinc-400 data-[state=active]:text-indigo-400"
-                                >
-                                    Progress
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="attendance"
-                                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-500 rounded-none px-0 pb-3 text-zinc-400 data-[state=active]:text-indigo-400"
-                                >
-                                    Attendance
-                                </TabsTrigger>
+                                {["overview", "progress", "attendance"].map((tab) => (
+                                    <TabsTrigger
+                                        key={tab}
+                                        value={tab}
+                                        className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none px-0 pb-3 pt-3 text-slate-500 data-[state=active]:text-blue-600 capitalize font-medium text-sm"
+                                    >
+                                        {tab}
+                                    </TabsTrigger>
+                                ))}
                             </TabsList>
                         </div>
 
-                        <ScrollArea className="flex-1 bg-black/20">
-                            <div className="p-6">
-                                <TabsContent value="overview" className="mt-0 space-y-6">
-                                    {/* Key Info Cards */}
+                        <ScrollArea className="flex-1 bg-slate-50">
+                            <div className="p-6 space-y-4">
+
+                                {/* OVERVIEW TAB */}
+                                <TabsContent value="overview" className="mt-0 space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <Card className="bg-zinc-900 border-zinc-800">
+                                        <Card className="bg-white border border-slate-200 shadow-sm">
                                             <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm font-medium text-zinc-400">Contact Information</CardTitle>
+                                                <CardTitle className="text-sm font-semibold text-slate-500">Contact Information</CardTitle>
                                             </CardHeader>
                                             <CardContent className="space-y-3">
-                                                <div className="flex items-center gap-3 text-sm">
-                                                    <Mail className="h-4 w-4 text-indigo-500" />
-                                                    <span>{student?.user?.email}</span>
+                                                <div className="flex items-center gap-3 text-sm text-slate-700">
+                                                    <Mail className="h-4 w-4 text-blue-500" />
+                                                    <span>{student?.user?.email || "N/A"}</span>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-sm">
-                                                    <Phone className="h-4 w-4 text-indigo-500" />
+                                                <div className="flex items-center gap-3 text-sm text-slate-700">
+                                                    <Phone className="h-4 w-4 text-blue-500" />
                                                     <span>{student?.phone || "N/A"}</span>
                                                 </div>
                                             </CardContent>
                                         </Card>
 
-                                        <Card className="bg-zinc-900 border-zinc-800">
+                                        <Card className="bg-white border border-slate-200 shadow-sm">
                                             <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm font-medium text-zinc-400">Enrollment Details</CardTitle>
+                                                <CardTitle className="text-sm font-semibold text-slate-500">Enrollment Details</CardTitle>
                                             </CardHeader>
                                             <CardContent className="space-y-3">
-                                                <div className="flex items-center gap-3 text-sm">
-                                                    <Calendar className="h-4 w-4 text-indigo-500" />
-                                                    <span>Enrolled: {student?.enrollmentDate ? format(new Date(student.enrollmentDate), "PPP") : "N/A"}</span>
+                                                <div className="flex items-center gap-3 text-sm text-slate-700">
+                                                    <Calendar className="h-4 w-4 text-blue-500" />
+                                                    <span>
+                                                        Enrolled:{" "}
+                                                        {student?.enrollmentDate
+                                                            ? format(new Date(student.enrollmentDate), "PPP")
+                                                            : "N/A"}
+                                                    </span>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-sm">
-                                                    <BookOpen className="h-4 w-4 text-indigo-500" />
+                                                <div className="flex items-center gap-3 text-sm text-slate-700">
+                                                    <BookOpen className="h-4 w-4 text-blue-500" />
                                                     <span>Active Batches: {student?.batches?.length || 0}</span>
                                                 </div>
                                             </CardContent>
                                         </Card>
                                     </div>
 
-                                    {/* Batches List */}
+                                    {/* Batches */}
                                     <div>
-                                        <h3 className="text-lg font-semibold mb-3 text-zinc-100">Enrolled Batches</h3>
-                                        <div className="space-y-3">
+                                        <h3 className="text-sm font-semibold text-slate-700 mb-3">Enrolled Batches</h3>
+                                        <div className="space-y-2">
                                             {student?.batches?.map((batch) => (
-                                                <div key={batch._id} className="flex items-center justify-between p-4 rounded-lg bg-zinc-900 border border-zinc-800">
+                                                <div
+                                                    key={batch._id}
+                                                    className="flex items-center justify-between p-4 rounded-lg bg-white border border-slate-200"
+                                                >
                                                     <div>
-                                                        <p className="font-medium text-zinc-100">{batch.name}</p>
-                                                        <p className="text-sm text-zinc-400">{batch.course}</p>
+                                                        <p className="font-medium text-slate-900">{batch.name}</p>
+                                                        <p className="text-xs text-slate-500">{batch.course}</p>
                                                     </div>
-                                                    <Badge variant="outline" className="border-zinc-700 text-zinc-400">
-                                                        {batch.status}
-                                                    </Badge>
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge className="bg-slate-100 text-slate-600 capitalize">
+                                                            {batch.status}
+                                                        </Badge>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="text-red-600 hover:bg-red-50 h-8 w-8 p-0"
+                                                            onClick={() => handleRemoveBatch(batch._id)}
+                                                            disabled={isRemoving === batch._id}
+                                                        >
+                                                            {isRemoving === batch._id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <Trash2 className="h-4 w-4" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ))}
                                             {(!student?.batches || student.batches.length === 0) && (
-                                                <p className="text-zinc-500 text-sm italic">Not enrolled in any batches.</p>
+                                                <p className="text-slate-400 text-sm italic">Not enrolled in any batches.</p>
                                             )}
+                                        </div>
+                                    </div>
+
+                                    {/* Assign New Batch */}
+                                    <div className="mt-6 pt-6 border-t border-slate-200">
+                                        <h3 className="text-sm font-semibold text-slate-700 mb-3">Assign to Batch</h3>
+                                        <div className="flex gap-3">
+                                            <Select
+                                                value={selectedBatchId}
+                                                onValueChange={setSelectedBatchId}
+                                            >
+                                                <SelectTrigger className="flex-1">
+                                                    <SelectValue placeholder="Select a batch to assign" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {unenrolledBatches.length === 0 ? (
+                                                        <SelectItem value="placeholder" disabled>
+                                                            No available batches
+                                                        </SelectItem>
+                                                    ) : (
+                                                        unenrolledBatches.map((batch) => (
+                                                            <SelectItem key={batch._id} value={batch._id}>
+                                                                {batch.name} ({batch.course})
+                                                            </SelectItem>
+                                                        ))
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                onClick={handleAssignBatch}
+                                                disabled={!selectedBatchId || selectedBatchId === "placeholder" || isAssigning}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                            >
+                                                {isAssigning ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <Plus className="h-4 w-4 mr-1" />
+                                                        Assign
+                                                    </>
+                                                )}
+                                            </Button>
                                         </div>
                                     </div>
                                 </TabsContent>
 
+                                {/* PROGRESS TAB */}
                                 <TabsContent value="progress" className="mt-0">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {attendanceSummary.map((summary) => (
-                                            <Card key={summary.batch._id} className="bg-zinc-900 border-zinc-800">
+                                            <Card key={summary.batch._id} className="bg-white border border-slate-200 shadow-sm">
                                                 <CardHeader className="pb-2">
-                                                    <CardTitle className="text-base font-semibold text-zinc-100">{summary.batch.name}</CardTitle>
+                                                    <CardTitle className="text-base font-semibold text-slate-800">
+                                                        {summary.batch.name}
+                                                    </CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
                                                     <div className="space-y-4">
                                                         <div>
                                                             <div className="flex justify-between text-sm mb-1">
-                                                                <span className="text-zinc-400">Attendance Rate</span>
-                                                                <span className="font-medium text-indigo-400">{summary.percentage}%</span>
+                                                                <span className="text-slate-500">Attendance Rate</span>
+                                                                <span className="font-semibold text-blue-600">{summary.percentage}%</span>
                                                             </div>
-                                                            <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+                                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                                                                 <div
-                                                                    className="h-full bg-indigo-500"
+                                                                    className="h-full bg-blue-500 rounded-full transition-all"
                                                                     style={{ width: `${summary.percentage}%` }}
                                                                 />
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                                                            <div className="bg-zinc-950/50 p-2 rounded">
-                                                                <div className="font-semibold text-zinc-300">{summary.totalSessions}</div>
-                                                                <div className="text-zinc-500">Total</div>
+                                                            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                                                <div className="font-bold text-slate-700">{summary.totalSessions}</div>
+                                                                <div className="text-slate-400">Total</div>
                                                             </div>
-                                                            <div className="bg-zinc-950/50 p-2 rounded">
-                                                                <div className="font-semibold text-green-400">{summary.presentCount}</div>
-                                                                <div className="text-zinc-500">Present</div>
+                                                            <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                                                                <div className="font-bold text-emerald-600">{summary.presentCount}</div>
+                                                                <div className="text-slate-400">Present</div>
                                                             </div>
-                                                            <div className="bg-zinc-950/50 p-2 rounded">
-                                                                <div className="font-semibold text-yellow-500">{summary.lateCount}</div>
-                                                                <div className="text-zinc-500">Late</div>
+                                                            <div className="bg-yellow-50 p-2 rounded-lg border border-yellow-100">
+                                                                <div className="font-bold text-yellow-600">{summary.lateCount}</div>
+                                                                <div className="text-slate-400">Late</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -189,46 +345,55 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                                             </Card>
                                         ))}
                                         {attendanceSummary.length === 0 && (
-                                            <div className="col-span-full py-8 text-center text-zinc-500">
+                                            <div className="col-span-full py-10 text-center text-slate-400 text-sm">
                                                 No progress data available.
                                             </div>
                                         )}
                                     </div>
                                 </TabsContent>
 
+                                {/* ATTENDANCE TAB */}
                                 <TabsContent value="attendance" className="mt-0">
-                                    <div className="space-y-4">
+                                    <div className="space-y-2">
                                         {attendanceHistory.map((record) => (
-                                            <div key={record._id} className="flex items-center justify-between p-3 rounded-lg bg-zinc-900 border border-zinc-800">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`
-                                        p-2 rounded-full
-                                        ${record.status === 'present' ? 'bg-green-500/10 text-green-500' : ''}
-                                        ${record.status === 'absent' ? 'bg-red-500/10 text-red-500' : ''}
-                                        ${record.status === 'late' ? 'bg-yellow-500/10 text-yellow-500' : ''}
-                                    `}>
-                                                        {record.status === 'present' && <CheckCircle2 className="h-4 w-4" />}
-                                                        {record.status === 'absent' && <XCircle className="h-4 w-4" />}
-                                                        {record.status === 'late' && <Clock className="h-4 w-4" />}
+                                            <div
+                                                key={record._id}
+                                                className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className={`p-2 rounded-full ${record.status === "present"
+                                                            ? "bg-emerald-100 text-emerald-600"
+                                                            : record.status === "absent"
+                                                                ? "bg-red-100 text-red-500"
+                                                                : "bg-yellow-100 text-yellow-600"
+                                                            }`}
+                                                    >
+                                                        {record.status === "present" && <CheckCircle2 className="h-4 w-4" />}
+                                                        {record.status === "absent" && <XCircle className="h-4 w-4" />}
+                                                        {record.status === "late" && <Clock className="h-4 w-4" />}
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-zinc-200">
+                                                        <p className="font-medium text-slate-800 text-sm">
                                                             {format(new Date(record.date), "PPP")}
                                                         </p>
-                                                        <p className="text-xs text-zinc-500">{record.batch?.name}</p>
+                                                        <p className="text-xs text-slate-400">{record.batch?.name}</p>
                                                     </div>
                                                 </div>
-                                                <Badge variant="outline" className={`capitalize border-zinc-700
-                                    ${record.status === 'present' ? 'text-green-400' : ''}
-                                    ${record.status === 'absent' ? 'text-red-400' : ''}
-                                    ${record.status === 'late' ? 'text-yellow-400' : ''}
-                                `}>
+                                                <Badge
+                                                    className={`capitalize text-xs ${record.status === "present"
+                                                        ? "bg-emerald-100 text-emerald-700"
+                                                        : record.status === "absent"
+                                                            ? "bg-red-100 text-red-700"
+                                                            : "bg-yellow-100 text-yellow-700"
+                                                        }`}
+                                                >
                                                     {record.status}
                                                 </Badge>
                                             </div>
                                         ))}
                                         {attendanceHistory.length === 0 && (
-                                            <div className="py-8 text-center text-zinc-500">
+                                            <div className="py-10 text-center text-slate-400 text-sm">
                                                 No attendance records found.
                                             </div>
                                         )}

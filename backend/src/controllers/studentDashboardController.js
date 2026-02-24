@@ -18,10 +18,24 @@ export const getStudentDashboard = async (req, res) => {
     const batchIds = student.batches.map(b => b._id);
 
     // 1. Calculate Attendance
-    const attendanceRecords = await Attendance.find({ student: student._id });
+    const attendanceRecords = await Attendance.find({ student: student._id })
+      .populate("batch", "name")
+      .sort({ date: -1 });
+
     const totalSessions = attendanceRecords.length;
-    const presentCount = attendanceRecords.filter(r => r.status === "present" || r.status === "late").length;
-    const attendancePercentage = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0;
+    const presentCount = attendanceRecords.filter(r => r.status === "present").length;
+    const absentCount = attendanceRecords.filter(r => r.status === "absent").length;
+    const lateCount = attendanceRecords.filter(r => r.status === "late").length;
+    const attendancePercentage = totalSessions > 0
+      ? Math.round(((presentCount + lateCount) / totalSessions) * 100)
+      : 0;
+
+    // Recent attendance records (last 10)
+    const recentAttendance = attendanceRecords.slice(0, 10).map(r => ({
+      date: r.date,
+      status: r.status,
+      batch: r.batch?.name || "N/A",
+    }));
 
     // 2. Fetch Assessments (Assignments and Quizzes)
     const activeAssessments = await Assessment.find({
@@ -50,9 +64,14 @@ export const getStudentDashboard = async (req, res) => {
           name: req.user.fullName,
           enrollmentId: student.enrollmentId,
           attendance: attendancePercentage,
+          presentCount,
+          absentCount,
+          lateCount,
+          totalSessions,
           pendingAssignmentsCount: pendingAssignments.length,
           upcomingQuizzesCount: upcomingQuizzes.length
         },
+        recentAttendance,
         pendingAssignments: pendingAssignments.slice(0, 5), // Only send nearest 5
         upcomingQuizzes: upcomingQuizzes.slice(0, 5)
       }

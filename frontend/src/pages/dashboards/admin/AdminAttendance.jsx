@@ -97,17 +97,24 @@ const AttendanceManagement = () => {
       alert(`Mark all students first (${markedCount}/${totalStudents})`);
       return;
     }
+    if (!sessionRemarks.trim()) {
+      alert("Session remarks are mandatory");
+      return;
+    }
     try {
       const records = students.map((student) => ({
         student: student.id,
         batch: batchId,
         date: new Date().toISOString(),
         status: student.status,
-        notes: sessionRemarks,
+        remarks: sessionRemarks,
       }));
 
       await api.post("/api/attendance", { records });
       alert("Attendance Submitted Successfully");
+      // Reset after successful submission
+      setStudents((prev) => prev.map((s) => ({ ...s, status: null })));
+      setSessionRemarks("");
     } catch (err) {
       console.error("Submit attendance failed:", err);
       alert(

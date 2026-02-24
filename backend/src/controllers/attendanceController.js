@@ -362,3 +362,48 @@ export const exportAttendance = async (req, res) => {
     res.status(500).json({ message: "Failed to export attendance" });
   }
 };
+
+// Student can fetch their own attendance records
+export const getMyAttendance = async (req, res) => {
+  try {
+    const student = await Student.findOne({ user: req.user._id });
+    if (!student || !student.isActive) {
+      return res.status(404).json({ message: "Student record not found" });
+    }
+
+    const records = await Attendance.find({ student: student._id })
+      .populate("batch", "name course")
+      .sort({ date: -1 });
+
+    const totalSessions = records.length;
+    const presentCount = records.filter((r) => r.status === "present").length;
+    const absentCount = records.filter((r) => r.status === "absent").length;
+    const lateCount = records.filter((r) => r.status === "late").length;
+    const attendancePercentage =
+      totalSessions > 0
+        ? Math.round(((presentCount + lateCount) / totalSessions) * 100)
+        : 0;
+
+    const recentRecords = records.slice(0, 30).map((r) => ({
+      date: r.date,
+      status: r.status,
+      batch: r.batch?.name || "N/A",
+      remarks: r.remarks,
+    }));
+
+    res.status(200).json({
+      message: "Your attendance retrieved successfully",
+      data: {
+        totalSessions,
+        presentCount,
+        absentCount,
+        lateCount,
+        attendancePercentage,
+        records: recentRecords,
+      },
+    });
+  } catch (error) {
+    console.error("Get My Attendance Error:", error);
+    res.status(500).json({ message: "Failed to retrieve your attendance" });
+  }
+};

@@ -34,6 +34,7 @@ const BatchDetail = () => {
 
     const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [attendanceForm, setAttendanceForm] = useState({});
+    const [attendanceRemarks, setAttendanceRemarks] = useState("");
     const [contentList, setContentList] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -87,6 +88,10 @@ const BatchDetail = () => {
     };
 
     const handleSaveAttendance = async () => {
+        if (!attendanceRemarks.trim()) {
+            toast.error("Remarks are mandatory before saving attendance");
+            return;
+        }
         try {
             setIsSaving(true);
             const today = new Date().toISOString().split('T')[0];
@@ -94,12 +99,14 @@ const BatchDetail = () => {
                 student: s._id,
                 batch: batchId,
                 date: today,
-                status: attendanceForm[s._id] || "present"
+                status: attendanceForm[s._id] || "present",
+                remarks: attendanceRemarks,
             }));
 
             await api.post('/api/attendance', { records });
             toast.success("Attendance saved successfully");
-            loadBatchData(); // Refresh history
+            setAttendanceRemarks("");
+            loadBatchData();
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to save attendance");
         } finally {
@@ -449,6 +456,21 @@ const BatchDetail = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Mandatory Remarks */}
+                            <div className="mt-6 space-y-2">
+                                <label className="block text-sm font-semibold text-slate-700">
+                                    Session Remarks <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={attendanceRemarks}
+                                    onChange={(e) => setAttendanceRemarks(e.target.value)}
+                                    placeholder="What was covered today? Add any notes about this session (mandatory)..."
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                                    rows="3"
+                                />
+                                <p className="text-xs text-slate-400">Remarks are required before submitting attendance.</p>
                             </div>
                         </CardContent>
                     </Card>
