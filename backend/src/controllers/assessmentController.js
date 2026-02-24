@@ -10,7 +10,16 @@ import {
 
 export const createAssessment = async (req, res) => {
   try {
-    const {
+    const { title, description, type, submissionType, batch, dueDate, totalMarks, status } =
+      req.body;
+
+    if (dueDate && new Date(dueDate) <= new Date()) {
+      return res.status(400).json({
+        message: "Due date must be in the future",
+      });
+    }
+
+    const assessment = await Assessment.create({
       title,
       description,
       type,
@@ -19,42 +28,9 @@ export const createAssessment = async (req, res) => {
       dueDate,
       totalMarks,
       status,
-      questions,
-      duration,
-      attemptLimit,
-    } = req.body;
-
-    if (dueDate && new Date(dueDate) <= new Date()) {
-      return res.status(400).json({
-        message: "Due date must be in the future",
-      });
-    }
-
-    // Build assessment data
-    const assessmentData = {
-      title,
-      description,
-      type,
-      submissionType,
-      batch,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
-      totalMarks: totalMarks ? Number(totalMarks) : 0,
-      status: status || "published",
       pdfUrl: req.file ? req.file.path : "",
       createdBy: req.user._id,
-    };
-
-    // Add quiz-specific fields
-    if (type === "quiz") {
-      // Questions might be a string due to multipart form data
-      if (questions) {
-        assessmentData.questions = typeof questions === 'string' ? JSON.parse(questions) : questions;
-      }
-      if (duration) assessmentData.duration = Number(duration);
-      if (attemptLimit) assessmentData.attemptLimit = Number(attemptLimit);
-    }
-
-    const assessment = await Assessment.create(assessmentData);
+    });
 
     res.status(201).json({
       message: "Assessment created successfully",
@@ -72,10 +48,7 @@ export const createAssessment = async (req, res) => {
       return res.status(409).json({ message: "Resource already exists" });
     }
     console.error("Create Assessment Error:", error);
-    res.status(500).json({
-      message: "Failed to create assessment",
-      error: error.message
-    });
+    res.status(500).json({ message: "Failed to create assessment" });
   }
 };
 
@@ -169,9 +142,6 @@ export const updateAssessment = async (req, res) => {
       "dueDate",
       "totalMarks",
       "status",
-      "questions",
-      "duration",
-      "attemptLimit",
     ];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) {
@@ -250,7 +220,7 @@ export const submitAssessment = async (req, res) => {
       return res.status(404).json({ message: "Resource not found" });
     }
 
-    const { studentId, submittedAt, answers } = req.body;
+    const { studentId, submittedAt } = req.body;
     if (!studentId) {
       return res.status(400).json({ message: "studentId is required" });
     }
@@ -269,79 +239,19 @@ export const submitAssessment = async (req, res) => {
         .json({ message: "Student is not enrolled in this batch" });
     }
 
-    // Check attempt limit for quizzes
-    if (assessment.type === "quiz") {
-      const submissionCount = await Submission.countDocuments({
-        student: student._id,
-        assessment: assessment._id,
-      });
-      if (submissionCount >= assessment.attemptLimit) {
-        return res.status(400).json({
-          message: `Maximum ${assessment.attemptLimit} attempt(s) allowed for this quiz`,
-        });
-      }
-
-      // Validate answers are provided for quiz
-      if (!answers || !Array.isArray(answers)) {
-        return res.status(400).json({ message: "Quiz answers are required" });
-      }
-    }
-
     const submissionDate = submittedAt ? new Date(submittedAt) : new Date();
     const isLateSubmission = submissionDate > assessment.dueDate;
     const status = isLateSubmission ? "late-submitted" : "submitted";
 
-    const submissionData = {
+    const submission = await Submission.create({
       student: student._id,
       assessment: assessment._id,
       submittedAt: submissionDate,
+      fileUrl: req.file ? req.file.path : req.body.fileUrl,
+      fileType: req.body.fileType,
       isLateSubmission,
       status,
-    };
-
-    // Handle quiz submission with auto-grading
-    if (assessment.type === "quiz" && answers) {
-      submissionData.answers = [];
-      let correctCount = 0;
-
-      for (const answer of answers) {
-        const question = assessment.questions.find(
-          (q) => q._id.toString() === answer.questionId,
-        );
-        if (!question) {
-          return res.status(400).json({
-            message: `Question ${answer.questionId} not found in assessment`,
-          });
-        }
-
-        const isCorrect = answer.selectedAnswer === question.correctAnswer;
-        if (isCorrect) correctCount++;
-
-        submissionData.answers.push({
-          questionId: answer.questionId,
-          selectedAnswer: answer.selectedAnswer,
-          isCorrect,
-        });
-      }
-
-      // Calculate marks: (correctCount / totalQuestions) * totalMarks
-      const totalQuestions = assessment.questions.length || 1;
-      const marksPerQuestion = assessment.totalMarks / totalQuestions;
-      submissionData.marksObtained = Math.round(
-        correctCount * marksPerQuestion,
-      );
-
-      // Auto-mark as evaluated for quizzes
-      submissionData.status = status;
-    } else {
-      // Handle file submission for assignments
-      submissionData.fileUrl = req.file
-        ? req.file.path
-        : req.body.fileUrl || "";
-      submissionData.fileType = req.body.fileType || "PDF";
-    }
-
-    const submission = await Submission.create(submissionData);
+    });
 
     res.status(201).json({
       message: "Assessment submitted successfully",
@@ -356,9 +266,7 @@ export const submitAssessment = async (req, res) => {
       });
     }
     if (isDuplicateKeyError(error)) {
-      return res.status(409).json({
-        message: "You have already submitted this assessment",
-      });
+      return res.status(409).json({ message: "Resource already exists" });
     }
     console.error("Submit Assessment Error:", error);
     res.status(500).json({ message: "Failed to submit assessment" });
@@ -438,7 +346,7 @@ export const evaluateSubmission = async (req, res) => {
 
     submission.marksObtained = marks;
     submission.feedback = feedback || "";
-    submission.status = "evaluated";
+    submission.submissionStatus = "evaluated";
     submission.gradedBy = req.user._id;
     submission.gradedAt = new Date();
     await submission.save();

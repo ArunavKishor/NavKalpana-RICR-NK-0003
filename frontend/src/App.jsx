@@ -92,6 +92,7 @@ const App = () => {
               path="assessments"
               element={<TeacherAssessmentManagement />}
             />
+            <Route path="students" element={<StudentManagement />} />
             <Route path="quizzes" element={<QuizManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>

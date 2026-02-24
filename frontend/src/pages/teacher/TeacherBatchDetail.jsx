@@ -1,27 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Save,
-  Calendar,
-  Users,
-  BookOpen,
-  Download,
-  Edit2,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Save, Calendar, Users, BookOpen } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import StudentDetailModal from "@/components/teacher/StudentDetailModal";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const TeacherBatchDetail = () => {
   const { batchId } = useParams();
@@ -36,11 +21,6 @@ const TeacherBatchDetail = () => {
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [editingRecord, setEditingRecord] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (batchId) {
@@ -92,10 +72,11 @@ const TeacherBatchDetail = () => {
 
     try {
       setIsSaving(true);
+      const today = new Date().toISOString().split("T")[0];
       const records = students.map((s) => ({
         student: s._id,
         batch: batchId,
-        date: selectedDate,
+        date: today,
         status: attendanceForm[s._id] || "present",
         remarks: attendanceRemarks,
       }));
@@ -107,7 +88,6 @@ const TeacherBatchDetail = () => {
 
       toast.success("Attendance saved successfully");
       setAttendanceRemarks("");
-      setSelectedDate(new Date().toISOString().split("T")[0]);
       await loadBatchData();
       setActiveTab("attendance-history");
     } catch (err) {
@@ -118,74 +98,6 @@ const TeacherBatchDetail = () => {
     }
   };
 
-  const handleExportAttendance = async () => {
-    try {
-      const response = await api.get(
-        `/api/attendance/export?batch=${batchId}`,
-        {
-          responseType: "blob",
-        },
-      );
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `attendance-${batch.name}-${new Date().toISOString().split("T")[0]}.csv`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success("Attendance exported successfully");
-    } catch (err) {
-      console.error("Export attendance failed:", err);
-      toast.error("Failed to export attendance");
-    }
-  };
-
-  const handleEditRecord = (record) => {
-    const now = new Date();
-    const recordTime = new Date(
-      record.submittedAt || record.createdAt || record.updatedAt,
-    );
-    const timeDiffMinutes = (now - recordTime) / (1000 * 60);
-
-    if (timeDiffMinutes > 10) {
-      toast.error("Cannot edit records older than 10 minutes");
-      return;
-    }
-
-    setEditingRecord({
-      ...record,
-      status: record.status || "present",
-      remarks: record.remarks || "",
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleUpdateRecord = async () => {
-    if (!editingRecord.remarks.trim()) {
-      toast.error("Remarks are required");
-      return;
-    }
-
-    try {
-      await api.put(`/api/attendance/${editingRecord._id}`, {
-        status: editingRecord.status,
-        remarks: editingRecord.remarks,
-      });
-      toast.success("Attendance record updated successfully");
-      await loadBatchData();
-      setIsEditModalOpen(false);
-      setEditingRecord(null);
-    } catch (err) {
-      console.error("Update attendance failed:", err);
-      toast.error(err.response?.data?.message || "Failed to update attendance");
-    }
-  };
-
   const handleStudentClick = (student) => {
     setSelectedStudent(student);
     setIsModalOpen(true);
@@ -193,14 +105,14 @@ const TeacherBatchDetail = () => {
 
   const getAttendanceStats = () => {
     const stats = { present: 0, absent: 0, late: 0 };
-    attendanceHistory.forEach((r) => {
+    attendanceHistory.forEach(r => {
       stats[r.status] = (stats[r.status] || 0) + 1;
     });
     return [
       { name: "Present", value: stats.present, color: "#10b981" },
       { name: "Absent", value: stats.absent, color: "#ef4444" },
       { name: "Late", value: stats.late, color: "#f59e0b" },
-    ].filter((s) => s.value > 0);
+    ].filter(s => s.value > 0);
   };
 
   if (loading) {
@@ -296,41 +208,37 @@ const TeacherBatchDetail = () => {
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("details")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "details"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "details"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             Batch Details
           </button>
           <button
             onClick={() => setActiveTab("mark-attendance")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "mark-attendance"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "mark-attendance"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             Mark Attendance
           </button>
           <button
             onClick={() => setActiveTab("attendance-history")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "attendance-history"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "attendance-history"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             History
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "analytics"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "analytics"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             Analytics
           </button>
@@ -375,19 +283,8 @@ const TeacherBatchDetail = () => {
             <h3 className="font-semibold text-slate-900 mb-3">
               Mark Attendance
             </h3>
-            <div className="mb-4 space-y-2">
-              <label className="block text-sm font-medium text-slate-900">
-                Select Date
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
             <p className="text-sm text-slate-600 mb-4">
-              Marking for: {new Date(selectedDate).toLocaleDateString()}
+              Today: {new Date().toLocaleDateString()}
             </p>
 
             {students.length === 0 ? (
@@ -419,15 +316,14 @@ const TeacherBatchDetail = () => {
                           onClick={() =>
                             handleAttendanceStatusChange(student._id, status)
                           }
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                            attendanceForm[student._id] === status
-                              ? status === "present"
-                                ? "bg-emerald-500 text-white"
-                                : status === "absent"
-                                  ? "bg-red-500 text-white"
-                                  : "bg-yellow-500 text-white"
-                              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                          }`}
+                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${attendanceForm[student._id] === status
+                            ? status === "present"
+                              ? "bg-emerald-500 text-white"
+                              : status === "absent"
+                                ? "bg-red-500 text-white"
+                                : "bg-yellow-500 text-white"
+                            : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                            }`}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </button>
@@ -469,16 +365,9 @@ const TeacherBatchDetail = () => {
 
       {activeTab === "attendance-history" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-slate-900">Attendance History</h3>
-            <button
-              onClick={handleExportAttendance}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export CSV
-            </button>
-          </div>
+          <h3 className="font-semibold text-slate-900 mb-4">
+            Attendance History
+          </h3>
           {attendanceHistory.length === 0 ? (
             <p className="text-slate-500 text-center py-8">
               No attendance records yet
@@ -500,9 +389,6 @@ const TeacherBatchDetail = () => {
                     <th className="px-4 py-3 text-left font-semibold text-slate-900">
                       Remarks
                     </th>
-                    <th className="px-4 py-3 text-center font-semibold text-slate-900">
-                      Action
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
@@ -516,13 +402,12 @@ const TeacherBatchDetail = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            record.status === "present"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : record.status === "absent"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
-                          }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${record.status === "present"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : record.status === "absent"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                            }`}
                         >
                           {record.status.charAt(0).toUpperCase() +
                             record.status.slice(1)}
@@ -530,15 +415,6 @@ const TeacherBatchDetail = () => {
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {record.remarks || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => handleEditRecord(record)}
-                          className="inline-flex items-center justify-center w-8 h-8 text-slate-600 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-colors"
-                          title="Edit attendance record"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
                       </td>
                     </tr>
                   ))}
@@ -551,10 +427,8 @@ const TeacherBatchDetail = () => {
       {activeTab === "analytics" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-6 text-center">
-              Batch Attendance Distribution
-            </h3>
-            <div className="h-64 w-full" style={{ minHeight: "250px" }}>
+            <h3 className="font-semibold text-slate-900 mb-6 text-center">Batch Attendance Distribution</h3>
+            <div className="h-64 w-full" style={{ minHeight: '250px' }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <PieChart>
                   <Pie
@@ -573,29 +447,17 @@ const TeacherBatchDetail = () => {
               </ResponsiveContainer>
             </div>
             <div className="flex justify-center gap-6 mt-4 text-xs font-medium">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>{" "}
-                Present
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div> Absent
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div> Late
-              </div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500"></div> Present</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500"></div> Absent</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-yellow-500"></div> Late</div>
             </div>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-6">
-              Module-wise Breakdown
-            </h3>
+            <h3 className="font-semibold text-slate-900 mb-6">Module-wise Breakdown</h3>
             <div className="space-y-4">
               {(batch.content || []).map((module, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 bg-slate-50 border border-slate-100 rounded-lg"
-                >
+                <div key={idx} className="p-4 bg-slate-50 border border-slate-100 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-sm font-semibold">{module.title}</p>
                     <Badge variant="outline">Module {idx + 1}</Badge>
@@ -611,19 +473,13 @@ const TeacherBatchDetail = () => {
                     </div>
                     <div className="p-2 bg-white rounded border border-slate-100">
                       <p className="text-slate-400">Content</p>
-                      <p className="text-slate-900">
-                        {module.body.length > 20
-                          ? module.body.substring(0, 20) + "..."
-                          : module.body}
-                      </p>
+                      <p className="text-slate-900">{module.body.length > 20 ? module.body.substring(0, 20) + '...' : module.body}</p>
                     </div>
                   </div>
                 </div>
               ))}
               {(!batch.content || batch.content.length === 0) && (
-                <p className="text-center text-slate-500 py-8">
-                  No course content/modules defined
-                </p>
+                <p className="text-center text-slate-500 py-8">No course content/modules defined</p>
               )}
             </div>
           </div>
@@ -637,114 +493,6 @@ const TeacherBatchDetail = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-
-      {/* Edit Attendance Modal */}
-      {isEditModalOpen && editingRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Edit Attendance
-              </h3>
-              <button
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setEditingRecord(null);
-                }}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-1">
-                  Student Name
-                </label>
-                <p className="px-3 py-2 bg-slate-50 rounded-lg text-slate-700">
-                  {editingRecord.student?.user?.fullName || "Unknown"}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-1">
-                  Date
-                </label>
-                <p className="px-3 py-2 bg-slate-50 rounded-lg text-slate-700">
-                  {new Date(editingRecord.date).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
-                  {["present", "absent", "late"].map((status) => (
-                    <button
-                      key={status}
-                      onClick={() =>
-                        setEditingRecord({
-                          ...editingRecord,
-                          status,
-                        })
-                      }
-                      className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-all ${
-                        editingRecord.status === status
-                          ? status === "present"
-                            ? "bg-emerald-500 text-white"
-                            : status === "absent"
-                              ? "bg-red-500 text-white"
-                              : "bg-yellow-500 text-white"
-                          : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                      }`}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-1">
-                  Remarks <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={editingRecord.remarks || ""}
-                  onChange={(e) =>
-                    setEditingRecord({
-                      ...editingRecord,
-                      remarks: e.target.value,
-                    })
-                  }
-                  placeholder="Add remarks..."
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  rows="3"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setIsEditModalOpen(false);
-                    setEditingRecord(null);
-                  }}
-                  className="flex-1 px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateRecord}
-                  className="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Update
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

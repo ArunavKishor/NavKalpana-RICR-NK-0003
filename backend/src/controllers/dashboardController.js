@@ -241,17 +241,10 @@ export const getTeacherStats = async (req, res) => {
       isActive: true,
     });
 
-    // Get all assessments for teacher's batches
-    const assessments = await Assessment.find({
-      batch: { $in: batchIds },
-      isActive: true,
-    });
-    const assessmentIds = assessments.map((a) => a._id);
-
     // Count completed grades (evaluated submissions)
     const completedGrades = await Submission.countDocuments({
-      assessment: { $in: assessmentIds },
-      status: "evaluated",
+      assessment: { $in: batchIds },
+      submissionStatus: "evaluated",
     });
 
     // Count active batches (ongoing)
@@ -278,17 +271,10 @@ export const getTeacherPerformance = async (req, res) => {
     const batches = await Batch.find({ createdBy: teacherId, isActive: true });
     const batchIds = batches.map((b) => b._id);
 
-    // Get assessments for teacher's batches
-    const assessments = await Assessment.find({
-      batch: { $in: batchIds },
-      isActive: true,
-    });
-    const assessmentIds = assessments.map((a) => a._id);
-
     // Get weekly performance data
     const fromDate = daysAgo(42);
     const submissions = await Submission.find({
-      assessment: { $in: assessmentIds },
+      assessment: { $in: batchIds },
       submittedAt: { $gte: fromDate },
       marksObtained: { $ne: null },
     });

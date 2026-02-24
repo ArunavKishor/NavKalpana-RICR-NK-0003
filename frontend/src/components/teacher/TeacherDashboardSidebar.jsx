@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   FileText,
   GraduationCap,
-  LifeBuoy,
   BookOpen,
   CheckCircle,
   MessageSquare,
@@ -14,119 +13,163 @@ import { cn } from "@/lib/utils";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/teacher-dashboard" },
-  {
-    icon: BookOpen,
-    label: "Batch Management",
-    href: "/teacher-dashboard/batches",
-  },
-  {
-    icon: FileText,
-    label: "Assessment Management",
-    href: "/teacher-dashboard/assessments",
-  },
-  {
-    icon: GraduationCap,
-    label: "Student Management",
-    href: "/teacher-dashboard/students",
-  },
+  { icon: BookOpen, label: "Batch Management", href: "/teacher-dashboard/batches" },
+  { icon: FileText, label: "Assessments", href: "/teacher-dashboard/assessments" },
+  { icon: GraduationCap, label: "Students", href: "/teacher-dashboard/students" },
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
-  {
-    icon: MessageSquare,
-    label: "Support Requests",
-    href: "/teacher-dashboard/support",
-  },
+  { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support", badge: 2 },
 ];
 
 const TeacherSidebar = ({ isOpen }) => {
   const location = useLocation();
 
   return (
-    <motion.div
-      initial={{ x: -100 }}
-      animate={{ x: isOpen ? 0 : -260 }}
-      transition={{ duration: 0.3 }}
+    <motion.aside
+      initial={false}
+      animate={{ x: isOpen ? 0 : -285 }}
+      transition={{
+        type: "spring",
+        stiffness: 95,
+        damping: 16,
+        mass: 0.9,
+      }}
       className={cn(
-        "fixed top-0 left-0 z-40 h-screen bg-white text-slate-800 flex flex-col",
-        "border-r border-slate-200 shadow-sm",
-        "w-64 sm:w-64",
-        "overflow-y-auto",
-        "transition-all duration-300",
+        "fixed top-3 left-3 z-40 h-[calc(100vh-24px)] w-64 rounded-3xl",
+        "bg-white/80 backdrop-blur-xl",
+        "border border-slate-200/70 shadow-sm",
+        "flex flex-col overflow-hidden"
       )}
     >
-      {/* Animated Logo Area */}
+      {/* LOGO */}
       <div className="h-20 px-5 flex items-center border-b border-slate-100">
         <motion.div
-          whileHover={{ scale: 1.04 }}
-          className="flex items-center gap-3 group cursor-pointer"
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center gap-3 cursor-pointer"
         >
           <motion.div
-            animate={{ y: [0, -2, 0] }}
-            transition={{ repeat: Infinity, duration: 3 }}
-            className="relative"
+            whileHover={{ rotate: -5 }}
+            transition={{ type: "spring", stiffness: 200, damping: 12 }}
+            className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-sm"
           >
-            <div className="absolute inset-0 bg-linear-to-tr from-orange-400 via-pink-500 to-rose-500 blur-lg opacity-40 group-hover:opacity-80 transition duration-300"></div>
-
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-linear-to-tr from-orange-400 via-pink-500 to-rose-500 flex items-center justify-center shadow-lg">
-              <GraduationCap className="text-white w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
+            <GraduationCap className="text-white w-5 h-5" />
           </motion.div>
 
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm sm:text-base font-semibold text-slate-900 tracking-wide">
+          <div className="leading-tight">
+            <p className="font-semibold text-slate-900 tracking-wide">
               MindRise
-            </span>
-            <span className="text-xs text-slate-400">Teacher Portal</span>
+            </p>
+            <p className="text-xs text-slate-500">
+              Teacher Portal
+            </p>
           </div>
         </motion.div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-2 sm:px-3 py-4 sm:py-6 space-y-1">
+      {/* NAVIGATION */}
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {sidebarItems.map((item) => {
-          // Exact match for dashboard home, startsWith for others
           const isActive =
             item.href === "/teacher-dashboard"
-              ? location.pathname === "/teacher-dashboard"
+              ? location.pathname === item.href
               : location.pathname.startsWith(item.href);
 
           return (
             <motion.div
               key={item.href}
-              whileHover={{ x: 4 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              whileHover={{ x: 2 }}
+              transition={{ type: "tween", duration: 0.15 }}
             >
               <Link
                 to={item.href}
                 className={cn(
-                  "relative flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all duration-200 group font-medium",
-                  isActive
-                    ? "bg-slate-900 text-white shadow-md"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
+                  "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium",
+                  "transition-all duration-200 group"
                 )}
               >
+                {/* Active Background */}
                 {isActive && (
                   <motion.div
-                    layoutId="activeIndicatorTeacher"
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-r-lg"
+                    layoutId="teacherActive"
+                    className="absolute inset-0 rounded-xl bg-indigo-600"
+                    transition={{
+                      type: "spring",
+                      stiffness: 140,
+                      damping: 22,
+                    }}
                   />
                 )}
 
-                <item.icon
+                {/* Icon */}
+                <div
                   className={cn(
-                    "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
+                    "relative z-10 w-9 h-9 rounded-lg flex items-center justify-center",
+                    "transition-all duration-200",
                     isActive
-                      ? "text-white"
-                      : "text-slate-400 group-hover:text-slate-900",
+                      ? "bg-white/20"
+                      : "bg-slate-100 group-hover:bg-slate-200"
                   )}
-                />
+                >
+                  <item.icon
+                    className={cn(
+                      "w-4 h-4 transition-colors duration-200",
+                      isActive ? "text-white" : "text-slate-500"
+                    )}
+                  />
+                </div>
 
-                <span className="text-sm truncate">{item.label}</span>
+                {/* Label */}
+                <span
+                  className={cn(
+                    "relative z-10 flex-1 transition-colors duration-200",
+                    isActive ? "text-white" : "text-slate-700"
+                  )}
+                >
+                  {item.label}
+                </span>
+
+                {/* Badge */}
+                {item.badge && (
+                  <motion.span
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className={cn(
+                      "relative z-10 text-xs px-2 py-0.5 rounded-full",
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-amber-100 text-blue-600"
+                    )}
+                  >
+                    {item.badge}
+                  </motion.span>
+                )}
               </Link>
             </motion.div>
           );
         })}
       </nav>
-    </motion.div>
+
+      {/* FOOTER */}
+      <div className="p-4 border-t border-slate-100">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-xl bg-slate-50 p-3 cursor-pointer"
+        >
+          <p className="text-xs font-medium text-slate-700">
+            Workspace Status
+          </p>
+
+          <div className="flex items-center gap-2 mt-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs text-slate-500">
+              All systems running smoothly
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    </motion.aside>
   );
 };
 

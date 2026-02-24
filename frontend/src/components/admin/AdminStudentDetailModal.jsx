@@ -12,7 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, User, Mail, Phone, Calendar, BookOpen, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import api from "@/config/Api";
 import { format } from "date-fns";
-import Avatar from "@/components/shared/Avatar";
 
 const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
     const [student, setStudent] = useState(null);
@@ -52,13 +51,6 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
             <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 bg-zinc-950 border-zinc-800 text-zinc-100">
                 <DialogHeader className="p-6 border-b border-zinc-800">
                     <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                        <Avatar
-                            name={student?.user?.fullName}
-                            email={student?.user?.email}
-                            src={student?.profilePhoto}
-                            size="lg"
-                            className="rounded-lg"
-                        />
                         {student?.user?.fullName || "Student Details"}
                         {student?.status && (
                             <Badge variant={student.status === 'active' ? 'default' : 'secondary'} className="uppercase text-xs">

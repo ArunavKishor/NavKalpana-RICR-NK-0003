@@ -19,7 +19,6 @@ import TeacherForm from "@/components/admin/AdminTeacherForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
-import Avatar from "@/components/shared/Avatar";
 
 const TeacherManagement = () => {
   const [searchParams] = useSearchParams();
@@ -123,7 +122,7 @@ const TeacherManagement = () => {
       console.error("Load teachers failed:", err);
       setError(
         err.response?.data?.message ||
-        "Failed to load teachers. Please try again.",
+          "Failed to load teachers. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -342,10 +341,10 @@ const TeacherManagement = () => {
                 className="grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition"
               >
                 <div className="col-span-5 flex items-center gap-4">
-                  <Avatar
-                    name={teacher.name}
-                    email={teacher.email}
-                    size="lg"
+                  <img
+                    src={`https://i.pravatar.cc/50?u=${teacher.email}`}
+                    alt={teacher.name}
+                    className="w-12 h-12 rounded-full"
                   />
                   <div>
                     <p className="font-semibold text-slate-900">
@@ -448,8 +447,9 @@ const StatCard = ({ icon, label, value }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
-      }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
+      active ? "bg-slate-200" : "bg-white border"
+    }`}
   >
     {children}
   </button>

@@ -45,7 +45,6 @@ const TeacherDashboardHome = () => {
     pendingAssignments: 0,
     completedGrades: 0,
     activeBatches: 0,
-    averageClassPerformance: 0,
   });
   const [performanceData, setPerformanceData] = useState([]);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
@@ -89,49 +88,21 @@ const TeacherDashboardHome = () => {
         );
       }, 0);
 
-      // Calculate average class performance
-      let totalMarks = 0;
-      let evaluatedCount = 0;
-      assessments.forEach((a) => {
-        const evaluatedSubmissions =
-          a.submissions?.filter((s) => s.status === "evaluated") || [];
-        evaluatedSubmissions.forEach((sub) => {
-          if (sub.marksObtained !== undefined) {
-            totalMarks += sub.marksObtained;
-            evaluatedCount += 1;
-          }
-        });
-      });
-      const averageClassPerformance =
-        evaluatedCount > 0
-          ? Math.round((totalMarks / evaluatedCount) * 10) / 10
-          : 0;
-
       setStats({
         totalStudents,
         pendingAssignments,
         completedGrades,
         activeBatches: batches.filter((b) => b.status === "ongoing").length,
-        averageClassPerformance,
       });
 
       // Prepare performance data (weekly average scores)
-      try {
-        const perfRes = await api.get("/api/dashboard/teacher/performance");
-        const perfData = perfRes?.data?.data?.performanceData || [];
-        setPerformanceData(perfData);
-      } catch (err) {
-        console.log(
-          "Could not fetch weekly performance data, using sample data",
-        );
-        const weeks = [];
-        for (let i = 0; i < 5; i++) {
-          const weekNum = i + 1;
-          const average = 75 + Math.random() * 20;
-          weeks.push({ name: `Week ${weekNum}`, score: Math.round(average) });
-        }
-        setPerformanceData(weeks);
+      const weeks = [];
+      for (let i = 0; i < 5; i++) {
+        const weekNum = i + 1;
+        const average = 75 + Math.random() * 20; // Dummy calculation
+        weeks.push({ name: `Week ${weekNum}`, score: Math.round(average) });
       }
+      setPerformanceData(weeks);
 
       // Fetch and process deadlines (next 7 days)
       const deadlinesData = assessments
@@ -199,7 +170,7 @@ const TeacherDashboardHome = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           icon={<Users className="w-6 h-6 text-blue-600" />}
           label="Total Students"
@@ -224,12 +195,6 @@ const TeacherDashboardHome = () => {
           value={stats.activeBatches}
           color="bg-purple-50"
         />
-        <StatCard
-          icon={<CheckCircle className="w-6 h-6 text-indigo-600" />}
-          label="Avg. Class Performance"
-          value={`${stats.averageClassPerformance}%`}
-          color="bg-indigo-50"
-        />
       </div>
 
       {/* Quick Actions & Recent Activity Area */}
@@ -238,7 +203,7 @@ const TeacherDashboardHome = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-4">
             Class Performance (Weekly)
           </h3>
-          <div className="h-64 w-full" style={{ minHeight: "250px" }}>
+          <div className="h-64 w-full" style={{ minHeight: '250px' }}>
             {performanceData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <BarChart data={performanceData}>

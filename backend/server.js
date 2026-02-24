@@ -3,8 +3,6 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 
 import cloudinary from "./src/config/cloudinary.js";
 import connectDB from "./src/config/db.js";
@@ -22,16 +20,6 @@ import TeacherRouter from "./src/routers/teacherRoutes.js";
 dotenv.config();
 
 const app = express();
-
-// ✅ Security Middleware (add BEFORE other middleware)
-app.use(helmet());
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
-    message: "Too many requests from this IP, please try again later.",
-  })
-);
 
 // ✅ Middleware
 app.use(

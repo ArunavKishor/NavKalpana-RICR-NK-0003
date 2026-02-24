@@ -3,7 +3,6 @@ import { FaGithub, FaLinkedin, FaEdit } from "react-icons/fa";
 import api from "../../config/api";
 import toast from "react-hot-toast";
 import ImageUploadComponent from "../../components/common/ImageUploadComponent";
-import Avatar from "../../components/shared/Avatar";
 
 const StudentProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -129,8 +128,6 @@ const StudentProfile = () => {
               acceptedFormats={["image/jpeg", "image/png", "image/gif"]}
               maxSize={5}
               endpoint="/api/students/me/upload-photo"
-              fallbackName={student.name}
-              fallbackEmail={student.email}
             />
             <p className="mt-4 text-lg font-semibold">{student.name}</p>
             <p className="text-gray-500 text-sm">{student.course}</p>
@@ -203,10 +200,11 @@ const InputField = ({
       disabled={disabled}
       onChange={onChange}
       placeholder={placeholder}
-      className={`w-full border rounded-lg p-2 mt-1 ${disabled
+      className={`w-full border rounded-lg p-2 mt-1 ${
+        disabled
           ? "bg-gray-100"
           : "focus:outline-none focus:ring-2 focus:ring-blue-400"
-        }`}
+      }`}
     />
   </div>
 );

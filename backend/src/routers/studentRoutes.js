@@ -12,7 +12,7 @@ import {
   updateStudentProfile,
   getStudentProgress,
   uploadProfilePhoto,
-  getStudentAttendance,
+  getStudentAttendance
 } from "../controllers/studentController.js";
 
 import { getStudentDashboard } from "../controllers/studentDashboardController.js";
@@ -21,24 +21,33 @@ import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
+/* =====================================
+   PROTECTED ROUTES (Logged-in users)
+===================================== */
 router.use(protect);
 
-// Student specific routes
+/* =====================================
+   STUDENT / ADMIN ROUTES
+===================================== */
+
+// Dashboard
 router
   .route("/me/dashboard")
   .get(authorize("student", "admin"), getStudentDashboard);
+
+// Profile
 router
   .route("/me")
   .get(authorize("student", "admin"), getStudentProfile)
   .put(authorize("student", "admin"), updateStudentProfile);
 
-// Student profile photo upload
+// Profile Photo Upload
 router
   .route("/me/upload-photo")
   .post(
     authorize("student", "admin"),
     upload.single("file"),
-    uploadProfilePhoto,
+    uploadProfilePhoto
   );
 
 /* =====================================
@@ -46,25 +55,33 @@ router
 ===================================== */
 router.use(authorize("admin", "teacher"));
 
-router.route("/").get(getStudents).post(createStudent);
+// All students
+router
+  .route("/")
+  .get(getStudents)
+  .post(createStudent);
 
+// Student by ID
 router
   .route("/:id")
   .get(getStudentById)
   .put(updateStudent)
   .delete(deleteStudent);
 
-router.route("/:id/progress").get(getStudentProgress);
+// Student Progress
+router
+  .route("/:id/progress")
+  .get(getStudentProgress);
 
-router.route("/:id/batches").get(getStudentBatches);
+// Student Batches
+router
+  .route("/:id/batches")
+  .get(getStudentBatches);
 
-router.route("/:id/enroll").post(enrollStudentInBatch);
-
-router.route("/:id/unenroll").post(unenrollStudentFromBatch);
-
-router.route("/:id/progress").get(getStudentProgress);
-
-router.route("/:id/attendance").get(getStudentAttendance);
+// Student Attendance
+router
+  .route("/:id/attendance")
+  .get(getStudentAttendance);
 
 /* =====================================
    EXPORT ROUTER

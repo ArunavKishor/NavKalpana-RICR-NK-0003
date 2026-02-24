@@ -25,7 +25,7 @@ const setTokenCookie = (res, token) => {
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, role } = req.body;
 
     // Validate required fields
     if (!fullName || !email || !password) {
@@ -43,12 +43,12 @@ export const register = async (req, res, next) => {
       });
     }
 
-    // Create user - always register as student
+    // Create user
     const user = await User.create({
       fullName,
       email,
       password,
-      role: "student",
+      role: role || "student", // Default to student if not provided
     });
 
     // Generate token

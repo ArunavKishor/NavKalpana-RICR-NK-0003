@@ -413,28 +413,6 @@ const BatchManagement = () => {
         </div>
       )}
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={modalMode === "create" ? "Create New Batch" : "Edit Batch"}
-      >
-        <BatchForm
-          initialData={selectedBatch}
-          onSubmit={handleBatchFormSubmit}
-          onCancel={() => setIsModalOpen(false)}
-          isLoading={isSubmitting}
-          errors={formErrors}
-        />
-      </Modal>
-
-      <DeleteConfirmationDialog
-        isOpen={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Batch"
-        description={`Are you sure you want to delete "${batchToDelete?.name}"? This will permanently remove the batch and all its associations.`}
-        isLoading={isDeleting}
-      />
     </div>
   );
 };

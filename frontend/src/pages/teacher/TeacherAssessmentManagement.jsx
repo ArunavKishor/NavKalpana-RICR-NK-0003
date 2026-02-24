@@ -43,7 +43,6 @@ const TeacherAssessmentManagement = () => {
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [submissions, setSubmissions] = useState([]);
   const [batches, setBatches] = useState([]);
-  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -126,55 +125,37 @@ const TeacherAssessmentManagement = () => {
 
   const handleCreateAssessment = async (e) => {
     e.preventDefault();
+
     try {
-      if (editingId) {
-        await api.put(`/api/assessments/${editingId}`, {
-          ...formData,
-          type: activeTab === "assignments" ? "assignment" : "quiz",
-        });
-        toast.success("Assessment updated successfully");
-      } else {
-        await api.post("/api/assessments", {
-          ...formData,
-          type: activeTab === "assignments" ? "assignment" : "quiz",
-        });
-        toast.success("Assessment created successfully");
-      }
+      const payload = {
+        ...formData,
+
+        /* ✅ Always send correct type */
+        type: activeTab === "assignments" ? "assignment" : "quiz",
+
+        /* ✅ Convert numbers safely (adjust fields as needed) */
+        maxMarks: Number(formData.maxMarks),
+        duration: formData.duration ? Number(formData.duration) : undefined,
+
+        /* ✅ Convert dates safely */
+        dueDate: formData.dueDate
+          ? new Date(formData.dueDate).toISOString()
+          : undefined,
+      };
+
+      console.log("Sending payload:", payload);
+
+      const res = await api.post("/api/assessments", payload);
+
+      toast.success("Assessment created successfully");
+
       setShowForm(false);
-      setEditingId(null);
-      setFormData({
-        title: "",
-        description: "",
-        type: "assignment",
-        batch: "",
-        dueDate: "",
-        totalMarks: 100,
-        submissionType: "PDF",
-      });
       loadAssessments();
     } catch (err) {
-      toast.error(
-        editingId
-          ? "Failed to update assessment"
-          : "Failed to create assessment",
-      );
-    }
-  };
+      console.error("Create Assessment Error:", err.response?.data || err);
 
-  const handleEditAssessment = (assessment) => {
-    setEditingId(assessment._id);
-    setFormData({
-      title: assessment.title || "",
-      description: assessment.description || "",
-      type: assessment.type || "assignment",
-      batch: assessment.batch?._id || assessment.batch || "",
-      dueDate: assessment.dueDate
-        ? new Date(assessment.dueDate).toISOString().split("T")[0]
-        : "",
-      totalMarks: assessment.totalMarks || 100,
-      submissionType: assessment.submissionType || "PDF",
-    });
-    setShowForm(true);
+      toast.error(err.response?.data?.message || "Failed to create assessment");
+    }
   };
 
   const handleEvaluate = async () => {
@@ -207,22 +188,7 @@ const TeacherAssessmentManagement = () => {
             Create and manage assignments and quizzes
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditingId(null);
-            setFormData({
-              title: "",
-              description: "",
-              type: "assignment",
-              batch: "",
-              dueDate: "",
-              totalMarks: 100,
-              submissionType: "PDF",
-            });
-            setShowForm(true);
-          }}
-          className="w-full md:w-auto"
-        >
+        <Button onClick={() => setShowForm(true)} className="w-full md:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Create Assessment
         </Button>
@@ -350,14 +316,6 @@ const TeacherAssessmentManagement = () => {
                         View
                       </Button>
                       <Button
-                        onClick={() => handleEditAssessment(assessment)}
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 hover:bg-blue-50 whitespace-nowrap"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
                         onClick={() => handleDelete(assessment._id)}
                         variant="outline"
                         size="sm"
@@ -441,8 +399,7 @@ const TeacherAssessmentManagement = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingId ? "Edit" : "Create New"}{" "}
-              {activeTab === "assignments" ? "Assignment" : "Quiz"}
+              Create New {activeTab === "assignments" ? "Assignment" : "Quiz"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateAssessment} className="space-y-4">
@@ -538,16 +495,11 @@ const TeacherAssessmentManagement = () => {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                }}
+                onClick={() => setShowForm(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                {editingId ? "Update Assessment" : "Create Assessment"}
-              </Button>
+              <Button type="submit">Create Assessment</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -555,116 +507,159 @@ const TeacherAssessmentManagement = () => {
 
       {/* Submissions/Evaluation Modal */}
       <Dialog open={showEvaluation} onOpenChange={setShowEvaluation}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Submissions: {selectedAssessment?.title}</DialogTitle>
-          </DialogHeader>
+  <DialogContent className="max-w-5xl h-[85vh] p-0 overflow-hidden">
+    <DialogHeader className="px-6 py-4 border-b bg-white">
+      <DialogTitle className="text-lg font-semibold">
+        Submissions • {selectedAssessment?.title}
+      </DialogTitle>
+    </DialogHeader>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Submission List */}
-              <div className="space-y-4 border-r pr-4">
-                <h4 className="font-semibold text-sm">Student Submissions</h4>
-                <div className="space-y-2">
-                  {submissions.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-8">
-                      No submissions yet
+    <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+      {/* ================= SUBMISSION LIST ================= */}
+      <div className="border-r bg-slate-50/40 h-full overflow-y-auto">
+        <div className="p-5 space-y-4">
+          <h4 className="text-sm font-semibold text-slate-700">
+            Student Submissions
+          </h4>
+
+          {submissions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+              <FileText className="w-10 h-10 mb-3 opacity-40" />
+              <p className="text-sm">No submissions yet</p>
+            </div>
+          ) : (
+            submissions.map((sub) => {
+              const isActive =
+                evalData.currentSubmission?._id === sub._id;
+
+              return (
+                <div
+                  key={sub._id}
+                  onClick={() =>
+                    setEvalData({
+                      ...evalData,
+                      currentSubmission: sub,
+                      marks: sub.marksObtained || "",
+                      feedback: sub.feedback || "",
+                    })
+                  }
+                  className={`group p-4 rounded-xl border cursor-pointer transition-all bg-white
+                    ${
+                      isActive
+                        ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
+                        : "hover:border-slate-300 hover:shadow-sm"
+                    }`}
+                >
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">
+                        {sub.student?.user?.fullName || "Student"}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {new Date(sub.submittedAt).toLocaleString()}
+                      </p>
+                    </div>
+
+                    <Badge
+                      className={
+                        sub.status === "evaluated"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-amber-100 text-amber-700"
+                      }
+                    >
+                      {sub.status}
+                    </Badge>
+                  </div>
+
+                  {sub.marksObtained !== undefined && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      Marks: <span className="font-medium">{sub.marksObtained}</span>
                     </p>
-                  ) : (
-                    submissions.map((sub) => (
-                      <div
-                        key={sub._id}
-                        onClick={() =>
-                          setEvalData({
-                            ...evalData,
-                            currentSubmission: sub,
-                            marks: sub.marksObtained || "",
-                          })
-                        }
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                          evalData.currentSubmission?._id === sub._id
-                            ? "bg-blue-50 border-blue-200"
-                            : "hover:bg-slate-50"
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="text-sm font-medium">
-                              {sub.student?.user?.fullName || "Student"}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {new Date(sub.submittedAt).toLocaleString()}
-                            </p>
-                          </div>
-                          <Badge
-                            variant={
-                              sub.status === "evaluated" ? "success" : "warning"
-                            }
-                          >
-                            {sub.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))
                   )}
                 </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ================= EVALUATION PANEL ================= */}
+      <div className="h-full overflow-y-auto bg-white">
+        <div className="p-6 space-y-5">
+          <h4 className="text-sm font-semibold text-slate-700">
+            Evaluation Panel
+          </h4>
+
+          {evalData.currentSubmission ? (
+            <>
+              {/* File Card */}
+              <div className="rounded-xl border bg-slate-50 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium">
+                      Submission File
+                    </p>
+                    <p className="text-xs text-slate-500 uppercase">
+                      {evalData.currentSubmission.fileType || "File"}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    window.open(
+                      evalData.currentSubmission.fileUrl,
+                      "_blank"
+                    )
+                  }
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  View
+                </Button>
               </div>
 
-              {/* Evaluation Panel */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-sm">Evaluation Panel</h4>
-                {evalData.currentSubmission ? (
-                  <div className="space-y-4">
-                    <div className="bg-slate-50 p-4 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-8 h-8 text-blue-600" />
-                        <div>
-                          <p className="text-sm font-medium">Submission File</p>
-                          <p className="text-xs text-slate-500 uppercase">
-                            {evalData.currentSubmission.fileType || "File"}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          window.open(
-                            evalData.currentSubmission.fileUrl,
-                            "_blank",
-                          )
-                        }
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
-                    </div>
+              {/* Marks */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Marks (Max: {selectedAssessment.totalMarks})
+                </label>
+                <Input
+                  type="number"
+                  max={selectedAssessment.totalMarks}
+                  value={evalData.marks}
+                  onChange={(e) =>
+                    setEvalData({
+                      ...evalData,
+                      marks: e.target.value,
+                    })
+                  }
+                  className="h-11"
+                />
+              </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Marks (Max: {selectedAssessment.totalMarks})
-                      </label>
-                      <Input
-                        type="number"
-                        max={selectedAssessment.totalMarks}
-                        value={evalData.marks}
-                        onChange={(e) =>
-                          setEvalData({ ...evalData, marks: e.target.value })
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Feedback</label>
-                      <Textarea
-                        rows={4}
-                        value={evalData.feedback}
-                        onChange={(e) =>
-                          setEvalData({ ...evalData, feedback: e.target.value })
-                        }
-                        placeholder="Provide constructive feedback..."
-                      />
-                    </div>
+              {/* Feedback */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Feedback
+                </label>
+                <Textarea
+                  rows={5}
+                  value={evalData.feedback}
+                  onChange={(e) =>
+                    setEvalData({
+                      ...evalData,
+                      feedback: e.target.value,
+                    })
+                  }
+                  placeholder="Provide constructive feedback..."
+                />
+              </div>
 
                     <Button className="w-full" onClick={handleEvaluate}>
                       Submit Evaluation
@@ -680,7 +675,7 @@ const TeacherAssessmentManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 };
 
