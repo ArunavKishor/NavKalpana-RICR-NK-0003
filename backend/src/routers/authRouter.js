@@ -12,12 +12,22 @@ import { protect, authorize } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+// Temporary handler for unimplemented OTP/password reset routes
+const otpNotImplemented = (req, res) => {
+  return res.status(501).json({
+    message:
+      "Password reset feature is coming soon. OTP service not yet implemented.",
+    status: "Not Implemented",
+  });
+};
+
 // Public routes
 router.post("/register", register);
 router.post("/login", login);
-router.post("/genOtp", generateOtp);
-router.post("/verifyOtp", verifyOtp);
-router.post("/forgetPasword", resetPassword); // Keeping typo to match frontend
+// Disabled until OTP flow is securely implemented
+router.post("/genOtp", otpNotImplemented);
+router.post("/verifyOtp", otpNotImplemented);
+router.post("/forgetPasword", otpNotImplemented); // Keeping typo to match frontend
 
 // Protected routes
 router.post("/logout", protect, logout);
