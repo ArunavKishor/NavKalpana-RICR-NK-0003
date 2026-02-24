@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Pencil,
   Trash2,
+  BookOpen,
 } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
