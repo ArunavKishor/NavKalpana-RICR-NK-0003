@@ -26,7 +26,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 api.get(`/api/attendance?student=${student._id}&batch=${batch?._id}`)
             ]);
             setProgressData(progressRes.data.data);
-            setAttendanceRecords(attendanceRes.data.data.attendance || []);
+            setAttendanceRecords(attendanceRes.data.data.records || []);
         } catch (err) {
             console.error("Failed to load student details:", err);
         } finally {

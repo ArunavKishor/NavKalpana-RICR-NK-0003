@@ -29,11 +29,11 @@ const StudentForm = ({
     useEffect(() => {
         if (initialData) {
             setFormData({
-                fullName: initialData.user?.fullName || initialData.fullName || "",
+                fullName: initialData.user?.fullName || initialData.fullName || initialData.name || "",
                 email: initialData.user?.email || initialData.email || "",
                 password: "", // Never populate password for security
                 phone: initialData.phone || "",
-                status: initialData.status || "active",
+                status: initialData.status?.toLowerCase() || "active",
             });
         } else {
             setFormData({

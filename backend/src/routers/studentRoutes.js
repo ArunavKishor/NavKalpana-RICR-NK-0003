@@ -83,6 +83,15 @@ router
   .route("/:id/attendance")
   .get(getStudentAttendance);
 
+// Enroll/Unenroll Student from Batch
+router
+  .route("/:id/enroll")
+  .post(enrollStudentInBatch);
+
+router
+  .route("/:id/unenroll")
+  .post(unenrollStudentFromBatch);
+
 /* =====================================
    EXPORT ROUTER
 ===================================== */

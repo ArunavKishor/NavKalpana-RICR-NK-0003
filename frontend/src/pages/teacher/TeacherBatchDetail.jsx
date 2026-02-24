@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Calendar, Users, BookOpen } from "lucide-react";
+import { ArrowLeft, Save, Calendar, Users, BookOpen, Zap, Download } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import StudentDetailModal from "@/components/teacher/StudentDetailModal";
+import AttendanceModal from "@/components/teacher/AttendanceModal";
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 const TeacherBatchDetail = () => {
@@ -19,8 +19,7 @@ const TeacherBatchDetail = () => {
   const [attendanceRemarks, setAttendanceRemarks] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
 
   useEffect(() => {
     if (batchId) {
@@ -81,10 +80,8 @@ const TeacherBatchDetail = () => {
         remarks: attendanceRemarks,
       }));
 
-      // Create attendance records
-      await Promise.all(
-        records.map((record) => api.post("/api/attendance", record)),
-      );
+      // Create attendance records in one batch request
+      await api.post("/api/attendance", { records });
 
       toast.success("Attendance saved successfully");
       setAttendanceRemarks("");
@@ -98,9 +95,27 @@ const TeacherBatchDetail = () => {
     }
   };
 
-  const handleStudentClick = (student) => {
-    setSelectedStudent(student);
-    setIsModalOpen(true);
+  const handleExportAttendance = async () => {
+    try {
+      const response = await api.get(`/api/attendance/export?batch=${batchId}`, {
+        responseType: 'blob'
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_${batch?.name || batchId}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Attendance exported successfully");
+    } catch (err) {
+      console.error("Export failed:", err);
+      toast.error(err.response?.data?.message || "Failed to export attendance");
+    }
   };
 
   const getAttendanceStats = () => {
@@ -156,6 +171,13 @@ const TeacherBatchDetail = () => {
           <h1 className="text-3xl font-bold text-slate-900">{batch.name}</h1>
           <p className="text-slate-500">{batch.course}</p>
         </div>
+        <Button
+          className="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white"
+          onClick={() => setIsAttendanceModalOpen(true)}
+        >
+          <Zap className="w-4 h-4 mr-2" />
+          Quick Attendance
+        </Button>
       </div>
 
       {/* Batch Info Cards */}
@@ -298,11 +320,8 @@ const TeacherBatchDetail = () => {
                     key={student._id}
                     className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100 hover:bg-slate-100 transition-colors"
                   >
-                    <div
-                      className="flex-1 cursor-pointer"
-                      onClick={() => handleStudentClick(student)}
-                    >
-                      <p className="font-medium text-slate-900 hover:text-blue-600 underline-offset-2 hover:underline">
+                    <div className="flex-1">
+                      <p className="font-medium text-slate-900">
                         {student.user?.fullName || "Unknown"}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -365,9 +384,20 @@ const TeacherBatchDetail = () => {
 
       {activeTab === "attendance-history" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h3 className="font-semibold text-slate-900 mb-4">
-            Attendance History
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-900">
+              Attendance History
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportAttendance}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+          </div>
           {attendanceHistory.length === 0 ? (
             <p className="text-slate-500 text-center py-8">
               No attendance records yet
@@ -486,12 +516,12 @@ const TeacherBatchDetail = () => {
         </div>
       )}
 
-      {/* Student Detail Modal */}
-      <StudentDetailModal
-        student={selectedStudent}
+      {/* Attendance Modal */}
+      <AttendanceModal
+        isOpen={isAttendanceModalOpen}
+        onClose={() => setIsAttendanceModalOpen(false)}
         batch={batch}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onSaveSuccess={loadBatchData}
       />
     </div>
   );
