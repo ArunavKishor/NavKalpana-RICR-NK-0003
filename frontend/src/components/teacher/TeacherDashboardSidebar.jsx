@@ -48,7 +48,7 @@ const TeacherSidebar = ({ isOpen, setIsOpen }) => {
       animate={{ x: isOpen ? 0 : -280 }}
       transition={{ type: "spring", damping: 25, stiffness: 120 }}
       className={cn(
-        "fixed top-0 left-0 z-50 h-[100dvh] bg-white text-slate-800 flex flex-col",
+        "fixed top-0 left-0 z-50 h-dvh bg-white text-slate-800 flex flex-col",
         "border-r border-slate-100 shadow-2xl lg:shadow-none",
         "w-64 sm:w-72",
         "overflow-hidden",
@@ -136,7 +136,7 @@ const TeacherSidebar = ({ isOpen, setIsOpen }) => {
                 {isActive && (
                   <motion.div
                     layoutId="activePillIndicator"
-                    className="absolute inset-0 bg-slate-900 rounded-2xl -z-0"
+                    className="absolute inset-0 bg-slate-900 rounded-2xl z-0"
                   />
                 )}
 

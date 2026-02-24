@@ -223,7 +223,7 @@ const TeacherBatchDetail = () => {
     <div className="space-y-10 pb-20">
       {/* Header Visual */}
       <section className="relative overflow-hidden rounded-[3rem] bg-indigo-600 p-8 sm:p-12 shadow-2xl shadow-indigo-200">
-        <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-white/10 rounded-full -mr-40 -mt-40 blur-3xl pointer-events-none transition-transform group-hover:scale-110"></div>
+        <div className="absolute top-0 right-0 w-160 h-160 bg-white/10 rounded-full -mr-40 -mt-40 blur-3xl pointer-events-none transition-transform group-hover:scale-110"></div>
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="space-y-6">
             <button onClick={() => navigate("/teacher-dashboard/batches")} 
@@ -241,7 +241,7 @@ const TeacherBatchDetail = () => {
                <p className="text-indigo-200 font-black uppercase text-[9px] tracking-widest mb-1">Status</p>
                <Badge className="bg-white text-indigo-600 border-none font-black uppercase rounded-full">{batch.status}</Badge>
             </div>
-            <div className="bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 min-w-[120px]">
+            <div className="bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 min-w-30">
                <p className="text-indigo-200 font-black uppercase text-[9px] tracking-widest mb-1">Health Check</p>
                <p className="text-2xl font-black text-white">{batch.progress || 0}%</p>
             </div>
@@ -277,7 +277,7 @@ const TeacherBatchDetail = () => {
            <button
              key={tab.id}
              onClick={() => setActiveTab(tab.id)}
-             className={`flex-1 min-w-[140px] flex items-center justify-center gap-3 py-4 px-6 rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] transition-all duration-500 ${
+             className={`flex-1 min-w-35 flex items-center justify-center gap-3 py-4 px-6 rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] transition-all duration-500 ${
                activeTab === tab.id
                  ? "bg-white text-indigo-600 shadow-xl ring-1 ring-slate-100"
                  : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
@@ -440,7 +440,7 @@ const TeacherBatchDetail = () => {
                                    {record.status}
                                 </Badge>
                              </td>
-                             <td className="px-6 py-6 min-w-[200px]">
+                             <td className="px-6 py-6 min-w-50">
                                 <p className="text-sm text-slate-500 font-medium italic">"{record.remarks || "No log entries"}"</p>
                              </td>
                              <td className="px-6 py-6 text-center">
@@ -463,7 +463,7 @@ const TeacherBatchDetail = () => {
                     <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Status Distribution</h3>
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600"><Activity size={20}/></div>
                  </div>
-                 <div className="h-[300px] w-full">
+                 <div className="h-75 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                        <PieChart>
                           <Pie data={getAttendanceStats()} innerRadius={80} outerRadius={110} paddingAngle={8} dataKey="value" stroke="none">
@@ -518,7 +518,7 @@ const TeacherBatchDetail = () => {
 
       {/* Modernized Edit Dialog */}
       {isEditModalOpen && editingRecord && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-[100] p-6">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-100 p-6">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                       className="bg-white rounded-[3rem] shadow-4xl max-w-lg w-full overflow-hidden border border-white/20">
              <div className="bg-slate-950 p-8 flex items-center justify-between">

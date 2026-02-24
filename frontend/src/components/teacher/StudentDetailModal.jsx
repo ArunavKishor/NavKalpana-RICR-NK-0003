@@ -72,7 +72,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
             <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden p-0 rounded-[2.5rem] border-none shadow-2xl bg-white flex flex-col">
                 <AnimatePresence>
                     {loading ? (
-                        <div className="h-[600px] flex flex-col items-center justify-center p-12 text-center bg-slate-50">
+                        <div className="h-150 flex flex-col items-center justify-center p-12 text-center bg-slate-50">
                             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full mb-4" />
                             <p className="text-slate-500 font-bold italic">Synchronizing Student Intelligence Hub...</p>
                         </div>
