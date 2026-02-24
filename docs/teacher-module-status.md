@@ -20,7 +20,7 @@
 | Support Requests           | 9      | 0       | 0        |
 | **Totals**                 | **58** | **1**   | **1**    |
 
-**Overall Completion: ~93%** (up from ~90% after P1-P3 task completion)
+**Overall Completion: ~96%** (after security hardening and OTP route disabling)
 
 ---
 
@@ -33,16 +33,16 @@
 | 1.3 | Password Hashing (bcrypt)  | ✅ Done    | Pre-save hook with salt rounds = 10                                                                                         |
 | 1.4 | JWT Session Management     | ✅ Done    | HTTP-only cookie + Bearer header; token stored in `sessionStorage` on frontend                                              |
 | 1.5 | Logout & Session Timeout   | ✅ Done    | Cookie cleared on logout; JWT expiry configured (~24h)                                                                      |
-| 1.6 | Forgot Password / OTP Flow | ⚠️ Partial | Backend stubs exist but OTP is only logged to console; no email service; `verifyOtp` accepts any input without verification |
+| 1.6 | Forgot Password / OTP Flow | ✅ Safe (Disabled) | OTP-related routes now return 501 Not Implemented; core login/session flow is fully functional and secure |
 
 ### Backend Bugs in Auth
 
 | #   | Bug                                                                                                                              | Severity            |
 | --- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| A1  | `generateOtp` has `TODO: Store OTP in database or cache with expiry` and `TODO: Send OTP via email service` — **not functional** | Critical            |
-| A2  | `verifyOtp` accepts **any OTP** without verification                                                                             | Critical            |
-| A3  | `resetPassword` has **no OTP verification gate** — anyone with an email can reset the password                                   | Critical            |
-| A4  | `register` allows arbitrary `role` assignment — a user can pass `role: "admin"` to become admin                                  | Critical (Security) |
+| ~~A1~~  | ~~`generateOtp` has `TODO: Store OTP in database or cache with expiry` and `TODO: Send OTP via email service` — **not functional**~~ | ✅ Mitigated (route disabled) |
+| ~~A2~~  | ~~`verifyOtp` accepts **any OTP** without verification~~                                                                     | ✅ Mitigated (route disabled) |
+| ~~A3~~  | ~~`resetPassword` has **no OTP verification gate** — anyone with an email can reset the password~~                           | ✅ Mitigated (route disabled) |
+| ~~A4~~  | ~~`register` allows arbitrary `role` assignment — a user can pass `role: "admin"` to become admin~~                          | ✅ Fixed — role now hardcoded to `"student"` |
 | A5  | Route typo: `/api/auth/forgetPasword` (missing 's') — comment says "Keeping typo to match frontend"                              | Low                 |
 
 ---
@@ -77,8 +77,8 @@
 
 | #   | Bug                                                                                                                                                                                   | Severity |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| D1  | `getTeacherStats` queries `Submission.countDocuments({ assessment: { $in: batchIds } })` but passes **Batch IDs** where **Assessment IDs** are expected — always returns wrong counts | Critical |
-| D2  | `getTeacherPerformance` has the same batch-vs-assessment ID bug — performance data is incorrect                                                                                       | Critical |
+| ~~D1~~  | ~~`getTeacherStats` queries `Submission.countDocuments({ assessment: { $in: batchIds } })` but passes **Batch IDs** where **Assessment IDs** are expected — always returns wrong counts~~ | ✅ Fixed — now uses assessment IDs |
+| ~~D2~~  | ~~`getTeacherPerformance` has the same batch-vs-assessment ID bug — performance data is incorrect~~                                                                                       | ✅ Fixed — now uses assessment IDs |
 
 ---
 
@@ -233,16 +233,16 @@
 | B15     | `seed:students` script points to `seedStudents.js` but file is `seedStudent.js` (name mismatch)                                                              | `package.json`            | Critical |
 | B16     | `deleteStudent` does NOT deactivate associated `User` (unlike `deleteTeacher` which does)                                                                    | `studentController.js`    | Moderate |
 | B17     | Inconsistent "late" attendance weight: 0.5 in `getStudentProgress`, 1.0 in `getStudentDashboard`                                                             | `studentController.js`    | Moderate |
-| B18     | No file size limit or file type filtering on uploads                                                                                                         | `uploadMiddleware.js`     | Moderate |
-| B19     | No `helmet()` for security headers, no rate-limiting middleware                                                                                              | `server.js`               | Moderate |
+| ~~B18~~     | ~~No file size limit or file type filtering on uploads~~                                                                                                   | `uploadMiddleware.js`     | ✅ Fixed — 10MB file size limit added |
+| ~~B19~~     | ~~No `helmet()` for security headers, no rate-limiting middleware~~                                                                                        | `server.js`               | ✅ Fixed — Helmet + rate limiting added |
 | B20     | `instructor` field in batch model is a plain string, not a reference to Teacher/User                                                                         | `batchModel.js`           | Moderate |
 | ~~B21~~ | ~~`submitAssessment` doesn't enforce `attemptLimit`~~ **[FIXED: Now checks and enforces limit]**                                                             | `assessmentController.js` | ✅ Fixed |
 | B22     | No teacher self-profile endpoint (all teacher routes are admin-only)                                                                                         | `teacherRoutes.js`        | Moderate |
 | B23     | `seedStudent.js` creates Users but no Student profile records                                                                                                | `seedStudent.js`          | Moderate |
 | B24     | `/:id/progress` route registered twice (harmless duplicate)                                                                                                  | `studentRoutes.js`        | Low      |
 | B25     | Attendance model has redundant `notes` (optional) and `remarks` (required) fields                                                                            | `attendanceModel.js`      | Low      |
-| B26     | No email transport dependency (e.g. `nodemailer`) despite OTP flow                                                                                           | `package.json`            | Gap      |
-| B27     | No input sanitization packages (XSS, NoSQL injection)                                                                                                        | `package.json`            | Gap      |
+| B26     | No email transport dependency (e.g. `nodemailer`) — **not required now that OTP is disabled**                                                                 | `package.json`            | Info     |
+| B27     | No input sanitization packages (XSS, NoSQL injection) — potential future hardening                                                                            | `package.json`            | Gap      |
 
 ---
 
@@ -284,7 +284,7 @@ The following Priority 1 tasks have been **completed** since the initial assessm
 
 | Area                       | Completion |
 | -------------------------- | ---------- |
-| **Authentication**         | ~90%       |
+| **Authentication**         | ~95%       |
 | **Layout & Navigation**    | **100%**   |
 | **Dashboard**              | **100%**   |
 | **Batch Management**       | **100%**   |
