@@ -8,45 +8,56 @@ import {
   User,
   GraduationCap,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+const sidebarItems = [
+  { icon: LayoutDashboard, label: "Dashboard", href: "/student-dashboard" },
+  {
+    icon: FileText,
+    label: "Assignments",
+    href: "/student-dashboard/assignments",
+    badge: 3,
+  },
+  { icon: BookOpen, label: "Quizzes", href: "/student-dashboard/quizzes" },
+  { icon: Calendar, label: "Attendance", href: "/student-dashboard/attendance" },
+  { icon: User, label: "Profile", href: "/student-dashboard/profile" },
+];
 
 const StudentSidebar = ({ isOpen }) => {
   const location = useLocation();
 
-  const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/student-dashboard" },
-    {
-      icon: FileText,
-      label: "Assignments",
-      href: "/student-dashboard/assignments",
-      badge: 3,
-    },
-    { icon: BookOpen, label: "Quizzes", href: "/student-dashboard/quizzes" },
-    { icon: Calendar, label: "Attendance", href: "/student-dashboard/attendance" },
-    { icon: User, label: "Profile", href: "/student-dashboard/profile" },
-  ];
-
   return (
     <motion.aside
-      initial={{ x: -120 }}
-      animate={{ x: isOpen ? 0 : -280 }}
-      transition={{ type: "spring", stiffness: 260, damping: 25 }}
+      initial={false}
+      animate={{ x: isOpen ? 0 : -285 }}
+      transition={{
+        type: "spring",
+        stiffness: 95,
+        damping: 16,
+        mass: 0.9,
+      }}
       className={cn(
         "fixed top-3 left-3 z-50 h-[calc(100vh-24px)] w-64 rounded-3xl",
-        "backdrop-blur-xl bg-gradient-to-b from-white to-slate-50",
-        "border border-slate-200 shadow-sm flex flex-col overflow-hidden"
+        "bg-white/80 backdrop-blur-xl",
+        "border border-slate-200/70 shadow-sm",
+        "flex flex-col overflow-hidden"
       )}
     >
       {/* LOGO */}
       <div className="h-20 px-5 flex items-center border-b border-slate-100">
         <motion.div
-          whileHover={{ scale: 1.03 }}
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center shadow-md">
+          <motion.div
+            whileHover={{ rotate: -5 }}
+            transition={{ type: "spring", stiffness: 200, damping: 12 }}
+            className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-sm"
+          >
             <GraduationCap className="text-white w-5 h-5" />
-          </div>
+          </motion.div>
 
           <div className="leading-tight">
             <p className="font-semibold text-slate-900 tracking-wide">
@@ -70,52 +81,63 @@ const StudentSidebar = ({ isOpen }) => {
           return (
             <motion.div
               key={item.href}
-              whileHover={{ x: 4 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              whileHover={{ x: 2 }}
+              transition={{ type: "tween", duration: 0.15 }}
             >
               <NavLink
                 to={item.href}
                 className={cn(
-                  "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
-                  isActive
-                    ? "text-white"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium",
+                  "transition-all duration-200 group"
                 )}
               >
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeSidebarStudent"
-                      className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-500 rounded-xl"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    />
-                  )}
-                </AnimatePresence>
+                {/* Active Background */}
+                {isActive && (
+                  <motion.div
+                    layoutId="studentActive"
+                    className="absolute inset-0 rounded-xl bg-indigo-600"
+                    transition={{
+                      type: "spring",
+                      stiffness: 140,
+                      damping: 22,
+                    }}
+                  />
+                )}
 
+                {/* Icon */}
                 <div
                   className={cn(
-                    "relative z-10 w-9 h-9 rounded-lg flex items-center justify-center transition-all",
+                    "relative z-10 w-9 h-9 rounded-lg flex items-center justify-center",
+                    "transition-all duration-200",
                     isActive
-                      ? "bg-white/15"
+                      ? "bg-white/20"
                       : "bg-slate-100 group-hover:bg-slate-200"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "w-4 h-4 transition-colors",
+                      "w-4 h-4 transition-colors duration-200",
                       isActive ? "text-white" : "text-slate-500"
                     )}
                   />
                 </div>
 
-                <span className="relative z-10 flex-1">
+                {/* Label */}
+                <span
+                  className={cn(
+                    "relative z-10 flex-1 transition-colors duration-200",
+                    isActive ? "text-white" : "text-slate-700"
+                  )}
+                >
                   {item.label}
                 </span>
 
+                {/* Badge */}
                 {item.badge && (
-                  <span
+                  <motion.span
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
                     className={cn(
                       "relative z-10 text-xs px-2 py-0.5 rounded-full",
                       isActive
@@ -124,13 +146,33 @@ const StudentSidebar = ({ isOpen }) => {
                     )}
                   >
                     {item.badge}
-                  </span>
+                  </motion.span>
                 )}
               </NavLink>
             </motion.div>
           );
         })}
       </nav>
+
+      {/* FOOTER (Premium Touch) */}
+      <div className="p-4 border-t border-slate-100">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          transition={{ duration: 0.2 }}
+          className="rounded-xl bg-slate-50 p-3 cursor-pointer"
+        >
+          <p className="text-xs font-medium text-slate-700">
+            Learning Status
+          </p>
+
+          <div className="flex items-center gap-2 mt-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs text-slate-500">
+              You're on track 🎯
+            </span>
+          </div>
+        </motion.div>
+      </div>
     </motion.aside>
   );
 };
