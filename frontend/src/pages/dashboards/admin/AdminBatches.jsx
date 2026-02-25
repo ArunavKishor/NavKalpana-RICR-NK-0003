@@ -72,6 +72,7 @@ const BatchManagement = () => {
   useEffect(() => {
     if (searchParams.get("action") === "create") {
       openCreateModal();
+      navigate("/admin/batches", { replace: true });
     }
   }, [searchParams]);
 
@@ -359,7 +360,9 @@ const BatchManagement = () => {
               <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
                 <User className="w-4 h-4" />
                 <span className="truncate">
-                  {batch.instructorName || batch.instructor?.user?.fullName || "Not Assigned"}
+                  {batch.instructorName ||
+                    batch.instructor?.user?.fullName ||
+                    "Not Assigned"}
                 </span>
               </div>
 

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Users, BookOpen, ClipboardCheck, Calendar, GraduationCap } from "lucide-react";
+import {
+  Users,
+  BookOpen,
+  ClipboardCheck,
+  Calendar,
+  GraduationCap,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import api from "@/config/Api";
@@ -106,7 +112,7 @@ const DashboardHome = () => {
         console.error("Dashboard load failed:", err);
         setError(
           err.response?.data?.message ||
-          "Failed to load dashboard data. Please try again.",
+            "Failed to load dashboard data. Please try again.",
         );
       } finally {
         setLoading(false);
@@ -117,19 +123,23 @@ const DashboardHome = () => {
   }, []);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Greeting Header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-          {greeting}, {user?.fullName || "Admin"}! 👋
-        </h1>
-        <p className="text-slate-500 font-medium">
-          Welcome back to the command center.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            {greeting}, {user?.fullName?.split(" ")[0] || "Admin"}! 👋
+          </h1>
+          <p className="text-slate-500 text-sm sm:text-base mt-0.5">
+            Here's what's happening across your institution today.
+          </p>
+        </div>
       </div>
 
       {loading && (
-        <div className="text-sm text-slate-500">Loading dashboard...</div>
+        <div className="text-sm text-slate-500 animate-pulse">
+          Loading dashboard data...
+        </div>
       )}
 
       {error && (
@@ -139,64 +149,64 @@ const DashboardHome = () => {
       )}
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat, index) => (
           <Card
             key={index}
-            className="border-none shadow-sm hover:shadow-md transition-shadow"
+            className="border border-slate-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wider">
-                {stat.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
+            <CardContent className="p-4 sm:p-5 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  {stat.title}
+                </p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+                  {stat.value}
+                </p>
+                <p className="text-xs text-slate-500 mt-1 truncate">
+                  {stat.change}
+                </p>
               </div>
-            </CardHeader>
-
-            <CardContent>
-              <div className="text-2xl sm:text-3xl font-bold text-slate-900">
-                {stat.value}
+              <div className={`p-2.5 rounded-xl shrink-0 ${stat.bgColor}`}>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
-              <p className="text-xs text-emerald-600 font-medium mt-1">
-                {stat.change}
-              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-
-        {/* Chart Section */}
+      {/* Main Grid — Chart + Sidepanel */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+        {/* Chart */}
         <div className="lg:col-span-2">
-          <Card className="border-none shadow-sm">
-            <CardHeader>
+          <Card className="border border-slate-100 shadow-sm h-full">
+            <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-sm sm:text-lg font-bold text-slate-800">
+                  <CardTitle className="text-base sm:text-lg font-bold text-slate-800">
                     Class Performance Analytics
                   </CardTitle>
-                  <p className="text-xs sm:text-sm text-slate-500">
-                    Average test scores vs Attendance trends
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    Average test scores vs attendance trends
                   </p>
                 </div>
-
-                <select className="w-full sm:w-auto text-xs sm:text-sm border rounded-md p-2 bg-slate-50">
+                <select className="w-full sm:w-auto text-xs sm:text-sm border rounded-lg p-2 bg-slate-50 focus:outline-none">
                   <option>Last 6 Weeks</option>
                   <option>Last 3 Months</option>
                 </select>
               </div>
             </CardHeader>
-
             <CardContent>
               <div className="h-56 sm:h-64 md:h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+                <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                   <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#f1f5f9"
+                    />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
                     <Line
                       type="monotone"
@@ -204,6 +214,7 @@ const DashboardHome = () => {
                       stroke="#8b5cf6"
                       strokeWidth={3}
                       dot={false}
+                      name="Avg Score"
                     />
                     <Line
                       type="monotone"
@@ -211,107 +222,127 @@ const DashboardHome = () => {
                       stroke="#10b981"
                       strokeWidth={2}
                       dot={false}
+                      name="Attendance %"
                     />
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="flex gap-4 mt-3 justify-end">
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-3 h-0.5 bg-purple-500 inline-block rounded" />
+                  Avg Score
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" />
+                  Attendance
+                </span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Upcoming Deadlines */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm sm:text-lg font-bold text-slate-800">
-              Upcoming Deadlines
-            </h3>
-            <button className="text-xs sm:text-sm text-blue-600 font-medium hover:underline">
-              View All
-            </button>
-          </div>
-
-          <div className="space-y-3 sm:space-y-4">
-            {deadlines.map((item, index) => (
-              <Card key={index} className="shadow-sm">
-                <CardContent className="p-3 flex gap-3">
-                  <div className={`p-2 rounded-lg ${item.color}`}>
-                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+        {/* Right Panel */}
+        <div className="flex flex-col gap-5">
+          {/* Upcoming Deadlines */}
+          <Card className="border border-slate-100 shadow-sm">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm sm:text-base font-bold text-slate-800">
+                  Upcoming Deadlines
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2 pt-0">
+              {deadlines.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-4">
+                  No upcoming deadlines
+                </p>
+              )}
+              {deadlines.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition"
+                >
+                  <div className={`p-1.5 rounded-lg shrink-0 ${item.color}`}>
+                    <item.icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-semibold text-sm sm:text-base truncate">
+                    <p className="font-medium text-sm text-slate-800 truncate">
                       {item.title}
-                    </h4>
-                    <p className="text-xs text-slate-500 mt-1 truncate">
-                      {item.date} • {item.type}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {item.date} · {item.type}
                     </p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
           {/* Quick Navigation */}
-          <div className="mt-6">
-            <h3 className="text-xs font-bold text-slate-400 uppercase mb-3">
-              Quick Navigation
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Link
-                to="/admin/batches"
-                className="w-full bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors border border-transparent hover:border-blue-200"
-              >
-                <BookOpen className="w-5 h-5" />
-                <span className="text-xs font-semibold">All Batches</span>
-              </Link>
-
-              <Link
-                to="/admin/students"
-                className="w-full bg-slate-50 hover:bg-purple-50 hover:text-purple-600 p-3 rounded-xl flex flex-col items-center gap-2 transition-colors border border-transparent hover:border-purple-200"
-              >
-                <Users className="w-5 h-5" />
-                <span className="text-xs font-semibold">Student List</span>
-              </Link>
-            </div>
-          </div>
+          <Card className="border border-slate-100 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm sm:text-base font-bold text-slate-800">
+                Quick Navigation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  to="/admin/batches"
+                  className="bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-3 rounded-xl flex flex-col items-center gap-1.5 transition-colors border border-transparent hover:border-blue-200 text-slate-600"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span className="text-xs font-semibold">All Batches</span>
+                </Link>
+                <Link
+                  to="/admin/students"
+                  className="bg-slate-50 hover:bg-purple-50 hover:text-purple-600 p-3 rounded-xl flex flex-col items-center gap-1.5 transition-colors border border-transparent hover:border-purple-200 text-slate-600"
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="text-xs font-semibold">Students</span>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Quick Actions */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 text-center">
-              Quick Actions
-            </h3>
-            <div className="space-y-2">
+          <Card className="border border-slate-100 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm sm:text-base font-bold text-slate-800">
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1 pt-0">
               <Link
                 to="/admin/batches?action=create"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 group transition-all"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 group transition-all"
               >
-                <div className="p-2 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100">
+                <div className="p-2 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100 shrink-0">
                   <PlusCircle className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium">Create New Batch</span>
               </Link>
-
               <Link
                 to="/admin/students?action=create"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-emerald-600 group transition-all"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-emerald-600 group transition-all"
               >
-                <div className="p-2 rounded-md bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100">
+                <div className="p-2 rounded-md bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 shrink-0">
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium">Add New Student</span>
               </Link>
-
               <Link
                 to="/admin/support?action=create"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-orange-600 group transition-all"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-orange-600 group transition-all"
               >
-                <div className="p-2 rounded-md bg-orange-50 text-orange-600 group-hover:bg-orange-100">
+                <div className="p-2 rounded-md bg-orange-50 text-orange-600 group-hover:bg-orange-100 shrink-0">
                   <MessageSquarePlus className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium">New Support Ticket</span>
               </Link>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
