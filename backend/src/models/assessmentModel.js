@@ -52,6 +52,10 @@ const assessmentSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    imageUrl: {
+      type: String,
+      default: "",
+    },
     totalMarks: {
       type: Number,
       required: [true, "Total marks is required"],

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Filter, MoreVertical, Zap, Archive } from "lucide-react";
+import { Filter, MoreVertical, Zap, Archive } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import AttendanceModal from "@/components/teacher/AttendanceModal";
 
@@ -14,7 +13,6 @@ const TeacherBatchManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("ONGOING");
-  const [searchQuery, setSearchQuery] = useState("");
   const [attendanceBatch, setAttendanceBatch] = useState(null);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
 
@@ -56,11 +54,7 @@ const TeacherBatchManagement = () => {
     }
   };
 
-  const filteredBatches = batches.filter(
-    (batch) =>
-      batch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      batch.course.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredBatches = batches;
 
   const handleEndBatch = async (batchId) => {
     if (
@@ -99,7 +93,6 @@ const TeacherBatchManagement = () => {
 
   return (
     <div className="w-full space-y-8">
-
       {/* PAGE HEADER */}
       <div className="flex flex-col gap-2 border-b pb-6">
         <h1 className="text-3xl font-bold text-slate-900">
@@ -111,45 +104,43 @@ const TeacherBatchManagement = () => {
       </div>
 
       {/* SUMMARY KPI SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="summary-card">
-          <p>Total Batches</p>
-          <h3>{allBatches.length}</h3>
-        </div>
-
-        <div className="summary-card">
-          <p>Ongoing</p>
-          <h3>
-            {allBatches.filter((b) => b.status === "ongoing").length}
-          </h3>
-        </div>
-
-        <div className="summary-card">
-          <p>Completed</p>
-          <h3>
-            {allBatches.filter((b) => b.status === "completed").length}
-          </h3>
-        </div>
-
-        <div className="summary-card">
-          <p>Upcoming</p>
-          <h3>
-            {allBatches.filter((b) => b.status === "upcoming").length}
-          </h3>
-        </div>
-      </div>
-
-      {/* SEARCH */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <Input
-            placeholder="Search by batch name or course..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white"
-          />
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            label: "Total Batches",
+            value: allBatches.length,
+            color: "bg-indigo-50 text-indigo-700",
+          },
+          {
+            label: "Ongoing",
+            value: allBatches.filter((b) => b.status === "ongoing").length,
+            color: "bg-emerald-50 text-emerald-700",
+          },
+          {
+            label: "Completed",
+            value: allBatches.filter((b) => b.status === "completed").length,
+            color: "bg-slate-50 text-slate-700",
+          },
+          {
+            label: "Upcoming",
+            value: allBatches.filter((b) => b.status === "upcoming").length,
+            color: "bg-blue-50 text-blue-700",
+          },
+        ].map(({ label, value, color }) => (
+          <div
+            key={label}
+            className="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
+          >
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              {label}
+            </p>
+            <p
+              className={`text-3xl font-bold rounded-md px-2 py-0.5 inline-block ${color}`}
+            >
+              {value}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* FILTER TABS */}
@@ -158,10 +149,11 @@ const TeacherBatchManagement = () => {
           <button
             key={status}
             onClick={() => setActiveFilter(status)}
-            className={`pb-3 font-semibold transition-all border-b-2 ${activeFilter === status
+            className={`pb-3 font-semibold transition-all border-b-2 ${
+              activeFilter === status
                 ? "text-indigo-600 border-indigo-600"
                 : "text-slate-500 border-transparent hover:text-slate-700"
-              }`}
+            }`}
           >
             {status}
           </button>
@@ -185,7 +177,6 @@ const TeacherBatchManagement = () => {
       {/* BATCH GRID */}
       {!loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
           {filteredBatches.length === 0 ? (
             <div className="col-span-full text-center py-16 bg-slate-50 rounded-xl">
               No batches found
@@ -204,9 +195,7 @@ const TeacherBatchManagement = () => {
                       <h3 className="text-lg font-bold text-slate-900">
                         {batch.name}
                       </h3>
-                      <p className="text-sm text-slate-600">
-                        {batch.course}
-                      </p>
+                      <p className="text-sm text-slate-600">{batch.course}</p>
 
                       {/* Batch Type (New Field Added) */}
                       {batch.type && (
@@ -226,7 +215,6 @@ const TeacherBatchManagement = () => {
 
                 {/* CARD BODY */}
                 <div className="p-6 space-y-4">
-
                   <div className="flex justify-between text-sm">
                     <span>Total Students</span>
                     <span className="font-semibold">
@@ -252,13 +240,9 @@ const TeacherBatchManagement = () => {
 
                   <div className="text-xs text-slate-500 pt-2">
                     <p>
-                      Start:{" "}
-                      {new Date(batch.startDate).toLocaleDateString()}
+                      Start: {new Date(batch.startDate).toLocaleDateString()}
                     </p>
-                    <p>
-                      End:{" "}
-                      {new Date(batch.endDate).toLocaleDateString()}
-                    </p>
+                    <p>End: {new Date(batch.endDate).toLocaleDateString()}</p>
                   </div>
                 </div>
 

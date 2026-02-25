@@ -10,6 +10,7 @@ import {
   Download,
   CheckCircle,
   Clock,
+  ImageIcon,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
@@ -62,6 +63,7 @@ const TeacherAssessmentManagement = () => {
     feedback: "",
     currentSubmission: null,
   });
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     loadAssessments();
@@ -151,27 +153,29 @@ const TeacherAssessmentManagement = () => {
     e.preventDefault();
 
     try {
-      const payload = {
-        ...formData,
-        type: activeTab === "assignments" ? "assignment" : "quiz",
-        totalMarks: Number(formData.totalMarks),
-        submissionType: formData.submissionType,
-        dueDate: formData.dueDate
-          ? new Date(formData.dueDate).toISOString()
-          : undefined,
-      };
+      const fd = new FormData();
+      fd.append("title", formData.title);
+      fd.append("description", formData.description);
+      fd.append("type", activeTab === "assignments" ? "assignment" : "quiz");
+      fd.append("batch", formData.batch);
+      fd.append("dueDate", formData.dueDate ? new Date(formData.dueDate).toISOString() : "");
+      fd.append("totalMarks", Number(formData.totalMarks));
+      fd.append("submissionType", formData.submissionType);
+      if (formData.moduleName) fd.append("moduleName", formData.moduleName);
+      if (formData.lessonName) fd.append("lessonName", formData.lessonName);
+      if (formData.lessonId) fd.append("lessonId", formData.lessonId);
+      if (imageFile) fd.append("image", imageFile);
 
-      console.log("Sending payload:", payload);
-
-      const res = await api.post("/api/assessments", payload);
+      await api.post("/api/assessments", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       toast.success("Assessment created successfully");
-
       setShowForm(false);
+      setImageFile(null);
       loadAssessments();
     } catch (err) {
       console.error("Create Assessment Error:", err.response?.data || err);
-
       toast.error(err.response?.data?.message || "Failed to create assessment");
     }
   };
@@ -540,6 +544,23 @@ const TeacherAssessmentManagement = () => {
                   placeholder="Lesson ID (optional)"
                 />
               </div>
+            </div>
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-slate-400" />
+                Cover Image (Optional)
+              </label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              />
+              {imageFile && (
+                <p className="text-xs text-slate-500">
+                  Selected: {imageFile.name}
+                </p>
+              )}
             </div>
             <DialogFooter>
               <Button

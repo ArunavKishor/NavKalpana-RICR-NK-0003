@@ -25,22 +25,32 @@ router.use(protect);
 router
   .route("/")
   .get(authorize("admin", "teacher"), getAssessments)
-  .post(authorize("admin", "teacher"), upload.single("pdf"), createAssessment);
+  .post(
+    authorize("admin", "teacher"),
+    upload.fields([
+      { name: "pdf", maxCount: 1 },
+      { name: "image", maxCount: 1 },
+    ]),
+    createAssessment,
+  );
 router
   .route("/:id")
   .get(authorize("admin", "teacher"), getAssessmentById)
-  .put(authorize("admin", "teacher"), upload.single("pdf"), updateAssessment)
+  .put(
+    authorize("admin", "teacher"),
+    upload.fields([
+      { name: "pdf", maxCount: 1 },
+      { name: "image", maxCount: 1 },
+    ]),
+    updateAssessment,
+  )
   .delete(authorize("admin", "teacher"), deleteAssessment);
 router
   .route("/:id/submissions")
   .get(authorize("admin", "teacher"), getAssessmentSubmissions);
 router
   .route("/:id/submit")
-  .post(
-    authorize("admin", "teacher"),
-    upload.single("file"),
-    submitAssessment,
-  );
+  .post(authorize("admin", "teacher"), upload.single("file"), submitAssessment);
 // Quiz-specific routes
 router
   .route("/:id/questions")
@@ -49,9 +59,7 @@ router
 router
   .route("/:id/questions/:questionId")
   .delete(authorize("admin", "teacher"), deleteQuizQuestion);
-router
-  .route("/:id/attempts")
-  .post(submitQuizAttempt);
+router.route("/:id/attempts").post(submitQuizAttempt);
 router
   .route("/:id/grade/:submissionId")
   .put(authorize("admin", "teacher"), gradeSubmission);

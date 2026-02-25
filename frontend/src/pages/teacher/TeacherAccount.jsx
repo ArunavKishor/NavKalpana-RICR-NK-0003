@@ -72,7 +72,6 @@ const TeacherAccount = () => {
     try {
       setSaving(true);
       await api.put(`/api/teachers/${teacher._id}`, {
-        fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone,
       });
@@ -90,7 +89,7 @@ const TeacherAccount = () => {
             ...user,
             fullName: formData.fullName,
             email: formData.email,
-          })
+          }),
         );
       }
 
@@ -315,19 +314,21 @@ const TeacherAccount = () => {
             )}
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Full Name */}
+            {/* Full Name — read-only */}
             <div className="space-y-2">
               <Label htmlFor="fullName" className="flex items-center gap-2">
                 <User className="w-4 h-4 text-slate-400" />
                 Full Name
+                <span className="text-xs text-slate-400 font-normal">
+                  (contact admin to change)
+                </span>
               </Label>
               <Input
                 id="fullName"
                 name="fullName"
                 value={formData.fullName}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className={!isEditing ? "bg-slate-50" : ""}
+                disabled
+                className="bg-slate-50"
               />
             </div>
 
@@ -374,9 +375,10 @@ const TeacherAccount = () => {
                 Account Status
               </h3>
               <p className="text-sm text-slate-600">
-                Your account is <span className="font-medium text-emerald-600">active</span>.
-                You have full access to all teacher features including batch management,
-                assessments, and student analytics.
+                Your account is{" "}
+                <span className="font-medium text-emerald-600">active</span>.
+                You have full access to all teacher features including batch
+                management, assessments, and student analytics.
               </p>
             </div>
           </CardContent>

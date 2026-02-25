@@ -64,7 +64,13 @@ export const createBatch = async (req, res) => {
 
     // Handle instructor field - convert empty string or "none" to null
     let instructorId = instructor;
-    if (instructor === "" || instructor === "none" || instructor === "null" || instructor === null || instructor === undefined) {
+    if (
+      instructor === "" ||
+      instructor === "none" ||
+      instructor === "null" ||
+      instructor === null ||
+      instructor === undefined
+    ) {
       instructorId = null;
     }
 
@@ -84,14 +90,18 @@ export const createBatch = async (req, res) => {
     // Populate instructor for response
     batch = await Batch.findById(batch._id)
       .populate("createdBy", "fullName email")
-      .populate("instructor", "user")
+      .populate("instructor", "user");
 
     const batchObj = batch.toObject();
     if (batchObj.instructor && batchObj.instructor.user) {
-      const user = await User.findById(batchObj.instructor.user).select("fullName");
+      const user = await User.findById(batchObj.instructor.user).select(
+        "fullName",
+      );
       batchObj.instructorName = user?.fullName || "Unknown";
     } else {
-      batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+      batchObj.instructorName = batchObj.instructor
+        ? "Unknown"
+        : "Not Assigned";
     }
     batchObj.enrolledStudents = batch.students.length;
 
@@ -142,17 +152,23 @@ export const getBatches = async (req, res) => {
 
     if (search) {
       const regex = new RegExp(search, "i");
-      filter.$or = [{ name: regex }, { course: regex }, { instructor: regex }];
+      filter.$or = [{ name: regex }, { course: regex }];
     }
 
     // If the caller is a teacher, restrict to only their assigned batches
     if (req.user?.role === "teacher") {
-      const teacherProfile = await Teacher.findOne({ user: req.user._id, isActive: true }).select("_id");
+      const teacherProfile = await Teacher.findOne({
+        user: req.user._id,
+        isActive: true,
+      }).select("_id");
       if (!teacherProfile) {
         return res.status(200).json({
           success: true,
           message: "Batches retrieved successfully",
-          data: { batches: [], pagination: buildPaginationMeta(page, limit, 0) },
+          data: {
+            batches: [],
+            pagination: buildPaginationMeta(page, limit, 0),
+          },
         });
       }
       filter.instructor = teacherProfile._id;
@@ -175,14 +191,18 @@ export const getBatches = async (req, res) => {
       batches.map(async (batch) => {
         const batchObj = batch.toObject();
         if (batchObj.instructor && batchObj.instructor.user) {
-          const user = await User.findById(batchObj.instructor.user).select("fullName");
+          const user = await User.findById(batchObj.instructor.user).select(
+            "fullName",
+          );
           batchObj.instructorName = user?.fullName || "Unknown";
         } else {
-          batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+          batchObj.instructorName = batchObj.instructor
+            ? "Unknown"
+            : "Not Assigned";
         }
         batchObj.enrolledStudents = batch.students.length;
         return batchObj;
-      })
+      }),
     );
 
     res.status(200).json({
@@ -222,10 +242,14 @@ export const getBatchById = async (req, res) => {
 
     // Get instructor name if instructor exists
     if (batchObj.instructor && batchObj.instructor.user) {
-      const user = await User.findById(batchObj.instructor.user).select("fullName");
+      const user = await User.findById(batchObj.instructor.user).select(
+        "fullName",
+      );
       batchObj.instructorName = user?.fullName || "Unknown";
     } else {
-      batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+      batchObj.instructorName = batchObj.instructor
+        ? "Unknown"
+        : "Not Assigned";
     }
 
     res.status(200).json({
@@ -256,7 +280,13 @@ export const updateBatch = async (req, res) => {
       // Handle instructor field specially - convert empty values to null
       if (key === "instructor") {
         const value = req.body[key];
-        if (value === "" || value === "none" || value === "null" || value === null || value === undefined) {
+        if (
+          value === "" ||
+          value === "none" ||
+          value === "null" ||
+          value === null ||
+          value === undefined
+        ) {
           batch[key] = null;
         } else {
           batch[key] = value;
@@ -281,10 +311,14 @@ export const updateBatch = async (req, res) => {
 
     const batchObj = updatedBatch.toObject();
     if (batchObj.instructor && batchObj.instructor.user) {
-      const user = await User.findById(batchObj.instructor.user).select("fullName");
+      const user = await User.findById(batchObj.instructor.user).select(
+        "fullName",
+      );
       batchObj.instructorName = user?.fullName || "Unknown";
     } else {
-      batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+      batchObj.instructorName = batchObj.instructor
+        ? "Unknown"
+        : "Not Assigned";
     }
     batchObj.enrolledStudents = updatedBatch.students.length;
 
@@ -331,8 +365,9 @@ export const getBatchStudents = async (req, res) => {
       return res.status(404).json({ message: "Batch not found" });
     }
 
-    const students = await Student.find({ _id: { $in: batch.students } })
-      .populate("user", "fullName email");
+    const students = await Student.find({
+      _id: { $in: batch.students },
+    }).populate("user", "fullName email");
 
     res.status(200).json({
       success: true,

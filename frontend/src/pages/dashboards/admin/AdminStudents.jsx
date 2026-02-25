@@ -50,6 +50,7 @@ const StudentManagement = () => {
   useEffect(() => {
     if (searchParams.get("action") === "create") {
       openCreateModal();
+      navigate("/admin/students", { replace: true });
     }
   }, [searchParams]);
 
@@ -153,7 +154,7 @@ const StudentManagement = () => {
       console.error("Load students failed:", err);
       setError(
         err.response?.data?.message ||
-        "Failed to load students. Please try again.",
+          "Failed to load students. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -306,11 +307,15 @@ const StudentManagement = () => {
                 icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
                 label="ACTIVE"
                 value={ongoing}
+                active={activeTab === "ONGOING"}
+                onClick={() => setActiveTab("ONGOING")}
               />
               <StatCard
                 icon={<Clock className="w-5 h-5 text-slate-600" />}
                 label="COMPLETED"
                 value={completed}
+                active={activeTab === "COMPLETED"}
+                onClick={() => setActiveTab("COMPLETED")}
               />
             </div>
           </div>
@@ -556,8 +561,13 @@ const StudentManagement = () => {
 
 /* ---------------- REUSABLE COMPONENTS ---------------- */
 
-const StatCard = ({ icon, label, value }) => (
-  <div className="bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35">
+const StatCard = ({ icon, label, value, onClick, active }) => (
+  <div
+    onClick={onClick}
+    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${
+      onClick ? "cursor-pointer hover:shadow-md" : ""
+    } ${active ? "ring-2 ring-blue-500" : ""}`}
+  >
     <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
     <div>
       <p className="text-xs text-slate-500">{label}</p>
@@ -569,8 +579,9 @@ const StatCard = ({ icon, label, value }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
-      }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
+      active ? "bg-slate-200" : "bg-white border"
+    }`}
   >
     {children}
   </button>
