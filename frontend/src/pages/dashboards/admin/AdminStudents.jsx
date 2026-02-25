@@ -10,6 +10,8 @@ import {
   ChevronRight,
   Mail,
   Phone,
+  Github,
+  Linkedin,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +141,8 @@ const StudentManagement = () => {
           name: student.user?.fullName || "Unknown",
           email: student.user?.email || "N/A",
           phone: student.phone || "N/A",
+          github: student.github || "",
+          linkedin: student.linkedin || "",
           course,
           enrollmentId: student.enrollmentId,
           attendance,
@@ -154,7 +158,7 @@ const StudentManagement = () => {
       console.error("Load students failed:", err);
       setError(
         err.response?.data?.message ||
-        "Failed to load students. Please try again.",
+          "Failed to load students. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -391,7 +395,7 @@ const StudentManagement = () => {
                   <div className="col-span-4 flex items-center gap-4">
                     <img
                       src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        student.name || "S"
+                        student.name || "S",
                       )}&background=random`}
                       alt={student.name}
                       className="w-12 h-12 rounded-full"
@@ -409,6 +413,38 @@ const StudentManagement = () => {
                           <Phone className="w-4 h-4" />
                           {student.phone}
                         </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {student.github && (
+                          <a
+                            href={
+                              student.github.startsWith("http")
+                                ? student.github
+                                : `https://github.com/${student.github}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="GitHub"
+                            className="text-slate-400 hover:text-slate-900 transition"
+                          >
+                            <Github className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {student.linkedin && (
+                          <a
+                            href={
+                              student.linkedin.startsWith("http")
+                                ? student.linkedin
+                                : `https://linkedin.com/in/${student.linkedin}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="LinkedIn"
+                            className="text-slate-400 hover:text-blue-600 transition"
+                          >
+                            <Linkedin className="w-3.5 h-3.5" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -470,7 +506,7 @@ const StudentManagement = () => {
                   <div className="flex items-center gap-3">
                     <img
                       src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        student.name || "S"
+                        student.name || "S",
                       )}&background=random`}
                       alt={student.name}
                       className="w-12 h-12 rounded-full"
@@ -568,8 +604,9 @@ const StudentManagement = () => {
 const StatCard = ({ icon, label, value, onClick, active }) => (
   <div
     onClick={onClick}
-    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${onClick ? "cursor-pointer hover:shadow-md" : ""
-      } ${active ? "ring-2 ring-blue-500" : ""}`}
+    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${
+      onClick ? "cursor-pointer hover:shadow-md" : ""
+    } ${active ? "ring-2 ring-blue-500" : ""}`}
   >
     <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
     <div>
@@ -582,8 +619,9 @@ const StatCard = ({ icon, label, value, onClick, active }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
-      }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
+      active ? "bg-slate-200" : "bg-white border"
+    }`}
   >
     {children}
   </button>

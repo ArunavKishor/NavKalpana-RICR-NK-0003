@@ -456,6 +456,35 @@ const SupportRequests = () => {
                   {request.description}
                 </p>
 
+                {/* Attachments */}
+                {request.attachments?.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {request.attachments.map((url, idx) => {
+                      const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                      return (
+                        <a
+                          key={idx}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition"
+                        >
+                          {isImage ? (
+                            <img
+                              src={url}
+                              alt={`attachment-${idx + 1}`}
+                              className="w-6 h-6 rounded object-cover border"
+                            />
+                          ) : (
+                            <span>📎</span>
+                          )}
+                          Attachment {idx + 1}
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {/* Footer */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-4 text-xs text-slate-500">

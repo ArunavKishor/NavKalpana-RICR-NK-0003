@@ -4,7 +4,7 @@
 
 ### 🎓 Classroom Intelligence & Resource Management Platform
 
-*Reimagining how institutions manage classrooms, track growth, and empower educators*
+_Reimagining how institutions manage classrooms, track growth, and empower educators_
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
@@ -19,24 +19,27 @@
 
 Traditional educational institutions depend on fragmented, manual processes for attendance, assessments, and student tracking. **Mind Rise** solves this by providing a unified, real-time platform with:
 
-- **Automated Attendance** with edit-lock safeguards and CSV export
-- **Assessment Lifecycle Management** — creation, submission tracking, late detection, and in-app grading
-- **Student Growth Index (OGI)** — a composite metric (40% Attendance + 60% Academics)
-- **Doubt Resolution System** with priority escalation and backup class scheduling
-- **Role-based Dashboards** for Admins, Teachers, and Students
+- **Automated Attendance** with Present / Absent / Late classification, edit-lock safeguards, and CSV export
+- **Assessment Lifecycle Management** — assignments and quizzes with submission tracking, late detection, and in-app grading with feedback
+- **Overall Growth Index (OGI)** — a composite metric: `(Attendance% × 0.4) + (Academics% × 0.6)` with 4-level growth classification
+- **Weekly Performance Snapshots** stored historically for trend analysis and week-over-week comparison
+- **Doubt Resolution System** with priority escalation, teacher replies, solution file upload, and backup class scheduling
+- **Analytics & Leaderboard** — class-wide OGI trends, attendance heatmaps, and student rankings
+- **Role-based Dashboards** for Admins and Teachers with real-time KPI cards
 
 > See [`docs/problem-statement.md`](docs/problem-statement.md) for the detailed problem statement.
+> See [`docs/remaining-tasks.md`](docs/remaining-tasks.md) for the PRD compliance checklist and feature gap tracking.
 
 ---
 
 ## 👥 Team Members & Roles
 
-| Name              | Role                          |
-|-------------------|-------------------------------|
-| Arunav Kishor     | Team Lead / UI/UX Developer |
-| Prateek Raiger    | Full Stack Developer          |
-| Punit             | Frontend Developer            |
-| Pradeep           | Backend Developer             |
+| Name           | Role                        |
+| -------------- | --------------------------- |
+| Arunav Kishor  | Team Lead / UI/UX Developer |
+| Prateek Raiger | Full Stack Developer        |
+| Punit          | Frontend Developer          |
+| Pradeep        | Backend Developer           |
 
 > **Team Name:** NavKalpana (Project: Mind Rise) | **Project Code:** RICR-NK-0003
 
@@ -44,14 +47,14 @@ Traditional educational institutions depend on fragmented, manual processes for 
 
 ## 🛠️ Tech Stack
 
-| Layer        | Technology                                              |
-|-------------|----------------------------------------------------------|
-| **Frontend** | React 19, Vite 7, Tailwind CSS 4, Framer Motion, Recharts, Radix UI |
-| **Backend**  | Node.js, Express 5, Mongoose 9 (MongoDB ODM)            |
-| **Database** | MongoDB Atlas                                            |
-| **Auth**     | JWT (JSON Web Tokens), bcryptjs                          |
-| **Storage**  | Cloudinary (images & file uploads)                       |
-| **Dev Tools**| Nodemon, ESLint, Morgan (HTTP logger)                    |
+| Layer         | Technology                                                          |
+| ------------- | ------------------------------------------------------------------- |
+| **Frontend**  | React 19, Vite 7, Tailwind CSS 4, Framer Motion, Recharts, Radix UI |
+| **Backend**   | Node.js, Express 5, Mongoose 9 (MongoDB ODM)                        |
+| **Database**  | MongoDB Atlas                                                       |
+| **Auth**      | JWT (JSON Web Tokens), bcryptjs                                     |
+| **Storage**   | Cloudinary (images & file uploads)                                  |
+| **Dev Tools** | Nodemon, ESLint, Morgan (HTTP logger)                               |
 
 ---
 
@@ -134,17 +137,17 @@ pnpm run seed:admin
 
 ### Quick Reference
 
-| Module          | Base Path            | Key Endpoints                                          |
-|-----------------|----------------------|--------------------------------------------------------|
-| **Auth**        | `/api/auth`          | `POST /login`, `POST /register`, `GET /me`             |
-| **Students**    | `/api/students`      | CRUD + `/me`, `/:id/progress`, `/:id/enroll`           |
-| **Batches**     | `/api/batches`       | CRUD + `/:id/students`, `/:id/attendance`              |
-| **Attendance**  | `/api/attendance`    | CRUD + `/export`, `/student/:id`, `/batch/:id`         |
-| **Assessments** | `/api/assessments`   | CRUD + `/:id/submit`, `/:id/grade/:subId`              |
-| **Support**     | `/api/support`       | CRUD + `/:id/respond`, `/:id/resolve`, `/statistics`   |
-| **Dashboard**   | `/api/dashboard`     | `/stats`, `/performance`, `/deadlines`, `/trends`      |
-| **Teachers**    | `/api/teachers`      | Full CRUD (Admin only)                                 |
-| **Contact**     | `/api/contact`       | `POST /`, `GET /`, `DELETE /:id`                       |
+| Module          | Base Path          | Key Endpoints                                                                          |
+| --------------- | ------------------ | -------------------------------------------------------------------------------------- |
+| **Auth**        | `/api/auth`        | `POST /login`, `POST /logout`, `GET /me`                                               |
+| **Students**    | `/api/students`    | CRUD + `/me`, `/:id/progress`, `/:id/enroll`                                           |
+| **Batches**     | `/api/batches`     | CRUD + `/:id/students`, `/:id/attendance`                                              |
+| **Attendance**  | `/api/attendance`  | CRUD + `/export`, `/student/:id`, `/batch/:id`                                         |
+| **Assessments** | `/api/assessments` | CRUD + `/:id/submit`, `/:id/grade/:subId`, `/:id/questions`, `/:id/attempts`           |
+| **Support**     | `/api/support`     | CRUD + `/:id/respond`, `/:id/resolve`, `/:id/schedule-backup-class`, `/statistics`     |
+| **Dashboard**   | `/api/dashboard`   | `/teacher/stats`, `/teacher/analytics`, `/teacher/leaderboard`, `/teacher/performance` |
+| **Teachers**    | `/api/teachers`    | Full CRUD (Admin only) + `/me`, `/:id/upload-photo`                                    |
+| **Contact**     | `/api/contact`     | `POST /`, `GET /`, `DELETE /:id`                                                       |
 
 ---
 
@@ -152,13 +155,13 @@ pnpm run seed:admin
 
 > Add screenshots of the application here.
 
-| Screen                       | Preview                                     |
-|------------------------------|---------------------------------------------|
-| Admin Dashboard              | *Add screenshot*                            |
-| Teacher — Batch Detail       | *Add screenshot*                            |
-| Teacher — Assessment Grading | *Add screenshot*                            |
-| Student Dashboard            | *Add screenshot*                            |
-| Attendance Calendar          | *Add screenshot*                            |
+| Screen                       | Preview          |
+| ---------------------------- | ---------------- |
+| Admin Dashboard              | _Add screenshot_ |
+| Teacher — Batch Detail       | _Add screenshot_ |
+| Teacher — Assessment Grading | _Add screenshot_ |
+| Student Dashboard            | _Add screenshot_ |
+| Attendance Calendar          | _Add screenshot_ |
 
 ---
 
@@ -186,10 +189,10 @@ Mind-Rise/
 │       └── utils/            # Helper utilities
 │
 ├── docs/                     # Documentation
-│   ├── problem-statement.md
-│   ├── architecture-diagram.md
-│   ├── api-documentation.md
-│   └── presentation.md
+│   ├── problem-statement.md      # Problem statement & solution overview
+│   ├── architecture-diagram.md   # System architecture, DB schema, routes
+│   ├── api-documentation.md      # Complete API endpoint reference
+│   └── remaining-tasks.md        # PRD compliance checklist & feature gap tracker
 │
 └── README.md
 ```

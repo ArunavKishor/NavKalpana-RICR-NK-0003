@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Filter, Users, Calendar, BookOpen, Search, User, ChevronRight, Zap } from "lucide-react";
+import {
+  Filter,
+  Users,
+  Calendar,
+  BookOpen,
+  Search,
+  User,
+  ChevronRight,
+  Zap,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
@@ -77,7 +86,10 @@ const TeacherBatchManagement = () => {
     const now = Date.now();
     if (now <= start) return 0;
     if (now >= end) return 100;
-    return Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
+    return Math.min(
+      100,
+      Math.max(0, Math.round(((now - start) / (end - start)) * 100)),
+    );
   };
 
   const getStatusColor = (status) => {
@@ -110,14 +122,39 @@ const TeacherBatchManagement = () => {
       {/* SUMMARY KPI SECTION */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Batches", value: allBatches.length, color: "bg-indigo-50 text-indigo-700" },
-          { label: "Ongoing", value: allBatches.filter((b) => b.status === "ongoing").length, color: "bg-emerald-50 text-emerald-700" },
-          { label: "Completed", value: allBatches.filter((b) => b.status === "completed").length, color: "bg-slate-50 text-slate-700" },
-          { label: "Upcoming", value: allBatches.filter((b) => b.status === "upcoming").length, color: "bg-blue-50 text-blue-700" },
+          {
+            label: "Total Batches",
+            value: allBatches.length,
+            color: "bg-indigo-50 text-indigo-700",
+          },
+          {
+            label: "Ongoing",
+            value: allBatches.filter((b) => b.status === "ongoing").length,
+            color: "bg-emerald-50 text-emerald-700",
+          },
+          {
+            label: "Completed",
+            value: allBatches.filter((b) => b.status === "completed").length,
+            color: "bg-slate-50 text-slate-700",
+          },
+          {
+            label: "Upcoming",
+            value: allBatches.filter((b) => b.status === "upcoming").length,
+            color: "bg-blue-50 text-blue-700",
+          },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col items-center sm:items-start text-center sm:text-left">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">{label}</p>
-            <p className={`text-2xl sm:text-3xl font-bold rounded-md px-2 py-0.5 inline-block ${color}`}>{value}</p>
+          <div
+            key={label}
+            className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col items-center sm:items-start text-center sm:text-left"
+          >
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+              {label}
+            </p>
+            <p
+              className={`text-2xl sm:text-3xl font-bold rounded-md px-2 py-0.5 inline-block ${color}`}
+            >
+              {value}
+            </p>
           </div>
         ))}
       </div>
@@ -137,8 +174,11 @@ const TeacherBatchManagement = () => {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${activeFilter === filter ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
-                }`}
+              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${
+                activeFilter === filter
+                  ? "bg-indigo-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
             >
               {filter}
             </button>
@@ -160,14 +200,19 @@ const TeacherBatchManagement = () => {
 
       {/* LOADING */}
       {loading && (
-        <div className="text-center py-16 text-slate-500 text-sm">Loading batches...</div>
+        <div className="text-center py-16 text-slate-500 text-sm">
+          Loading batches...
+        </div>
       )}
 
       {/* Cards Grid */}
       {!loading && (
         <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6">
           {filteredBatches.map((batch) => (
-            <Card key={batch._id} className="shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full border border-slate-200">
+            <Card
+              key={batch._id}
+              className="shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full border border-slate-200"
+            >
               {/* Image */}
               <div className="relative h-40 xs:h-44 sm:h-48 md:h-52 overflow-hidden bg-slate-100">
                 {batch.image ? (
@@ -182,7 +227,9 @@ const TeacherBatchManagement = () => {
                   </div>
                 )}
                 <div className="absolute top-3 right-3">
-                  <Badge className={`${getStatusColor(batch.status)} font-semibold shadow-sm text-xs`}>
+                  <Badge
+                    className={`${getStatusColor(batch.status)} font-semibold shadow-sm text-xs`}
+                  >
                     {batch.status?.toUpperCase()}
                   </Badge>
                 </div>
@@ -190,11 +237,17 @@ const TeacherBatchManagement = () => {
 
               <CardContent className="p-4 sm:p-5 space-y-4 flex flex-col flex-1">
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 line-clamp-1">{batch.name}</h3>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 line-clamp-1">
+                    {batch.name}
+                  </h3>
                   <div className="flex flex-col gap-0.5 mt-1">
-                    <p className="text-xs sm:text-sm text-indigo-600 font-semibold">{batch.course}</p>
-                    {batch.type && (
-                      <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Type: {batch.type}</p>
+                    <p className="text-xs sm:text-sm text-indigo-600 font-semibold">
+                      {batch.course}
+                    </p>
+                    {batch.batchType && (
+                      <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
+                        Type: {batch.batchType}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -202,12 +255,20 @@ const TeacherBatchManagement = () => {
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-xs sm:text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-slate-400" />
-                    <span className="font-medium text-slate-700">{batch.enrolledStudents ?? batch.students?.length ?? 0}</span> Students
+                    <span className="font-medium text-slate-700">
+                      {batch.enrolledStudents ?? batch.students?.length ?? 0}
+                    </span>{" "}
+                    Students
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-400" />
                     <span className="font-medium text-slate-700">
-                      {batch.startDate ? new Date(batch.startDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "N/A"}
+                      {batch.startDate
+                        ? new Date(batch.startDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", year: "numeric" },
+                          )
+                        : "N/A"}
                     </span>
                   </div>
                 </div>
@@ -216,7 +277,9 @@ const TeacherBatchManagement = () => {
                 <div>
                   <div className="flex justify-between text-xs sm:text-sm mb-1.5 font-medium text-slate-700">
                     <span>Course Progress</span>
-                    <span className="text-indigo-600">{computeProgress(batch)}%</span>
+                    <span className="text-indigo-600">
+                      {computeProgress(batch)}%
+                    </span>
                   </div>
                   <div className="w-full bg-slate-100 border border-slate-200 h-2 sm:h-2.5 rounded-full overflow-hidden">
                     <div
@@ -230,7 +293,9 @@ const TeacherBatchManagement = () => {
                 <div className="mt-auto pt-3 space-y-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button
-                      onClick={() => navigate(`/teacher-dashboard/batches/${batch._id}`)}
+                      onClick={() =>
+                        navigate(`/teacher-dashboard/batches/${batch._id}`)
+                      }
                       className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
                     >
                       Manage
@@ -259,8 +324,12 @@ const TeacherBatchManagement = () => {
       {!loading && filteredBatches.length === 0 && (
         <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300">
           <BookOpen className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-          <h3 className="text-lg font-medium text-slate-900">No batches found</h3>
-          <p className="text-slate-500 text-sm mt-1">Try adjusting your search or filters.</p>
+          <h3 className="text-lg font-medium text-slate-900">
+            No batches found
+          </h3>
+          <p className="text-slate-500 text-sm mt-1">
+            Try adjusting your search or filters.
+          </p>
         </div>
       )}
 

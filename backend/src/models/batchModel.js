@@ -16,8 +16,8 @@ const batchSchema = new mongoose.Schema(
     },
     batchType: {
       type: String,
-      enum: ["regular", "weekend", "fast-track", "self-paced"],
-      default: "regular",
+      trim: true,
+      default: "",
     },
     image: {
       type: String,

@@ -7,6 +7,8 @@ import {
   Mail,
   Phone,
   Download,
+  Github,
+  Linkedin,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -83,6 +85,8 @@ const TeacherStudentManagement = () => {
           name: student.user?.fullName || "Unknown",
           email: student.user?.email || "N/A",
           phone: student.phone || "N/A",
+          github: student.github || "",
+          linkedin: student.linkedin || "",
           course,
           enrollmentId: student.enrollmentId,
           modules,
@@ -305,6 +309,38 @@ const TeacherStudentManagement = () => {
                       </p>
                       <div className="text-xs text-slate-500 truncate">
                         {student.email}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {student.github && (
+                          <a
+                            href={
+                              student.github.startsWith("http")
+                                ? student.github
+                                : `https://github.com/${student.github}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="GitHub"
+                            className="text-slate-500 hover:text-slate-900 transition"
+                          >
+                            <Github className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {student.linkedin && (
+                          <a
+                            href={
+                              student.linkedin.startsWith("http")
+                                ? student.linkedin
+                                : `https://linkedin.com/in/${student.linkedin}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="LinkedIn"
+                            className="text-slate-500 hover:text-blue-600 transition"
+                          >
+                            <Linkedin className="w-3.5 h-3.5" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
