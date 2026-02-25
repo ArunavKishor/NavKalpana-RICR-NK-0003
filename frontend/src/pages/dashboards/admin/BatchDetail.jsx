@@ -14,6 +14,7 @@ import {
     Save,
     FileText,
     Loader2,
+    Download,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +36,7 @@ const BatchDetail = () => {
 
     const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [attendanceForm, setAttendanceForm] = useState({});
+    const [attendanceRemarks, setAttendanceRemarks] = useState("");
     const [contentList, setContentList] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -75,6 +77,28 @@ const BatchDetail = () => {
         }
     }, [batchId]);
 
+    const handleExportAttendance = async () => {
+        try {
+            const response = await api.get(`/api/attendance/export?batch=${batchId}`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `attendance_${batch?.name || batchId}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Attendance exported successfully");
+        } catch (err) {
+            console.error("Export failed:", err);
+            toast.error(err.response?.data?.message || "Failed to export attendance");
+        }
+    };
+
     const handleSaveContent = async () => {
         try {
             setIsSaving(true);
@@ -88,6 +112,10 @@ const BatchDetail = () => {
     };
 
     const handleSaveAttendance = async () => {
+        if (!attendanceRemarks.trim()) {
+            toast.error("Remarks are mandatory before saving attendance");
+            return;
+        }
         try {
             setIsSaving(true);
             const today = new Date().toISOString().split('T')[0];
@@ -95,12 +123,14 @@ const BatchDetail = () => {
                 student: s._id,
                 batch: batchId,
                 date: today,
-                status: attendanceForm[s._id] || "present"
+                status: attendanceForm[s._id] || "present",
+                remarks: attendanceRemarks,
             }));
 
             await api.post('/api/attendance', { records });
             toast.success("Attendance saved successfully");
-            loadBatchData(); // Refresh history
+            setAttendanceRemarks("");
+            loadBatchData();
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to save attendance");
         } finally {
@@ -355,7 +385,18 @@ const BatchDetail = () => {
                 <TabsContent value="view-attendance">
                     <Card>
                         <CardContent className="p-6">
-                            <h2 className="text-xl font-bold mb-6">Attendance logs</h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold">Attendance Logs</h2>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleExportAttendance}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export CSV
+                                </Button>
+                            </div>
                             {attendanceHistory.length === 0 ? (
                                 <div className="p-12 text-center text-slate-500">
                                     <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-20" />
@@ -452,6 +493,21 @@ const BatchDetail = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Mandatory Remarks */}
+                            <div className="mt-6 space-y-2">
+                                <label className="block text-sm font-semibold text-slate-700">
+                                    Session Remarks <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={attendanceRemarks}
+                                    onChange={(e) => setAttendanceRemarks(e.target.value)}
+                                    placeholder="What was covered today? Add any notes about this session (mandatory)..."
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                                    rows="3"
+                                />
+                                <p className="text-xs text-slate-400">Remarks are required before submitting attendance.</p>
                             </div>
                         </CardContent>
                     </Card>

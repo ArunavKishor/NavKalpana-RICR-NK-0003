@@ -1,96 +1,56 @@
 import React, { useState, useEffect } from "react";
-import { quizService } from "@/utils/quizService";
+import api from "../../config/api";
+import { format } from "date-fns";
+import { FaClipboardList, FaExclamationCircle } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 const AssignmentManagement = () => {
   const [filter, setFilter] = useState("All");
-  const [quizzes, setQuizzes] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [submittedIds, setSubmittedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
-
-  // ✅ Static assignments now inside state
-  const [staticAssignments, setStaticAssignments] = useState([
-    {
-      id: 1,
-      title: "React Project",
-      lesson: "React Basics",
-      deadline: "25 Feb 2026",
-      status: "Pending",
-      marks: null,
-      type: "assignment",
-    },
-    {
-      id: 2,
-      title: "HTML Fundamentals",
-      lesson: "HTML Module",
-      deadline: "15 Feb 2026",
-      status: "Evaluated",
-      marks: "85/100",
-      type: "assignment",
-    },
-    {
-      id: 3,
-      title: "JavaScript DOM Task",
-      lesson: "JS Advanced",
-      deadline: "20 Feb 2026",
-      status: "Submitted",
-      marks: null,
-      type: "assignment",
-    },
-  ]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadQuizzes();
-
-    const handleStorageChange = () => {
-      loadQuizzes();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    fetchAssignments();
   }, []);
 
-  const loadQuizzes = () => {
+  const fetchAssignments = async () => {
     try {
       setLoading(true);
-      const allQuizzes = quizService.getAllQuizzes();
+      // Fetch all published assignments
+      const [assignmentsRes, dashboardRes] = await Promise.all([
+        api.get("/api/assessments?type=assignment&status=published"),
+        api.get("/api/students/me/dashboard"),
+      ]);
 
-      const quizAssignments = allQuizzes.map((quiz) => ({
-        id: quiz.id,
-        title: quiz.title,
-        lesson: "Quiz",
-        deadline: new Date(quiz.createdAt).toLocaleDateString("en-US"),
-        status: "Available",
-        marks: null,
-        type: "quiz",
-        questions: quiz.questions?.length || 0,
+      const allAssignments =
+        assignmentsRes.data?.data?.assessments || [];
+
+      // Get IDs the student has already submitted from the dashboard
+      const pendingFromDashboard =
+        dashboardRes.data?.data?.pendingAssignments || [];
+      const pendingIds = new Set(
+        pendingFromDashboard.map((a) => a._id.toString())
+      );
+
+      // Mark assignments as Pending or Submitted based on the dashboard data
+      const enriched = allAssignments.map((a) => ({
+        ...a,
+        computedStatus: pendingIds.has(a._id.toString())
+          ? "Pending"
+          : "Submitted",
       }));
 
-      setQuizzes(quizAssignments);
-    } catch (error) {
+      setAssignments(enriched);
+    } catch (err) {
+      console.error("Assignment Fetch Error:", err);
+      setError("Failed to load assignments.");
       toast.error("Failed to load assignments");
     } finally {
       setLoading(false);
     }
   };
-
-  // ✅ Submit Handler
-  const handleSubmitAssignment = (id) => {
-    const updatedAssignments = staticAssignments.map((assignment) =>
-      assignment.id === id
-        ? { ...assignment, status: "Submitted" }
-        : assignment
-    );
-
-    setStaticAssignments(updatedAssignments);
-    toast.success("Assignment Submitted Successfully!");
-  };
-
-  const assignments = [...staticAssignments, ...quizzes];
-
-  const filteredAssignments =
-    filter === "All"
-      ? assignments
-      : assignments.filter((a) => a.status === filter);
 
   const statusColor = (status) => {
     switch (status) {
@@ -100,12 +60,15 @@ const AssignmentManagement = () => {
         return "bg-blue-100 text-blue-700";
       case "Evaluated":
         return "bg-green-100 text-green-700";
-      case "Available":
-        return "bg-orange-100 text-orange-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
   };
+
+  const filteredAssignments =
+    filter === "All"
+      ? assignments
+      : assignments.filter((a) => a.computedStatus === filter);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -120,15 +83,14 @@ const AssignmentManagement = () => {
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-3 mb-8">
-        {["All", "Pending", "Submitted", "Evaluated", "Available"].map((tab) => (
+        {["All", "Pending", "Submitted"].map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200
-              ${
-                filter === tab
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-white text-gray-600 border hover:bg-blue-50 hover:text-blue-600"
+              ${filter === tab
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white text-gray-600 border hover:bg-blue-50 hover:text-blue-600"
               }`}
           >
             {tab}
@@ -140,87 +102,71 @@ const AssignmentManagement = () => {
         <div className="text-center py-12">
           <p className="text-gray-500">Loading assignments...</p>
         </div>
+      ) : error ? (
+        <div className="text-center py-12 bg-white rounded-2xl border">
+          <p className="text-red-500">{error}</p>
+        </div>
       ) : (
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAssignments.length === 0 ? (
             <div className="col-span-full text-center py-12 bg-white rounded-2xl border">
+              <FaClipboardList className="text-4xl text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No assignments found</p>
             </div>
           ) : (
             filteredAssignments.map((assignment) => (
               <div
-                key={assignment.id}
+                key={assignment._id}
                 className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-xl font-semibold text-gray-800">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-xl font-semibold text-gray-800 line-clamp-2">
                     {assignment.title}
                   </h3>
-
-                  {assignment.type === "quiz" && (
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-medium">
-                      Quiz
-                    </span>
-                  )}
+                  <span className="ml-2 shrink-0 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">
+                    Assignment
+                  </span>
                 </div>
 
+                {assignment.description && (
+                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                    {assignment.description}
+                  </p>
+                )}
+
                 <p className="text-sm text-gray-500 mb-1">
-                  Lesson:{" "}
+                  Total Marks:{" "}
                   <span className="font-medium text-gray-700">
-                    {assignment.lesson}
+                    {assignment.totalMarks}
                   </span>
                 </p>
 
-                <p className="text-sm text-gray-500 mb-4">
-                  Deadline:{" "}
-                  <span className="font-medium text-gray-700">
-                    {assignment.deadline}
-                  </span>
-                </p>
-
-                {assignment.type === "quiz" && assignment.questions && (
-                  <p className="text-sm text-gray-500 mb-4">
-                    Questions:{" "}
+                {assignment.dueDate && (
+                  <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+                    <FaExclamationCircle className="text-red-400 text-xs" />
+                    Due:{" "}
                     <span className="font-medium text-gray-700">
-                      {assignment.questions}
+                      {format(new Date(assignment.dueDate), "dd MMM yyyy")}
+                    </span>
+                  </p>
+                )}
+
+                {assignment.batch?.name && (
+                  <p className="text-sm text-gray-500 mb-4">
+                    Batch:{" "}
+                    <span className="font-medium text-gray-700">
+                      {assignment.batch.name}
                     </span>
                   </p>
                 )}
 
                 <span
                   className={`inline-block px-4 py-1 text-xs font-semibold rounded-full ${statusColor(
-                    assignment.status
+                    assignment.computedStatus
                   )}`}
                 >
-                  {assignment.status}
+                  {assignment.computedStatus}
                 </span>
-
-                {assignment.marks && (
-                  <p className="mt-4 text-sm font-semibold text-green-600">
-                    Marks: {assignment.marks}
-                  </p>
-                )}
-
-                {/* ✅ Submit Button */}
-                {assignment.status === "Pending" &&
-                  assignment.type === "assignment" && (
-                    <button
-                      onClick={() =>
-                        handleSubmitAssignment(assignment.id)
-                      }
-                      className="mt-5 w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition duration-200"
-                    >
-                      Submit Assignment
-                    </button>
-                  )}
-
-                {/* Quiz Button */}
-                {assignment.type === "quiz" &&
-                  assignment.status === "Available" && (
-                    <button className="mt-5 w-full bg-orange-600 text-white py-2 rounded-xl hover:bg-orange-700 transition duration-200">
-                      Start Quiz
-                    </button>
-                  )}
               </div>
             ))
           )}

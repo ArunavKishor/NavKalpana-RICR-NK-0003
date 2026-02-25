@@ -19,7 +19,6 @@ import Modal from "@/components/admin/AdminModal";
 import BatchForm from "@/components/admin/AdminBatchForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
 
-
 // -------------------- Component --------------------
 
 const BatchManagement = () => {
@@ -57,7 +56,7 @@ const BatchManagement = () => {
       console.error("Load batches failed:", err);
       setError(
         err.response?.data?.message ||
-        "Failed to load batches. Please try again.",
+          "Failed to load batches. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -91,7 +90,10 @@ const BatchManagement = () => {
     const now = Date.now();
     if (now <= start) return 0;
     if (now >= end) return 100;
-    return Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)));
+    return Math.min(
+      100,
+      Math.max(0, Math.round(((now - start) / (end - start)) * 100)),
+    );
   };
 
   const resetForm = () => {
@@ -148,10 +150,10 @@ const BatchManagement = () => {
       setIsSubmitting(true);
 
       const formDataToSend = new FormData();
-      Object.keys(data).forEach(key => {
-        if (key === 'imageFile') {
-          if (data.imageFile) formDataToSend.append('image', data.imageFile);
-        } else if (key === 'maxStudents') {
+      Object.keys(data).forEach((key) => {
+        if (key === "imageFile") {
+          if (data.imageFile) formDataToSend.append("image", data.imageFile);
+        } else if (key === "maxStudents") {
           formDataToSend.append(key, Number(data[key]));
         } else if (data[key] !== undefined && data[key] !== null) {
           formDataToSend.append(key, data[key]);
@@ -160,12 +162,12 @@ const BatchManagement = () => {
 
       if (modalMode === "create") {
         await api.post("/api/batches", formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Batch created successfully");
       } else {
         await api.put(`/api/batches/${selectedBatch._id}`, formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Batch updated successfully");
       }
@@ -184,7 +186,7 @@ const BatchManagement = () => {
       }
       toast.error(
         err.response?.data?.message ||
-        "Failed to save batch. Please try again."
+          "Failed to save batch. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -211,7 +213,7 @@ const BatchManagement = () => {
       console.error("Delete batch failed:", err);
       toast.error(
         err.response?.data?.message ||
-        "Failed to delete batch. Please try again.",
+          "Failed to delete batch. Please try again.",
         { duration: 5000 },
       );
     } finally {
@@ -233,7 +235,6 @@ const BatchManagement = () => {
   };
   return (
     <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-12 py-6 max-w-[1600px] mx-auto space-y-8">
-
       {loading && (
         <div className="text-sm text-slate-500">Loading batches...</div>
       )}
@@ -246,7 +247,6 @@ const BatchManagement = () => {
 
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
         <div className="text-center md:text-left">
           <h1 className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">
             Batch Management
@@ -267,17 +267,17 @@ const BatchManagement = () => {
 
       {/* Filters & Search */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
         {/* Filters */}
         <div className="flex gap-2 bg-white rounded-lg p-1.5 shadow-sm border overflow-x-auto whitespace-nowrap scrollbar-thin">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${activeFilter === filter
-                ? "bg-blue-600 text-white"
-                : "text-slate-600 hover:bg-slate-100"
-                }`}
+              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${
+                activeFilter === filter
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
             >
               {filter}
             </button>
@@ -299,7 +299,6 @@ const BatchManagement = () => {
 
       {/* Cards Grid */}
       <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6">
-
         {filteredBatches.map((batch) => (
           <Card
             key={batch._id}
@@ -328,7 +327,6 @@ const BatchManagement = () => {
             </div>
 
             <CardContent className="p-4 space-y-4 flex flex-col flex-1">
-
               <div>
                 <h3 className="text-base sm:text-lg font-bold line-clamp-1">
                   {batch.name}
@@ -341,15 +339,16 @@ const BatchManagement = () => {
               <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-xs sm:text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  {batch.enrolledStudents ?? batch.students?.length ?? 0} Students
+                  {batch.enrolledStudents ?? batch.students?.length ?? 0}{" "}
+                  Students
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   {batch.startDate
                     ? new Date(batch.startDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      year: "numeric",
-                    })
+                        month: "short",
+                        year: "numeric",
+                      })
                     : "N/A"}
                 </div>
               </div>
@@ -370,7 +369,6 @@ const BatchManagement = () => {
 
               {/* Buttons */}
               <div className="mt-auto space-y-2">
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <button
                     onClick={() => navigate(`/admin/batches/${batch._id}`)}
@@ -396,9 +394,7 @@ const BatchManagement = () => {
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </button>
-
               </div>
-
             </CardContent>
           </Card>
         ))}
@@ -407,12 +403,11 @@ const BatchManagement = () => {
       {filteredBatches.length === 0 && (
         <div className="text-center py-12">
           <Search className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-          <p className="text-slate-600 text-sm">
-            No batches found
-          </p>
+          <p className="text-slate-600 text-sm">No batches found</p>
         </div>
       )}
 
+      {/* Modals */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -432,8 +427,14 @@ const BatchManagement = () => {
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={confirmDelete}
         title="Delete Batch"
-        description={`Are you sure you want to delete "${batchToDelete?.name}"? This will permanently remove the batch and all its associations.`}
-        isLoading={isDeleting}
+        description={
+          <>
+            Are you sure you want to delete{" "}
+            <strong>{batchToDelete?.name}</strong>? This action cannot be
+            undone.
+          </>
+        }
+        isDeleting={isDeleting}
       />
     </div>
   );

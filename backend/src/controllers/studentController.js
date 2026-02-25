@@ -544,26 +544,3 @@ export const uploadProfilePhoto = async (req, res) => {
     res.status(500).json({ message: "Failed to upload profile photo" });
   }
 };
-
-export const getStudentAttendance = async (req, res) => {
-  try {
-    const studentId = req.params.id;
-    const student = await Student.findById(studentId);
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    const records = await Attendance.find({ student: studentId }).populate(
-      "batch",
-      "name course",
-    );
-
-    res.status(200).json({
-      message: "Student attendance retrieved successfully",
-      data: { records },
-    });
-  } catch (error) {
-    console.error("Get Student Attendance Error:", error);
-    res.status(500).json({ message: "Failed to retrieve attendance" });
-  }
-};

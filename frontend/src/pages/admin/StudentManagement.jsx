@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Users,
   CheckCircle,
@@ -18,7 +18,7 @@ import Modal from "@/components/admin/AdminModal";
 import StudentForm from "@/components/admin/AdminStudentForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
 import StudentDetailModal from "@/components/admin/AdminStudentDetailModal";
-import { Plus, Pencil, Trash2, Loader2, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import Avatar from "@/components/shared/Avatar";
@@ -27,6 +27,7 @@ import QuickAttendanceModal from "@/components/admin/QuickAttendanceModal";
 
 const StudentManagement = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("ONGOING");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("All");
@@ -148,6 +149,7 @@ const StudentManagement = () => {
           enrollmentId: student.enrollmentId,
           attendance,
           modules,
+          batchId: student.batches?.[0]?._id || null,
           status: student.status === "completed" ? "COMPLETED" : "ONGOING",
         };
       });
@@ -488,16 +490,6 @@ const StudentManagement = () => {
                       onClick={() => openDeleteDialog(student)}
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
-                      onClick={() => {
-                        setStudentToView(student);
-                        setIsDetailModalOpen(true);
-                      }}
-                      title="View Details"
-                    >
-                      <Eye className="w-4 h-4" />
                     </button>
                     <button
                       className="p-2 rounded-lg hover:bg-slate-100"
