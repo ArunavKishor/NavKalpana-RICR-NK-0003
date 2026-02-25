@@ -329,7 +329,7 @@ const TeacherBatchDetail = () => {
             <div>
               <p className="text-sm text-slate-600 mb-1">Instructor</p>
               <p className="text-lg font-semibold text-slate-900">
-                {batch.instructor || "Not assigned"}
+                {batch.instructorName || batch.instructor?.user?.fullName || "Not assigned"}
               </p>
             </div>
             <div>

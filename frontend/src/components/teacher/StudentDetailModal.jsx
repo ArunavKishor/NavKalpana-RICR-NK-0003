@@ -86,7 +86,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-500">Instructor</p>
-                                <p className="font-semibold">{batch?.instructor || "N/A"}</p>
+                                <p className="font-semibold">{batch?.instructorName || batch?.instructor?.user?.fullName || "N/A"}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-slate-500">Joined Date</p>
