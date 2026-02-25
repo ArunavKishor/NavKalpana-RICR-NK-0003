@@ -77,7 +77,7 @@ const TeacherDashboardHome = () => {
                 <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col">
                     <h3 className="text-lg font-bold text-slate-900 mb-4">Class Performance</h3>
                     <div className="h-64 w-full flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <BarChart data={classPerformanceData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                                 <XAxis

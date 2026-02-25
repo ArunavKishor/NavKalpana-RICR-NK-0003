@@ -351,6 +351,14 @@ export const evaluateSubmission = async (req, res) => {
     submission.gradedAt = new Date();
     await submission.save();
 
+    // Rebuild weekly snapshot for this student so analytics/leaderboard stay in sync
+    try {
+      const { buildWeeklySnapshotsForStudent } = await import("./analyticsController.js");
+      await buildWeeklySnapshotsForStudent(submission.student.toString(), 8);
+    } catch (innerErr) {
+      console.error("evaluateSubmission snapshot rebuild failed:", innerErr);
+    }
+
     res.status(200).json({
       message: "Submission evaluated successfully",
       data: submission,

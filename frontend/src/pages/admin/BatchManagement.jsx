@@ -413,6 +413,30 @@ const BatchManagement = () => {
         </div>
       )}
 
+      {/* Modals */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalMode === "create" ? "Create New Batch" : "Edit Batch"}
+      >
+        <BatchForm
+          initialData={selectedBatch}
+          onSubmit={handleBatchFormSubmit}
+          onCancel={() => setIsModalOpen(false)}
+          isLoading={isSubmitting}
+          errors={formErrors}
+        />
+      </Modal>
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Batch"
+        description={<>Are you sure you want to delete <strong>{batchToDelete?.name}</strong>? This action cannot be undone.</>}
+        isDeleting={isDeleting}
+      />
+
     </div>
   );
 };

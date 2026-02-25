@@ -184,7 +184,7 @@ const DashboardHome = () => {
 
             <CardContent>
               <div className="h-56 sm:h-64 md:h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={250}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="name" />
