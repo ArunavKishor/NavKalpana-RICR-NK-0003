@@ -354,6 +354,81 @@ export const deleteQuizQuestion = async (req, res) => {
 // Quiz Attempts (student side)
 // ============================
 
+export const startQuizAttempt = async (req, res) => {
+  try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.isActive || assessment.type !== "quiz") {
+      return res.status(404).json({ message: "Quiz assessment not found" });
+    }
+
+    const { studentId } = req.body;
+    if (!studentId) {
+      return res.status(400).json({ message: "studentId is required" });
+    }
+
+    const student = await Student.findById(studentId);
+    if (!student || !student.isActive) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const batch = await Batch.findById(assessment.batch);
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+    const isEnrolled = batch.students.some(
+      (id) => id.toString() === student._id.toString(),
+    );
+    if (!isEnrolled) {
+      return res
+        .status(400)
+        .json({ message: "Student is not enrolled in this batch" });
+    }
+
+    // Check for existing in-progress attempt
+    const inProgressAttempt = await QuizAttempt.findOne({
+      assessment: assessment._id,
+      student: student._id,
+      status: "in-progress",
+    });
+    if (inProgressAttempt) {
+      return res.status(200).json({
+        message: "Existing in-progress attempt found",
+        data: { attempt: inProgressAttempt },
+      });
+    }
+
+    // Enforce maxAttempts
+    if (assessment.maxAttempts) {
+      const completedAttempts = await QuizAttempt.countDocuments({
+        assessment: assessment._id,
+        student: student._id,
+        status: { $ne: "in-progress" },
+      });
+      if (completedAttempts >= assessment.maxAttempts) {
+        return res.status(400).json({
+          message: `Attempt limit reached. This quiz allows a maximum of ${assessment.maxAttempts} attempt(s).`,
+        });
+      }
+    }
+
+    const attempt = await QuizAttempt.create({
+      assessment: assessment._id,
+      student: student._id,
+      batch: batch._id,
+      startedAt: new Date(),
+      status: "in-progress",
+    });
+
+    res.status(201).json({
+      message: "Quiz attempt started",
+      data: { attempt },
+    });
+  } catch (error) {
+    console.error("Start Quiz Attempt Error:", error);
+    res.status(500).json({ message: "Failed to start quiz attempt" });
+  }
+};
+
 export const submitQuizAttempt = async (req, res) => {
   try {
     const assessment = await Assessment.findById(req.params.id);
@@ -361,7 +436,7 @@ export const submitQuizAttempt = async (req, res) => {
       return res.status(404).json({ message: "Quiz assessment not found" });
     }
 
-    const { studentId, answers } = req.body;
+    const { studentId, answers, attemptId } = req.body;
     if (!studentId || !Array.isArray(answers) || !answers.length) {
       return res.status(400).json({
         message: "studentId and answers are required",
@@ -386,13 +461,25 @@ export const submitQuizAttempt = async (req, res) => {
         .json({ message: "Student is not enrolled in this batch" });
     }
 
-    // Enforce maxAttempts if set
-    if (assessment.maxAttempts) {
-      const existingAttempts = await QuizAttempt.countDocuments({
+    // If resuming an in-progress attempt, find and update it
+    let existingAttempt = null;
+    if (attemptId) {
+      existingAttempt = await QuizAttempt.findOne({
+        _id: attemptId,
         assessment: assessment._id,
         student: student._id,
+        status: "in-progress",
       });
-      if (existingAttempts >= assessment.maxAttempts) {
+    }
+
+    // Enforce maxAttempts if no existing in-progress attempt
+    if (!existingAttempt && assessment.maxAttempts) {
+      const completedAttempts = await QuizAttempt.countDocuments({
+        assessment: assessment._id,
+        student: student._id,
+        status: { $ne: "in-progress" },
+      });
+      if (completedAttempts >= assessment.maxAttempts) {
         return res.status(400).json({
           message: `Attempt limit reached. This quiz allows a maximum of ${assessment.maxAttempts} attempt(s).`,
         });
@@ -448,16 +535,27 @@ export const submitQuizAttempt = async (req, res) => {
       });
     });
 
-    const attempt = await QuizAttempt.create({
-      assessment: assessment._id,
-      student: student._id,
-      batch: batch._id,
-      answers: answerDocs,
-      totalMarks,
-      score,
-      completedAt: new Date(),
-      status: "evaluated",
-    });
+    let attempt;
+    if (existingAttempt) {
+      existingAttempt.answers = answerDocs;
+      existingAttempt.totalMarks = totalMarks;
+      existingAttempt.score = score;
+      existingAttempt.completedAt = new Date();
+      existingAttempt.status = "evaluated";
+      await existingAttempt.save();
+      attempt = existingAttempt;
+    } else {
+      attempt = await QuizAttempt.create({
+        assessment: assessment._id,
+        student: student._id,
+        batch: batch._id,
+        answers: answerDocs,
+        totalMarks,
+        score,
+        completedAt: new Date(),
+        status: "evaluated",
+      });
+    }
 
     // Also write a Submission record so existing analytics includes quiz scores
     await Submission.create({

@@ -71,6 +71,12 @@ const TeacherSupport = () => {
     priority: "medium",
   });
   const [students, setStudents] = useState([]);
+  const [supportStats, setSupportStats] = useState({
+    avgResponseTime: "—",
+    resolutionRate: 0,
+    inProgressCount: 0,
+    resolvedCount: 0,
+  });
 
   const filters = ["All", "OPEN", "IN_PROGRESS", "RESOLVED"];
   const priorities = ["All", "URGENT", "HIGH", "MEDIUM", "LOW"];
@@ -87,6 +93,7 @@ const TeacherSupport = () => {
 
   useEffect(() => {
     loadSupportRequests();
+    loadSupportStats();
   }, [
     activeFilter,
     selectedPriority,
@@ -104,6 +111,23 @@ const TeacherSupport = () => {
       setStudents(data?.data?.students || []);
     } catch (err) {
       console.error("Load students failed:", err);
+    }
+  };
+
+  const loadSupportStats = async () => {
+    try {
+      const { data } = await api.get("/api/support/statistics");
+      const d = data?.data || {};
+      const avgMs = d.averageResponseTimeMs || 0;
+      const avgHours = avgMs > 0 ? (avgMs / 3600000).toFixed(1) : "—";
+      setSupportStats({
+        avgResponseTime: avgMs > 0 ? `${avgHours}h` : "—",
+        resolutionRate: Math.round(d.resolutionRate || 0),
+        inProgressCount: d.statusCounts?.["in-progress"] || 0,
+        resolvedCount: d.statusCounts?.resolved || 0,
+      });
+    } catch {
+      // keep defaults
     }
   };
 
@@ -254,20 +278,36 @@ const TeacherSupport = () => {
   };
 
   const handleCreate = async () => {
-    if (
-      !createForm.studentId ||
-      !createForm.subject.trim() ||
-      !createForm.description.trim()
-    ) {
-      toast.error("Please fill all required fields");
+    const subject = createForm.subject.trim();
+    const description = createForm.description.trim();
+
+    if (!createForm.studentId) {
+      toast.error("Please select a student");
       return;
     }
+    if (!subject) {
+      toast.error("Subject is required");
+      return;
+    }
+    if (subject.length < 5) {
+      toast.error("Subject must be at least 5 characters");
+      return;
+    }
+    if (!description) {
+      toast.error("Description is required");
+      return;
+    }
+    if (description.length < 10) {
+      toast.error("Description must be at least 10 characters");
+      return;
+    }
+
     try {
       setDialogSubmitting(true);
       await api.post("/api/support", {
         student: createForm.studentId,
-        subject: createForm.subject.trim(),
-        description: createForm.description.trim(),
+        subject,
+        description,
         category: createForm.category,
         priority: createForm.priority,
         course: createForm.course.trim() || undefined,
@@ -278,9 +318,12 @@ const TeacherSupport = () => {
       await loadSupportRequests();
     } catch (err) {
       console.error("Create support request failed:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to create support request",
-      );
+      const errData = err.response?.data;
+      if (errData?.errors && Array.isArray(errData.errors)) {
+        errData.errors.forEach((e) => toast.error(e.message));
+      } else {
+        toast.error(errData?.message || "Failed to create support request");
+      }
     } finally {
       setDialogSubmitting(false);
     }
@@ -411,7 +454,7 @@ const TeacherSupport = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
           icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
           label="Total (filtered)"
@@ -421,6 +464,16 @@ const TeacherSupport = () => {
           icon={<AlertCircle className="w-5 h-5 text-red-600" />}
           label="Urgent"
           value={stats.urgent}
+        />
+        <StatsCard
+          icon={<Clock className="w-5 h-5 text-yellow-600" />}
+          label="Avg Response"
+          value={supportStats.avgResponseTime}
+        />
+        <StatsCard
+          icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
+          label="Resolution Rate"
+          value={`${supportStats.resolutionRate}%`}
         />
       </div>
 
@@ -863,17 +916,19 @@ const TeacherSupport = () => {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Subject</label>
+              <label className="text-sm font-medium">Subject <span className="text-slate-400 font-normal">(min 5 chars)</span></label>
               <Input
                 value={createForm.subject}
                 onChange={(e) =>
                   setCreateForm({ ...createForm, subject: e.target.value })
                 }
                 placeholder="Short summary of the issue"
+                minLength={5}
+                maxLength={200}
               />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">Description</label>
+              <label className="text-sm font-medium">Description <span className="text-slate-400 font-normal">(min 10 chars)</span></label>
               <Textarea
                 rows={4}
                 value={createForm.description}
@@ -881,6 +936,8 @@ const TeacherSupport = () => {
                   setCreateForm({ ...createForm, description: e.target.value })
                 }
                 placeholder="Detailed description of the doubt or issue"
+                minLength={10}
+                maxLength={2000}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">

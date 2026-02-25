@@ -7,6 +7,7 @@ import {
   getStudentAttendanceSummary,
   getBatchAttendanceStats,
   exportAttendance,
+  getMyAttendance,
 } from "../controllers/attendanceController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 
@@ -14,6 +15,9 @@ const router = express.Router();
 
 // All routes require authentication
 router.use(protect);
+
+// Student-accessible route (must be before admin/teacher middleware)
+router.route("/my").get(authorize("student"), getMyAttendance);
 
 // Admin/Teacher only routes
 router.use(authorize("admin", "teacher"));

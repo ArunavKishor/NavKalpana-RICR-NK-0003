@@ -183,7 +183,8 @@ export const updateAttendance = async (req, res) => {
 
     if (diffInMinutes > 10) {
       return res.status(403).json({
-        message: "Attendance can only be edited within 10 minutes of submission.",
+        message:
+          "Attendance can only be edited within 10 minutes of submission.",
       });
     }
 
@@ -195,7 +196,8 @@ export const updateAttendance = async (req, res) => {
       recordDate.getDate() !== now.getDate()
     ) {
       return res.status(403).json({
-        message: "Attendance can only be edited on the same day it was recorded.",
+        message:
+          "Attendance can only be edited on the same day it was recorded.",
       });
     }
 
@@ -303,6 +305,38 @@ export const getBatchAttendanceStats = async (req, res) => {
             (((presentCount + lateCount) / totalSessions) * 100).toFixed(2),
           );
 
+    // Weekly breakdown within the batch
+    const weeklyBreakdown = {};
+    records.forEach((r) => {
+      const d = new Date(r.date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const ws = new Date(d);
+      ws.setDate(diff);
+      ws.setHours(0, 0, 0, 0);
+      const weekKey = ws.toISOString().split("T")[0];
+      if (!weeklyBreakdown[weekKey]) {
+        weeklyBreakdown[weekKey] = { total: 0, present: 0, absent: 0, late: 0 };
+      }
+      weeklyBreakdown[weekKey].total += 1;
+      weeklyBreakdown[weekKey][r.status] += 1;
+    });
+
+    const weeklyStats = Object.entries(weeklyBreakdown)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([week, counts]) => ({
+        week,
+        ...counts,
+        percentage:
+          counts.total === 0
+            ? 0
+            : Number(
+                (((counts.present + counts.late) / counts.total) * 100).toFixed(
+                  2,
+                ),
+              ),
+      }));
+
     res.status(200).json({
       message: "Attendance statistics retrieved successfully",
       data: {
@@ -311,6 +345,7 @@ export const getBatchAttendanceStats = async (req, res) => {
         absentCount,
         lateCount,
         percentage,
+        weeklyBreakdown: weeklyStats,
       },
     });
   } catch (error) {
@@ -324,19 +359,23 @@ export const exportAttendance = async (req, res) => {
     const { batch } = req.query;
 
     if (!batch) {
-      return res.status(400).json({ message: "Batch ID is required for export" });
+      return res
+        .status(400)
+        .json({ message: "Batch ID is required for export" });
     }
 
     const records = await Attendance.find({ batch })
       .populate("student", "enrollmentId")
       .populate({
-         path: "student",
-         populate: { path: "user", select: "fullName email" }
+        path: "student",
+        populate: { path: "user", select: "fullName email" },
       })
       .sort({ date: -1 });
 
     if (records.length === 0) {
-      return res.status(404).json({ message: "No attendance records found to export" });
+      return res
+        .status(404)
+        .json({ message: "No attendance records found to export" });
     }
 
     // CSV Header
@@ -354,7 +393,10 @@ export const exportAttendance = async (req, res) => {
     });
 
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=attendance_export_${batch}.csv`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=attendance_export_${batch}.csv`,
+    );
 
     res.status(200).send(csvData);
   } catch (error) {

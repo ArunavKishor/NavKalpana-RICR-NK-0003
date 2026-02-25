@@ -180,6 +180,9 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
               <DialogTitle className="text-2xl">
                 {student?.user?.fullName}
               </DialogTitle>
+              {batch?.course && (
+                <p className="text-sm text-slate-500 mt-0.5">{batch.course}</p>
+              )}
               <div className="flex gap-2 mt-1">
                 <Badge variant="outline">{student?.enrollmentId}</Badge>
                 <Badge
@@ -189,6 +192,19 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 >
                   {student?.status}
                 </Badge>
+                {attPct > 0 && (
+                  <Badge
+                    className={`${
+                      attPct >= 75
+                        ? "bg-emerald-100 text-emerald-700"
+                        : attPct >= 50
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {attPct}% Attendance
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -640,6 +656,58 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 </div>
               </div>
             </div>
+
+            {/* Date-wise Attendance Records with Remarks */}
+            {attendanceRecords.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Date-wise Records</h4>
+                <div className="max-h-48 overflow-y-auto space-y-1.5">
+                  {[...attendanceRecords]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map((record) => (
+                      <div
+                        key={record._id}
+                        className="flex items-start justify-between text-sm p-2 rounded-md bg-white border border-slate-100"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              record.status === "present"
+                                ? "bg-emerald-500"
+                                : record.status === "absent"
+                                  ? "bg-red-500"
+                                  : "bg-yellow-500"
+                            }`}
+                          />
+                          <span className="text-slate-700">
+                            {new Date(record.date).toLocaleDateString("en-US", {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                          <Badge
+                            className={`capitalize text-[10px] px-1.5 py-0 ${
+                              record.status === "present"
+                                ? "bg-emerald-50 text-emerald-600"
+                                : record.status === "absent"
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-yellow-50 text-yellow-600"
+                            }`}
+                          >
+                            {record.status}
+                          </Badge>
+                        </div>
+                        {record.remarks && (
+                          <span className="text-xs text-slate-400 italic ml-2 truncate max-w-[200px]">
+                            {record.remarks}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>

@@ -27,6 +27,9 @@ const AttendanceManagement = () => {
   const [batchName, setBatchName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [attendanceDate, setAttendanceDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -38,15 +41,15 @@ const AttendanceManagement = () => {
   const markAttendance = (id, status) => {
     setStudents((prev) =>
       prev.map((student) =>
-        student.id === id ? { ...student, status } : student
-      )
+        student.id === id ? { ...student, status } : student,
+      ),
     );
   };
 
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchQuery.toLowerCase())
+      student.id.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const markedCount = students.filter((s) => s.status !== null).length;
@@ -72,7 +75,7 @@ const AttendanceManagement = () => {
             id: student._id,
             name: student.user?.fullName || "Unknown",
             avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              student.user?.fullName || "S"
+              student.user?.fullName || "S",
             )}&background=random`,
             status: null,
           })),
@@ -82,7 +85,7 @@ const AttendanceManagement = () => {
         console.error("Load attendance data failed:", err);
         setError(
           err.response?.data?.message ||
-          "Failed to load batch attendance data.",
+            "Failed to load batch attendance data.",
         );
       } finally {
         setLoading(false);
@@ -107,7 +110,7 @@ const AttendanceManagement = () => {
       const records = students.map((student) => ({
         student: student.id,
         batch: batchId,
-        date: new Date().toISOString(),
+        date: attendanceDate,
         status: student.status,
         remarks: sessionRemarks,
       }));
@@ -121,7 +124,7 @@ const AttendanceManagement = () => {
       console.error("Submit attendance failed:", err);
       alert(
         err.response?.data?.message ||
-        "Failed to submit attendance. Please try again.",
+          "Failed to submit attendance. Please try again.",
       );
     }
   };
@@ -140,7 +143,6 @@ const AttendanceManagement = () => {
 
       {/* Header */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-
         <div className="flex items-start gap-4">
           <button
             onClick={() => navigate("/admin/batches")}
@@ -160,9 +162,19 @@ const AttendanceManagement = () => {
               </Badge>
             </div>
 
-            <p className="text-slate-500 text-sm mt-1">
-              📅 {currentDate}
-            </p>
+            <p className="text-slate-500 text-sm mt-1">📅 {currentDate}</p>
+            <div className="flex items-center gap-3 mt-2">
+              <label className="text-sm font-medium text-slate-700">
+                Attendance for:
+              </label>
+              <input
+                type="date"
+                value={attendanceDate}
+                onChange={(e) => setAttendanceDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 
@@ -185,12 +197,10 @@ const AttendanceManagement = () => {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-
         {/* Students Section */}
         <div className="xl:col-span-2">
           <Card className="shadow-sm">
             <CardContent className="p-4 sm:p-6">
-
               {/* Search */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <h2 className="text-lg font-bold">Student Roster</h2>
@@ -231,16 +241,19 @@ const AttendanceManagement = () => {
                         <button
                           key={type}
                           onClick={() => markAttendance(student.id, type)}
-                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${student.status === type
+                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
+                            student.status === type
                               ? type === "present"
                                 ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
                                 : type === "absent"
                                   ? "bg-red-100 text-red-700 border-2 border-red-500"
                                   : "bg-orange-100 text-orange-700 border-2 border-orange-500"
                               : "bg-white border border-slate-200 text-slate-600"
-                            }`}
+                          }`}
                         >
-                          {type === "present" && <CheckCircle2 className="w-4 h-4" />}
+                          {type === "present" && (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
                           {type === "absent" && <XCircle className="w-4 h-4" />}
                           {type === "late" && <Clock className="w-4 h-4" />}
                           <span className="capitalize hidden sm:inline">
@@ -258,7 +271,6 @@ const AttendanceManagement = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
-
           <Card className="shadow-sm">
             <CardContent className="p-4 sm:p-6 space-y-4">
               <h3 className="font-semibold">Session Remarks *</h3>
@@ -310,7 +322,6 @@ const AttendanceManagement = () => {
               </p>
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>

@@ -254,7 +254,7 @@ export const getTeacherStats = async (req, res) => {
       isActive: true,
     });
 
-    // Count pending assignments (not yet evaluated)
+    // Count pending assignments (those with unevaluated submissions)
     const assignments = await Assessment.find({
       batch: { $in: batchIds },
       type: "assignment",
@@ -262,11 +262,17 @@ export const getTeacherStats = async (req, res) => {
       isActive: true,
     }).select("_id");
 
-    const pendingAssignments = assignments.length;
-
-    // Count completed grades (evaluated submissions)
     const assessmentIds = assignments.map((a) => a._id);
 
+    const pendingAssignments =
+      assessmentIds.length === 0
+        ? 0
+        : await Submission.countDocuments({
+            assessment: { $in: assessmentIds },
+            status: { $ne: "evaluated" },
+          });
+
+    // Count completed grades (evaluated submissions)
     const completedGrades =
       assessmentIds.length === 0
         ? 0

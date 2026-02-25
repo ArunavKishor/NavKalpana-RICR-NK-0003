@@ -9,6 +9,7 @@ import {
   MessageSquare,
   BarChart3,
   User,
+  Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,11 @@ const baseNavItems = [
     icon: BookOpen,
     label: "Batch Management",
     href: "/teacher-dashboard/batches",
+  },
+  {
+    icon: Users,
+    label: "Student Management",
+    href: "/teacher-dashboard/students",
   },
   {
     icon: FileText,

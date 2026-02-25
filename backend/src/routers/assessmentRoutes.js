@@ -13,6 +13,7 @@ import {
   getQuizQuestions,
   upsertQuizQuestions,
   deleteQuizQuestion,
+  startQuizAttempt,
   submitQuizAttempt,
   getQuizAttempts,
 } from "../controllers/assessmentController.js";
@@ -64,6 +65,7 @@ router
   .route("/:id/attempts")
   .get(authorize("admin", "teacher"), getQuizAttempts)
   .post(submitQuizAttempt);
+router.route("/:id/attempts/start").post(startQuizAttempt);
 router
   .route("/:id/grade/:submissionId")
   .put(authorize("admin", "teacher"), gradeSubmission);

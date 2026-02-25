@@ -43,6 +43,7 @@ const TeacherBatchDetail = () => {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [contentList, setContentList] = useState([]);
   const [isSavingContent, setIsSavingContent] = useState(false);
+  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split("T")[0]);
 
   useEffect(() => {
     if (batchId) {
@@ -96,11 +97,10 @@ const TeacherBatchDetail = () => {
 
     try {
       setIsSaving(true);
-      const today = new Date().toISOString().split("T")[0];
       const records = students.map((s) => ({
         student: s._id,
         batch: batchId,
-        date: today,
+        date: attendanceDate,
         status: attendanceForm[s._id] || "present",
         remarks: attendanceRemarks,
       }));
@@ -426,9 +426,16 @@ const TeacherBatchDetail = () => {
             <h3 className="font-semibold text-slate-900 mb-3">
               Mark Attendance
             </h3>
-            <p className="text-sm text-slate-600 mb-4">
-              Today: {new Date().toLocaleDateString()}
-            </p>
+            <div className="flex items-center gap-4 mb-4">
+              <label className="text-sm font-medium text-slate-700">Date:</label>
+              <Input
+                type="date"
+                value={attendanceDate}
+                onChange={(e) => setAttendanceDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className="w-48"
+              />
+            </div>
 
             {students.length === 0 ? (
               <p className="text-slate-500 text-center py-8">

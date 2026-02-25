@@ -21,7 +21,7 @@ import {
   Loader2,
   Mail,
   Phone,
-  Calendar,
+  Calendar as CalendarIcon,
   BookOpen,
   Clock,
   CheckCircle2,
@@ -30,7 +30,10 @@ import {
   Trash2,
   Github,
   Linkedin,
+  Flame,
+  Star,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import api from "@/config/Api";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -40,6 +43,7 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
   const [attendanceSummary, setAttendanceSummary] = useState([]);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [weeklySnapshots, setWeeklySnapshots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [availableBatches, setAvailableBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
@@ -56,7 +60,7 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
   const fetchStudentDetails = async () => {
     setLoading(true);
     try {
-      const [studentRes, summaryRes, historyRes, progressRes] =
+      const [studentRes, summaryRes, historyRes, progressRes, snapshotsRes] =
         await Promise.all([
           api.get(`/api/students/${studentId}`),
           api.get(`/api/attendance/student/${studentId}`),
@@ -64,12 +68,18 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
           api
             .get(`/api/students/${studentId}/progress`)
             .catch(() => ({ data: { data: {} } })),
+          api
+            .get(`/api/dashboard/students/${studentId}/weekly-snapshots`, {
+              params: { weeks: 8 },
+            })
+            .catch(() => ({ data: { data: { snapshots: [] } } })),
         ]);
 
       setStudent(studentRes.data.data);
       setAttendanceSummary(summaryRes.data.data.summaries || []);
       setAttendanceHistory(historyRes.data.data.records || []);
       setSubmissions(progressRes.data.data.submissions || []);
+      setWeeklySnapshots(snapshotsRes.data?.data?.snapshots || []);
     } catch (error) {
       console.error("Failed to fetch student details:", error);
     } finally {
@@ -139,6 +149,57 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
     (b) => !enrolledBatchIds.includes(b._id),
   );
 
+  // Compute attendance percentage from summaries
+  const overallAttPct = (() => {
+    const totals = attendanceSummary.reduce(
+      (acc, s) => ({
+        total: acc.total + (s.totalSessions || 0),
+        attended: acc.attended + (s.presentCount || 0) + (s.lateCount || 0),
+      }),
+      { total: 0, attended: 0 },
+    );
+    return totals.total === 0
+      ? 0
+      : Math.round((totals.attended / totals.total) * 100);
+  })();
+
+  // Compute learning streak from weekly snapshots
+  const learningStreak = (() => {
+    const sorted = [...weeklySnapshots].sort(
+      (a, b) => new Date(b.weekStart) - new Date(a.weekStart),
+    );
+    let streak = 0;
+    for (const snap of sorted) {
+      if ((snap.ogi || 0) > 0) streak++;
+      else break;
+    }
+    return streak;
+  })();
+
+  const latestSkills =
+    weeklySnapshots.length > 0
+      ? weeklySnapshots[weeklySnapshots.length - 1]?.skillAcquisitionCount || 0
+      : 0;
+
+  // Attendance calendar modifiers
+  const calendarModifiers = {
+    present: attendanceHistory
+      .filter((r) => r.status === "present")
+      .map((r) => new Date(r.date)),
+    absent: attendanceHistory
+      .filter((r) => r.status === "absent")
+      .map((r) => new Date(r.date)),
+    late: attendanceHistory
+      .filter((r) => r.status === "late")
+      .map((r) => new Date(r.date)),
+  };
+
+  const calendarModifierStyles = {
+    present: { color: "white", backgroundColor: "#10b981" },
+    absent: { color: "white", backgroundColor: "#ef4444" },
+    late: { color: "white", backgroundColor: "#f59e0b" },
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -154,20 +215,42 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
               <DialogTitle className="text-xl font-bold text-slate-900">
                 {student?.user?.fullName || "Student Details"}
               </DialogTitle>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {student?.enrollmentId || "—"}
-              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-sm text-slate-500">
+                  {student?.enrollmentId || "—"}
+                </p>
+                {student?.batches?.[0]?.course && (
+                  <span className="text-xs text-slate-400">
+                    | {student.batches[0].course}
+                  </span>
+                )}
+              </div>
             </div>
             {student?.status && (
-              <Badge
-                className={`ml-auto uppercase text-xs ${
-                  student.status === "active"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {student.status}
-              </Badge>
+              <div className="ml-auto flex items-center gap-2">
+                {overallAttPct > 0 && (
+                  <Badge
+                    className={`text-xs ${
+                      overallAttPct >= 75
+                        ? "bg-emerald-100 text-emerald-700"
+                        : overallAttPct >= 50
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {overallAttPct}% Att
+                  </Badge>
+                )}
+                <Badge
+                  className={`uppercase text-xs ${
+                    student.status === "active"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {student.status}
+                </Badge>
+              </div>
             )}
           </div>
         </DialogHeader>
@@ -255,7 +338,7 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="flex items-center gap-3 text-sm text-slate-700">
-                          <Calendar className="h-4 w-4 text-blue-500" />
+                          <CalendarIcon className="h-4 w-4 text-blue-500" />
                           <span>
                             Enrolled:{" "}
                             {student?.enrollmentDate
@@ -271,6 +354,33 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                         </div>
                       </CardContent>
                     </Card>
+                  </div>
+
+                  {/* Skills + Streak badges (M11, M12) */}
+                  <div className="flex gap-4">
+                    <div className="flex-1 flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 rounded-lg">
+                      <Star className="w-5 h-5 text-amber-500 shrink-0" />
+                      <div>
+                        <p className="text-xs text-amber-600 font-semibold uppercase">
+                          Skills Acquired
+                        </p>
+                        <p className="text-2xl font-black text-amber-700">
+                          {latestSkills}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex items-center gap-3 p-4 bg-orange-50 border border-orange-100 rounded-lg">
+                      <Flame className="w-5 h-5 text-orange-500 shrink-0" />
+                      <div>
+                        <p className="text-xs text-orange-600 font-semibold uppercase">
+                          Learning Streak
+                        </p>
+                        <p className="text-2xl font-black text-orange-700">
+                          {learningStreak}{" "}
+                          <span className="text-sm font-medium">weeks</span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Batches */}
@@ -491,8 +601,41 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                 </TabsContent>
 
                 {/* ATTENDANCE TAB */}
-                <TabsContent value="attendance" className="mt-0">
-                  <div className="space-y-2">
+                <TabsContent value="attendance" className="mt-0 space-y-4">
+                  {/* Calendar View (M5) */}
+                  <div className="flex flex-col items-center">
+                    <h4 className="text-sm font-semibold mb-3 w-full text-slate-700">
+                      Attendance Calendar
+                    </h4>
+                    <Calendar
+                      mode="multiple"
+                      selected={[
+                        ...calendarModifiers.present,
+                        ...calendarModifiers.absent,
+                        ...calendarModifiers.late,
+                      ]}
+                      modifiers={calendarModifiers}
+                      modifiersStyles={calendarModifierStyles}
+                      className="border rounded-md shadow-sm"
+                    />
+                    <div className="flex gap-4 mt-3 text-xs">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-emerald-500 rounded" /> Present
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-red-500 rounded" /> Absent
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-yellow-500 rounded" /> Late
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Date-wise list with remarks (M1) */}
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-semibold text-slate-700">
+                      Date-wise Records
+                    </h4>
                     {attendanceHistory.map((record) => (
                       <div
                         key={record._id}
@@ -525,6 +668,11 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                             <p className="text-xs text-slate-400">
                               {record.batch?.name}
                             </p>
+                            {record.remarks && (
+                              <p className="text-xs text-slate-500 italic mt-0.5">
+                                {record.remarks}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <Badge

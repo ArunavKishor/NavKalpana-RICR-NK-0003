@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
-import { Trophy, Users, Activity, Flame, FileText } from "lucide-react";
+import { Trophy, Users, Activity, Flame, FileText, Download } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
@@ -139,6 +139,36 @@ const TeacherAnalytics = () => {
   const moduleAttendance = analytics?.moduleAttendanceComparison || [];
   const attendanceHeatmap = analytics?.attendanceHeatmap || [];
   const students = analytics?.students || [];
+
+  const handleExportCSV = () => {
+    const rows = [
+      ["Name", "Email", "OGI (%)", "Growth", "Attendance (%)", "Weekly Hours", "Skills", "Streak (weeks)"],
+    ];
+    students.forEach((s) => {
+      rows.push([
+        s.name || "",
+        s.email || "",
+        s.ogi ?? "",
+        s.growthClassification || "",
+        s.attendancePercentage ?? "",
+        s.weeklyLearningHours ?? "",
+        s.skillAcquisitionCount ?? "",
+        s.learningStreak ?? "",
+      ]);
+    });
+    const csv = rows
+      .map((row) =>
+        row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analytics_export_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) {
     return (
@@ -284,9 +314,21 @@ const TeacherAnalytics = () => {
             <h3 className="text-sm font-bold text-slate-900">
               Student Performance Monitoring
             </h3>
-            <p className="text-xs text-slate-500">
-              Click a row to open detailed insights
-            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCSV}
+                disabled={students.length === 0}
+                className="flex items-center gap-1.5 text-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Export CSV
+              </Button>
+              <p className="text-xs text-slate-500">
+                Click a row for details
+              </p>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <Table>
