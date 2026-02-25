@@ -8,11 +8,14 @@ import {
   BookOpen,
   Zap,
   Download,
+  PenTool,
+  XCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import AttendanceModal from "@/components/teacher/AttendanceModal";
 import {
   PieChart,
@@ -38,6 +41,8 @@ const TeacherBatchDetail = () => {
   const [editRemarks, setEditRemarks] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
+  const [contentList, setContentList] = useState([]);
+  const [isSavingContent, setIsSavingContent] = useState(false);
 
   useEffect(() => {
     if (batchId) {
@@ -60,6 +65,7 @@ const TeacherBatchDetail = () => {
       setStudents(studentsList);
       // API returns { data: { records, pagination } }
       setAttendanceHistory(attendanceRes?.data?.data?.records || []);
+      setContentList(batchData?.content || []);
 
       // Initialize attendance form with "present" for all students
       const initialForm = {};
@@ -112,6 +118,32 @@ const TeacherBatchDetail = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSaveContent = async () => {
+    try {
+      setIsSavingContent(true);
+      await api.put(`/api/batches/${batchId}`, { content: contentList });
+      toast.success("Content updated successfully");
+    } catch (err) {
+      toast.error("Failed to update content");
+    } finally {
+      setIsSavingContent(false);
+    }
+  };
+
+  const addContentSection = () => {
+    setContentList([...contentList, { title: "New Section", body: "Section content..." }]);
+  };
+
+  const updateContentItem = (index, field, value) => {
+    const newList = [...contentList];
+    newList[index][field] = value;
+    setContentList(newList);
+  };
+
+  const removeContentItem = (index) => {
+    setContentList(contentList.filter((_, i) => i !== index));
   };
 
   const handleExportAttendance = async () => {
@@ -201,7 +233,7 @@ const TeacherBatchDetail = () => {
       console.error("Update attendance failed:", err);
       toast.error(
         err.response?.data?.message ||
-          "Failed to update attendance. Note: records can only be edited same day within 10 minutes.",
+        "Failed to update attendance. Note: records can only be edited same day within 10 minutes.",
       );
     } finally {
       setIsUpdating(false);
@@ -308,41 +340,46 @@ const TeacherBatchDetail = () => {
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("details")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "details"
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "details"
                 ? "text-blue-600 border-blue-600"
                 : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+              }`}
           >
             Batch Details
           </button>
           <button
             onClick={() => setActiveTab("mark-attendance")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "mark-attendance"
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "mark-attendance"
                 ? "text-blue-600 border-blue-600"
                 : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+              }`}
           >
             Mark Attendance
           </button>
           <button
-            onClick={() => setActiveTab("attendance-history")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "attendance-history"
+            onClick={() => setActiveTab("manage-content")}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "manage-content"
                 ? "text-blue-600 border-blue-600"
                 : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+              }`}
+          >
+            Manage Content
+          </button>
+          <button
+            onClick={() => setActiveTab("attendance-history")}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "attendance-history"
+                ? "text-blue-600 border-blue-600"
+                : "text-slate-600 border-transparent hover:text-slate-900"
+              }`}
           >
             History
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${
-              activeTab === "analytics"
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "analytics"
                 ? "text-blue-600 border-blue-600"
                 : "text-slate-600 border-transparent hover:text-slate-900"
-            }`}
+              }`}
           >
             Analytics
           </button>
@@ -419,15 +456,14 @@ const TeacherBatchDetail = () => {
                           onClick={() =>
                             handleAttendanceStatusChange(student._id, status)
                           }
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                            attendanceForm[student._id] === status
+                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${attendanceForm[student._id] === status
                               ? status === "present"
                                 ? "bg-emerald-500 text-white"
                                 : status === "absent"
                                   ? "bg-red-500 text-white"
                                   : "bg-yellow-500 text-white"
                               : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                          }`}
+                            }`}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </button>
@@ -462,6 +498,53 @@ const TeacherBatchDetail = () => {
             >
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? "Saving..." : "Save Attendance"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "manage-content" && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-slate-900">Course Content</h2>
+            <Button
+              onClick={handleSaveContent}
+              disabled={isSavingContent}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isSavingContent ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Content</>}
+            </Button>
+          </div>
+          <div className="space-y-6">
+            {contentList.map((item, index) => (
+              <div key={index} className="p-4 bg-slate-50 rounded-lg border relative group">
+                <button
+                  onClick={() => removeContentItem(index)}
+                  className="absolute top-2 right-2 p-1 text-red-500 hover:bg-red-50 rounded hidden group-hover:block"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+                <Input
+                  value={item.title}
+                  onChange={(e) => updateContentItem(index, 'title', e.target.value)}
+                  className="font-semibold mb-2 bg-white"
+                  placeholder="Section Title"
+                />
+                <textarea
+                  value={item.body}
+                  onChange={(e) => updateContentItem(index, 'body', e.target.value)}
+                  className="w-full p-2 text-sm text-slate-600 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                  placeholder="Section content..."
+                />
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              onClick={addContentSection}
+              className="w-full border-dashed border-2 py-8 hover:bg-slate-50 transition"
+            >
+              <PenTool className="w-4 h-4 mr-2" />
+              Add New Section
             </Button>
           </div>
         </div>
@@ -518,13 +601,12 @@ const TeacherBatchDetail = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            record.status === "present"
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${record.status === "present"
                               ? "bg-emerald-100 text-emerald-700"
                               : record.status === "absent"
                                 ? "bg-red-100 text-red-700"
                                 : "bg-yellow-100 text-yellow-700"
-                          }`}
+                            }`}
                         >
                           {record.status.charAt(0).toUpperCase() +
                             record.status.slice(1)}
@@ -561,15 +643,14 @@ const TeacherBatchDetail = () => {
                     <button
                       key={status}
                       onClick={() => setEditStatus(status)}
-                      className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                        editStatus === status
+                      className={`px-3 py-1 rounded text-xs font-medium transition-all ${editStatus === status
                           ? status === "present"
                             ? "bg-emerald-500 text-white"
                             : status === "absent"
                               ? "bg-red-500 text-white"
                               : "bg-yellow-500 text-white"
                           : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                      }`}
+                        }`}
                     >
                       {status.charAt(0).toUpperCase() + status.slice(1)}
                     </button>
