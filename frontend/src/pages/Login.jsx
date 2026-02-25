@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -18,6 +18,14 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const sessionMessage = sessionStorage.getItem("sessionExpiredMessage");
+    if (sessionMessage) {
+      toast.error(sessionMessage);
+      sessionStorage.removeItem("sessionExpiredMessage");
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

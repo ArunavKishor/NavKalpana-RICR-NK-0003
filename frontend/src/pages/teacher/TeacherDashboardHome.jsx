@@ -49,6 +49,16 @@ const TeacherDashboardHome = () => {
   const [performanceData, setPerformanceData] = useState([]);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
   const [lowPerformingStudents, setLowPerformingStudents] = useState([]);
+  const [classSummary, setClassSummary] = useState({
+    averageOgi: 0,
+    averageAttendance: 0,
+    averageAssignmentScore: 0,
+  });
+  const [alerts, setAlerts] = useState({
+    overdueAssignments: 0,
+    veryLowOgiStudents: 0,
+    attendanceDrops: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -107,17 +117,37 @@ const TeacherDashboardHome = () => {
       // Fetch and process low performing students (using teacher analytics)
       try {
         const analyticsRes = await api.get("/api/dashboard/teacher/analytics");
-        const students = analyticsRes?.data?.data?.students || [];
+        const analyticsData = analyticsRes?.data?.data || {};
+        const students = analyticsData.students || [];
 
         const lowPerformers = students
-          .filter((st) => (st.academicAverage || 0) < 65)
+          .filter((st) => (st.academicAverage || st.ogi || 0) < 65)
           .slice(0, 3)
           .map((st) => ({
-            name: st.name || "Unknown",
-            course: st.email || "Unassigned",
-            score: Math.round(st.academicAverage || 0),
+            name: st.name || st.fullName || "Unknown",
+            course: st.email || st.course || "Unassigned",
+            score: Math.round(st.academicAverage || st.ogi || 0),
           }));
         setLowPerformingStudents(lowPerformers);
+
+        // Class-level summary from analytics
+        const classMetrics = analyticsData.classMetrics || {};
+        setClassSummary({
+          averageOgi: Math.round(classMetrics.averageOgi || 0),
+          averageAttendance: Math.round(classMetrics.averageAttendance || 0),
+          averageAssignmentScore: Math.round(
+            classMetrics.averageAssignmentScore || 0,
+          ),
+        });
+
+        // Simple alerts based on analytics
+        setAlerts({
+          overdueAssignments: analyticsData.overdueAssignments || 0,
+          veryLowOgiStudents: (students || []).filter(
+            (st) => (st.ogi || st.academicAverage || 0) < 50,
+          ).length,
+          attendanceDrops: analyticsData.attendanceDropCount || 0,
+        });
       } catch (err) {
         console.log("Could not fetch teacher analytics metrics");
       }
@@ -178,6 +208,97 @@ const TeacherDashboardHome = () => {
           value={stats.activeBatches}
           color="bg-purple-50"
         />
+      </div>
+
+      {/* Class Summary + Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="text-lg font-bold text-slate-900 mb-4">
+            Average Class Performance
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase">
+                Overall OGI
+              </p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">
+                {classSummary.averageOgi}%
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Blended attendance and academic scores
+              </p>
+            </div>
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase">
+                Avg Attendance
+              </p>
+              <p className="mt-2 text-2xl font-bold text-emerald-600">
+                {classSummary.averageAttendance}%
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Across your active batches
+              </p>
+            </div>
+            <div className="rounded-xl bg-slate-50 px-4 py-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase">
+                Avg Assignment Score
+              </p>
+              <p className="mt-2 text-2xl font-bold text-indigo-600">
+                {classSummary.averageAssignmentScore}%
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Evaluated assignments only
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="text-lg font-bold text-slate-900 mb-4">
+            Alerts & Risks
+          </h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
+              <div>
+                <p className="font-semibold text-amber-800">
+                  Overdue assignments
+                </p>
+                <p className="text-xs text-amber-700">
+                  Assessments past due with pending submissions.
+                </p>
+              </div>
+              <span className="text-lg font-bold text-amber-800">
+                {alerts.overdueAssignments}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
+              <div>
+                <p className="font-semibold text-red-800">
+                  Very low OGI students
+                </p>
+                <p className="text-xs text-red-700">
+                  Students under 50 OGI in your classes.
+                </p>
+              </div>
+              <span className="text-lg font-bold text-red-800">
+                {alerts.veryLowOgiStudents}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-sky-50 border border-sky-100">
+              <div>
+                <p className="font-semibold text-sky-800">
+                  Attendance drops
+                </p>
+                <p className="text-xs text-sky-700">
+                  Batches with recent attendance decline.
+                </p>
+              </div>
+              <span className="text-lg font-bold text-sky-800">
+                {alerts.attendanceDrops}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Quick Actions & Recent Activity Area */}

@@ -10,6 +10,10 @@ import {
   gradeSubmission,
   getAssessmentStatistics,
   evaluateSubmission,
+  getQuizQuestions,
+  upsertQuizQuestions,
+  deleteQuizQuestion,
+  submitQuizAttempt,
 } from "../controllers/assessmentController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/uploadMiddleware.js";
@@ -37,6 +41,17 @@ router
     upload.single("file"),
     submitAssessment,
   );
+// Quiz-specific routes
+router
+  .route("/:id/questions")
+  .get(authorize("admin", "teacher"), getQuizQuestions)
+  .post(authorize("admin", "teacher"), upsertQuizQuestions);
+router
+  .route("/:id/questions/:questionId")
+  .delete(authorize("admin", "teacher"), deleteQuizQuestion);
+router
+  .route("/:id/attempts")
+  .post(submitQuizAttempt);
 router
   .route("/:id/grade/:submissionId")
   .put(authorize("admin", "teacher"), gradeSubmission);

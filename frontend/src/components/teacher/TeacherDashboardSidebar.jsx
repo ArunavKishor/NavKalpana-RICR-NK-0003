@@ -7,6 +7,7 @@ import {
   BookOpen,
   CheckCircle,
   MessageSquare,
+  BarChart3,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ const sidebarItems = [
   { icon: FileText, label: "Assessments", href: "/teacher-dashboard/assessments" },
   { icon: GraduationCap, label: "Students", href: "/teacher-dashboard/students" },
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
+  { icon: BarChart3, label: "Analytics", href: "/teacher-dashboard/analytics" },
   { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support", badge: 2 },
 ];
 

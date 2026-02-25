@@ -19,4 +19,32 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Global response interceptor for auth/session handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      // Clear any stored auth tokens and user info
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("AdminToken");
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("AdminUser");
+      localStorage.removeItem("token");
+
+      // Optional message flag for UI to show friendly session-expired info
+      sessionStorage.setItem(
+        "sessionExpiredMessage",
+        error.response.data?.message || "Your session has expired. Please log in again."
+      );
+
+      // Redirect to login page if running in browser
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;
