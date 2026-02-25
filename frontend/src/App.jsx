@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardLayout from "./components/dashboard/DashboardMainLayout";
@@ -35,6 +35,9 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />} />
 
+          {/* Legacy route catch-all */}
+          <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+
           {/* Admin Routes */}
           <Route
             path="/admin"
@@ -44,6 +47,7 @@ const App = () => {
               </ProtectedRoute>
             }
           >
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<DashboardHome />} />
             <Route path="batches" element={<BatchManagement />} />
             <Route path="batches/:batchId" element={<BatchDetail />} />

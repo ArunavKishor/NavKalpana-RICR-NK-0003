@@ -78,7 +78,7 @@ const Login = () => {
       sessionStorage.setItem("Token", JSON.stringify(user));
 
       if (role === "admin") {
-        navigate("/admin-dashboard");
+        navigate("/admin/dashboard");
       } else if (role === "teacher") {
         navigate("/teacher-dashboard");
       }
