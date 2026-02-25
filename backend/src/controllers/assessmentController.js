@@ -301,6 +301,7 @@ export const upsertQuizQuestions = async (req, res) => {
         marks: q.marks ?? 1,
         order: q.order ?? index,
         isActive: q.isActive !== false,
+        explanation: q.explanation ?? "",
       };
 
       if (q._id) {
@@ -387,6 +388,19 @@ export const submitQuizAttempt = async (req, res) => {
       return res
         .status(400)
         .json({ message: "Student is not enrolled in this batch" });
+    }
+
+    // Enforce maxAttempts if set
+    if (assessment.maxAttempts) {
+      const existingAttempts = await QuizAttempt.countDocuments({
+        assessment: assessment._id,
+        student: student._id,
+      });
+      if (existingAttempts >= assessment.maxAttempts) {
+        return res.status(400).json({
+          message: `Attempt limit reached. This quiz allows a maximum of ${assessment.maxAttempts} attempt(s).`,
+        });
+      }
     }
 
     const questions = await QuizQuestion.find({
@@ -662,7 +676,8 @@ export const evaluateSubmission = async (req, res) => {
 
     // Rebuild weekly snapshot for this student so analytics/leaderboard stay in sync
     try {
-      const { buildWeeklySnapshotsForStudent } = await import("./analyticsController.js");
+      const { buildWeeklySnapshotsForStudent } =
+        await import("./analyticsController.js");
       await buildWeeklySnapshotsForStudent(submission.student.toString(), 8);
     } catch (innerErr) {
       console.error("evaluateSubmission snapshot rebuild failed:", innerErr);

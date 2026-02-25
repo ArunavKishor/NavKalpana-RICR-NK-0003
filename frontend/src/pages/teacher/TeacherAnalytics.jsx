@@ -15,8 +15,21 @@ import { Trophy, Users, Activity, Flame, FileText } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import StudentDetailModal from "@/components/teacher/StudentDetailModal";
 
 const StatCard = ({ icon, label, value, suffix = "" }) => (
@@ -45,6 +58,7 @@ const TeacherAnalytics = () => {
     sortBy: "ogi",
     order: "desc",
   });
+  const [courseFilter, setCourseFilter] = useState("ALL");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedBatch, setSelectedBatch] = useState(null);
 
@@ -131,7 +145,8 @@ const TeacherAnalytics = () => {
           Performance Analytics & Leaderboard
         </h1>
         <p className="text-slate-500 font-medium text-sm">
-          Monitor class performance, growth trends, and top performers in real time.
+          Monitor class performance, growth trends, and top performers in real
+          time.
         </p>
       </div>
 
@@ -276,7 +291,10 @@ const TeacherAnalytics = () => {
               <TableBody>
                 {students.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-slate-500">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center text-slate-500"
+                    >
                       No students found for your batches.
                     </TableCell>
                   </TableRow>
@@ -320,60 +338,105 @@ const TeacherAnalytics = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-500" />
-              <h3 className="text-sm font-bold text-slate-900">Class Leaderboard</h3>
+              <h3 className="text-sm font-bold text-slate-900">
+                Class Leaderboard
+              </h3>
             </div>
           </div>
 
-          <div className="flex gap-2 mb-3">
-            <Select
-              value={filters.batchId}
-              onValueChange={(val) =>
-                setFilters((prev) => ({ ...prev, batchId: val }))
-              }
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Filter by batch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Batches</SelectItem>
-                {batches.map((b) => (
-                  <SelectItem key={b._id} value={b._id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Course filter */}
+          {(() => {
+            const uniqueCourses = [
+              "ALL",
+              ...new Set(batches.map((b) => b.course).filter(Boolean)),
+            ];
+            const courseBatches =
+              courseFilter === "ALL"
+                ? batches
+                : batches.filter((b) => b.course === courseFilter);
+            return (
+              <>
+                {uniqueCourses.length > 2 && (
+                  <div className="mb-2">
+                    <Select
+                      value={courseFilter}
+                      onValueChange={(val) => {
+                        setCourseFilter(val);
+                        setFilters((prev) => ({ ...prev, batchId: "ALL" }));
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Filter by course" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All Courses</SelectItem>
+                        {uniqueCourses
+                          .filter((c) => c !== "ALL")
+                          .map((c) => (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
-            <Select
-              value={filters.sortBy}
-              onValueChange={(val) =>
-                setFilters((prev) => ({ ...prev, sortBy: val }))
-              }
-            >
-              <SelectTrigger className="h-8 text-xs w-28">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ogi">OGI</SelectItem>
-                <SelectItem value="attendance">Attendance</SelectItem>
-                <SelectItem value="assignmentScore">Assignment Score</SelectItem>
-              </SelectContent>
-            </Select>
+                <div className="flex gap-2 mb-3">
+                  <Select
+                    value={filters.batchId}
+                    onValueChange={(val) =>
+                      setFilters((prev) => ({ ...prev, batchId: val }))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Filter by batch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Batches</SelectItem>
+                      {courseBatches.map((b) => (
+                        <SelectItem key={b._id} value={b._id}>
+                          {b.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() =>
-                setFilters((prev) => ({
-                  ...prev,
-                  order: prev.order === "asc" ? "desc" : "asc",
-                }))
-              }
-            >
-              {filters.order === "asc" ? "↑" : "↓"}
-            </Button>
-          </div>
+                  <Select
+                    value={filters.sortBy}
+                    onValueChange={(val) =>
+                      setFilters((prev) => ({ ...prev, sortBy: val }))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs w-28">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ogi">OGI</SelectItem>
+                      <SelectItem value="attendance">Attendance</SelectItem>
+                      <SelectItem value="assignmentScore">
+                        Assignment Score
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        order: prev.order === "asc" ? "desc" : "asc",
+                      }))
+                    }
+                  >
+                    {filters.order === "asc" ? "↑" : "↓"}
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
 
           <div className="space-y-2 flex-1 overflow-y-auto">
             {leaderboard.length === 0 && (
@@ -460,4 +523,3 @@ const TeacherAnalytics = () => {
 };
 
 export default TeacherAnalytics;
-

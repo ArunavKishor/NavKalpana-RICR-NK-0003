@@ -70,9 +70,7 @@ const TeacherDashboardHome = () => {
       setLoading(true);
 
       // Fetch teacher-scoped KPI stats
-      const teacherStatsRes = await api.get(
-        "/api/dashboard/teacher/stats",
-      );
+      const teacherStatsRes = await api.get("/api/dashboard/teacher/stats");
       const teacherStats = teacherStatsRes?.data?.data || {};
 
       setStats({
@@ -84,8 +82,11 @@ const TeacherDashboardHome = () => {
 
       // Fetch teacher performance data (weekly average scores)
       try {
-        const performanceRes = await api.get("/api/dashboard/teacher/performance");
-        const performanceData = performanceRes?.data?.data?.performanceData || [];
+        const performanceRes = await api.get(
+          "/api/dashboard/teacher/performance",
+        );
+        const performanceData =
+          performanceRes?.data?.data?.performanceData || [];
 
         // Transform the data to match the chart format
         const chartData = performanceData.map((item, index) => ({
@@ -204,7 +205,7 @@ const TeacherDashboardHome = () => {
         />
         <StatCard
           icon={<GraduationCap className="w-6 h-6 text-purple-600" />}
-          label="Active Batches"
+          label="Active Courses"
           value={stats.activeBatches}
           color="bg-purple-50"
         />
@@ -286,9 +287,7 @@ const TeacherDashboardHome = () => {
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-sky-50 border border-sky-100">
               <div>
-                <p className="font-semibold text-sky-800">
-                  Attendance drops
-                </p>
+                <p className="font-semibold text-sky-800">Attendance drops</p>
                 <p className="text-xs text-sky-700">
                   Batches with recent attendance decline.
                 </p>
@@ -307,7 +306,7 @@ const TeacherDashboardHome = () => {
           <h3 className="text-lg font-bold text-slate-900 mb-4">
             Class Performance (Weekly)
           </h3>
-          <div className="h-64 w-full" style={{ minHeight: '250px' }}>
+          <div className="h-64 w-full" style={{ minHeight: "250px" }}>
             {performanceData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <BarChart data={performanceData}>

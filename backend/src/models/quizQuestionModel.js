@@ -54,6 +54,11 @@ const quizQuestionSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    explanation: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   {
     timestamps: true,
@@ -65,4 +70,3 @@ quizQuestionSchema.index({ assessment: 1, order: 1 });
 const QuizQuestion = mongoose.model("QuizQuestion", quizQuestionSchema);
 
 export default QuizQuestion;
-

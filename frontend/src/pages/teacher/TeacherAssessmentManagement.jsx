@@ -610,15 +610,25 @@ const TeacherAssessmentManagement = () => {
                             </p>
                           </div>
 
-                          <Badge
-                            className={
-                              sub.status === "evaluated"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-amber-100 text-amber-700"
-                            }
-                          >
-                            {sub.status}
-                          </Badge>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge
+                              className={
+                                sub.status === "evaluated"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }
+                            >
+                              {sub.status}
+                            </Badge>
+                            {selectedAssessment?.dueDate &&
+                              sub.submittedAt &&
+                              new Date(sub.submittedAt) >
+                                new Date(selectedAssessment.dueDate) && (
+                                <Badge className="bg-red-100 text-red-700 text-[10px]">
+                                  Late
+                                </Badge>
+                              )}
+                          </div>
                         </div>
 
                         {sub.marksObtained !== undefined && (

@@ -78,6 +78,17 @@ const assessmentSchema = new mongoose.Schema(
       enum: ["PDF", "Image", "JPG", "Video", "Text", "Any"],
       default: "PDF",
     },
+    // Quiz-specific fields
+    duration: {
+      type: Number,
+      min: [1, "Duration must be at least 1 minute"],
+      default: null,
+    },
+    maxAttempts: {
+      type: Number,
+      min: [1, "Max attempts must be at least 1"],
+      default: 1,
+    },
   },
   {
     timestamps: true,

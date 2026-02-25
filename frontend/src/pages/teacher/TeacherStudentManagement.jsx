@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Users, CheckCircle, Clock, Search, Mail, Phone, Download } from "lucide-react";
+import {
+  Users,
+  CheckCircle,
+  Clock,
+  Search,
+  Mail,
+  Phone,
+  Download,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
@@ -128,7 +136,16 @@ const TeacherStudentManagement = () => {
   };
 
   const downloadCSV = () => {
-    const headers = ["Name", "Email", "Enrollment ID", "Course", "Status", "OGI (%)", "Growth", "Attendance (%)"];
+    const headers = [
+      "Name",
+      "Email",
+      "Enrollment ID",
+      "Course",
+      "Status",
+      "OGI (%)",
+      "Growth",
+      "Attendance (%)",
+    ];
     const rows = filteredStudents.map((s) => [
       s.name,
       s.email,
@@ -140,7 +157,11 @@ const TeacherStudentManagement = () => {
       s.attendancePercentage,
     ]);
     const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
+      .map((row) =>
+        row
+          .map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`)
+          .join(","),
+      )
       .join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -256,8 +277,9 @@ const TeacherStudentManagement = () => {
               <div className="col-span-3">STUDENT DETAILS</div>
               <div className="col-span-2">COURSE & ID</div>
               <div className="col-span-2">PERFORMANCE</div>
-              <div className="col-span-2">ATTENDANCE</div>
-              <div className="col-span-2">MODULES</div>
+              <div className="col-span-1">ATTENDANCE</div>
+              <div className="col-span-2">PHONE</div>
+              <div className="col-span-1">MODULES</div>
               <div className="col-span-1 text-right">ACTIONS</div>
             </div>
 
@@ -317,7 +339,7 @@ const TeacherStudentManagement = () => {
                     </Badge>
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <Badge
                       className={getAttendanceStyle(
                         student.attendancePercentage,
@@ -327,13 +349,20 @@ const TeacherStudentManagement = () => {
                     </Badge>
                   </div>
 
-                  <div className="col-span-2 flex gap-1 flex-wrap">
+                  <div className="col-span-2">
+                    <div className="flex items-center gap-1.5 text-sm text-slate-700">
+                      <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{student.phone}</span>
+                    </div>
+                  </div>
+
+                  <div className="col-span-1 flex gap-1 flex-wrap">
                     {student.modules.map((mod) => (
                       <Badge
                         key={mod}
                         className="bg-slate-100 text-slate-600 text-[10px] font-medium border-slate-200"
                       >
-                        {mod.length > 10 ? mod.substring(0, 10) + "..." : mod}
+                        {mod.length > 8 ? mod.substring(0, 8) + "…" : mod}
                       </Badge>
                     ))}
                   </div>

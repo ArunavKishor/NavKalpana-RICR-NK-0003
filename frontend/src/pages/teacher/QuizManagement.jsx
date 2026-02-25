@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, BarChart2 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -25,6 +31,8 @@ const QuizManagement = () => {
     batch: "",
     dueDate: "",
     totalMarks: 100,
+    duration: "",
+    maxAttempts: 1,
     moduleName: "",
     lessonName: "",
     lessonId: "",
@@ -32,6 +40,11 @@ const QuizManagement = () => {
   const [questionEditorQuiz, setQuestionEditorQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [isSavingQuestions, setIsSavingQuestions] = useState(false);
+
+  // Scores panel state
+  const [scoresQuiz, setScoresQuiz] = useState(null);
+  const [scoresData, setScoresData] = useState(null);
+  const [scoresLoading, setScoresLoading] = useState(false);
 
   useEffect(() => {
     loadBatches();
@@ -90,6 +103,8 @@ const QuizManagement = () => {
         moduleName: formData.moduleName,
         lessonName: formData.lessonName,
         lessonId: formData.lessonId,
+        duration: formData.duration ? Number(formData.duration) : undefined,
+        maxAttempts: Number(formData.maxAttempts) || 1,
       };
 
       await api.post("/api/assessments", payload);
@@ -101,6 +116,8 @@ const QuizManagement = () => {
         batch: "",
         dueDate: "",
         totalMarks: 100,
+        duration: "",
+        maxAttempts: 1,
         moduleName: "",
         lessonName: "",
         lessonId: "",
@@ -108,9 +125,7 @@ const QuizManagement = () => {
       await loadQuizzes();
     } catch (err) {
       console.error("Create quiz failed:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to create quiz",
-      );
+      toast.error(err.response?.data?.message || "Failed to create quiz");
     }
   };
 
@@ -133,6 +148,21 @@ const QuizManagement = () => {
     }
   };
 
+  const openScoresPanel = async (quiz) => {
+    setScoresQuiz(quiz);
+    setScoresData(null);
+    setScoresLoading(true);
+    try {
+      const { data } = await api.get(`/api/assessments/${quiz._id}/statistics`);
+      setScoresData(data?.data || null);
+    } catch (err) {
+      console.error("Load quiz statistics failed:", err);
+      toast.error("Failed to load quiz scores");
+    } finally {
+      setScoresLoading(false);
+    }
+  };
+
   const handleQuestionChange = (index, updated) => {
     setQuestions((prev) => {
       const copy = [...prev];
@@ -151,6 +181,7 @@ const QuizManagement = () => {
           { label: "", isCorrect: false },
         ],
         marks: 1,
+        explanation: "",
       },
     ]);
   };
@@ -169,6 +200,7 @@ const QuizManagement = () => {
         marks: Number(q.marks ?? 1),
         order: q.order ?? index,
         isActive: q.isActive !== false,
+        explanation: q.explanation ?? "",
       }));
       await api.post(`/api/assessments/${questionEditorQuiz._id}/questions`, {
         questions: payload,
@@ -301,15 +333,15 @@ const QuizManagement = () => {
                         quiz.status === "published"
                           ? "bg-green-100 text-green-700"
                           : quiz.status === "draft"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-slate-100 text-slate-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {quiz.status || "published"}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 text-sm">
                     <div className="text-slate-600">
                       <span className="font-medium">Due Date:</span>{" "}
                       <span className="text-slate-900 text-xs">
@@ -325,15 +357,21 @@ const QuizManagement = () => {
                       </span>
                     </div>
                     <div className="text-slate-600">
-                      <span className="font-medium">Attempts:</span>{" "}
+                      <span className="font-medium">Duration:</span>{" "}
                       <span className="text-slate-900">
-                        {quiz.submissionStats?.total || 0}
+                        {quiz.duration ? `${quiz.duration} min` : "Unlimited"}
                       </span>
                     </div>
                     <div className="text-slate-600">
-                      <span className="font-medium">Evaluated:</span>{" "}
+                      <span className="font-medium">Max Attempts:</span>{" "}
                       <span className="text-slate-900">
-                        {quiz.submissionStats?.evaluated || 0}
+                        {quiz.maxAttempts ?? 1}
+                      </span>
+                    </div>
+                    <div className="text-slate-600">
+                      <span className="font-medium">Attempts:</span>{" "}
+                      <span className="text-slate-900">
+                        {quiz.submissionStats?.total || 0}
                       </span>
                     </div>
                   </div>
@@ -345,6 +383,14 @@ const QuizManagement = () => {
                       onClick={() => openQuestionEditor(quiz)}
                     >
                       Manage Questions
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-blue-700 border-blue-200 hover:bg-blue-50"
+                      onClick={() => openScoresPanel(quiz)}
+                    >
+                      <BarChart2 className="w-4 h-4 mr-2" />
+                      View Scores
                     </Button>
                     <Button
                       onClick={() => handleDeleteQuiz(quiz._id)}
@@ -422,25 +468,48 @@ const QuizManagement = () => {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Total Marks</label>
-                <Input
-                  type="number"
-                  required
-                  value={formData.totalMarks}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      totalMarks: e.target.value,
-                    })
-                  }
-                />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Total Marks</label>
+                  <Input
+                    type="number"
+                    required
+                    value={formData.totalMarks}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        totalMarks: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Duration (min)</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration: e.target.value })
+                    }
+                    placeholder="Optional"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Max Attempts</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={formData.maxAttempts}
+                    onChange={(e) =>
+                      setFormData({ ...formData, maxAttempts: e.target.value })
+                    }
+                  />
+                </div>
               </div>
               {/* Optional lesson metadata */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Lesson (optional)
-                </label>
+                <label className="text-sm font-medium">Lesson (optional)</label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <Input
                     value={formData.moduleName}
@@ -476,6 +545,61 @@ const QuizManagement = () => {
                 <Button type="submit">Create Quiz</Button>
               </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Scores Panel Dialog */}
+        <Dialog
+          open={!!scoresQuiz}
+          onOpenChange={(open) => {
+            if (!open) setScoresQuiz(null);
+          }}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Quiz Scores • {scoresQuiz?.title}</DialogTitle>
+            </DialogHeader>
+            {scoresLoading ? (
+              <p className="text-sm text-slate-500 py-4 text-center">
+                Loading scores...
+              </p>
+            ) : scoresData ? (
+              <div className="space-y-4 py-2">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-blue-600 uppercase">
+                      Attempts
+                    </p>
+                    <p className="text-2xl font-black text-blue-700">
+                      {scoresData.submissionCount}
+                    </p>
+                  </div>
+                  <div className="bg-emerald-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-emerald-600 uppercase">
+                      Avg Score
+                    </p>
+                    <p className="text-2xl font-black text-emerald-700">
+                      {Math.round(scoresData.averageMarks * 10) / 10}
+                    </p>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-purple-600 uppercase">
+                      Completion
+                    </p>
+                    <p className="text-2xl font-black text-purple-700">
+                      {Math.round(scoresData.completionPercentage)}%
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 text-center">
+                  Out of {scoresQuiz?.totalMarks} total marks
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 py-4 text-center">
+                No scores available yet.
+              </p>
+            )}
           </DialogContent>
         </Dialog>
 
@@ -579,9 +703,7 @@ const QuizManagement = () => {
                       Add Option
                     </Button>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500">
-                        Marks:
-                      </span>
+                      <span className="text-xs text-slate-500">Marks:</span>
                       <Input
                         type="number"
                         className="w-20"
@@ -593,6 +715,22 @@ const QuizManagement = () => {
                         }
                       />
                     </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-slate-500">
+                      Explanation (shown after submission)
+                    </label>
+                    <Textarea
+                      rows={2}
+                      value={q.explanation ?? ""}
+                      onChange={(e) =>
+                        handleQuestionChange(index, {
+                          explanation: e.target.value,
+                        })
+                      }
+                      placeholder="Optional: explain why the correct answer is correct"
+                      className="text-sm"
+                    />
                   </div>
                 </div>
               ))}
