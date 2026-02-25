@@ -5,15 +5,6 @@ import AdminLogin from "./pages/public/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardLayout from "./components/dashboard/DashboardMainLayout";
 import DashboardHome from "./pages/dashboards/admin/AdminDashboardHome";
-import {
-  BatchManagement,
-  AssessmentManagement,
-  StudentManagement,
-  SupportRequests,
-  BatchDetail,
-  TeacherManagement,
-} from "./pages/dashboards/admin/AdminHome";
-import AttendanceManagement from "./pages/dashboards/admin/AdminAttendance";
 import Login from "./pages/Login";
 
 import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
@@ -50,26 +41,6 @@ const App = () => {
             <Route index element={<DashboardHome />} />
           </Route>
 
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="dashboard" element={<DashboardHome />} />
-            <Route path="batches" element={<BatchManagement />} />
-            <Route path="batches/:batchId" element={<BatchDetail />} />
-            <Route
-              path="batches/:batchId/attendance"
-              element={<AttendanceManagement />}
-            />
-            <Route path="assessments" element={<AssessmentManagement />} />
-            <Route path="students" element={<StudentManagement />} />
-            <Route path="teachers" element={<TeacherManagement />} />
-            <Route path="support" element={<SupportRequests />} />
-          </Route>
 
           {/* Teacher Dashboard Routes (Admin can view too) */}
           <Route

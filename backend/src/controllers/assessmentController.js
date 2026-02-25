@@ -56,6 +56,7 @@ export const createAssessment = async (req, res) => {
   } catch (error) {
     const validationErrors = formatValidationErrors(error);
     if (validationErrors) {
+      console.log("Validation Errors detailed:", validationErrors);
       return res.status(400).json({
         message: "Validation failed",
         errors: validationErrors,
