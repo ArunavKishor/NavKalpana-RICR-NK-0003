@@ -8,6 +8,7 @@ import {
   CheckCircle,
   MessageSquare,
   BarChart3,
+  User,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const sidebarItems = [
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
   { icon: BarChart3, label: "Analytics", href: "/teacher-dashboard/analytics" },
   { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support", badge: 2 },
+  { icon: User, label: "My Account", href: "/teacher-dashboard/account" },
 ];
 
 const TeacherSidebar = ({ isOpen }) => {
