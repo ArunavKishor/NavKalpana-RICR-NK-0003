@@ -2,6 +2,7 @@ import Batch from "../models/batchModel.js";
 import Student from "../models/studentModel.js";
 import Attendance from "../models/attendanceModel.js";
 import User from "../models/userModel.js";
+import Teacher from "../models/teacherModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -122,6 +123,19 @@ export const getBatches = async (req, res) => {
     if (search) {
       const regex = new RegExp(search, "i");
       filter.$or = [{ name: regex }, { course: regex }, { instructor: regex }];
+    }
+
+    // If the caller is a teacher, restrict to only their assigned batches
+    if (req.user?.role === "teacher") {
+      const teacherProfile = await Teacher.findOne({ user: req.user._id }).select("_id");
+      if (!teacherProfile) {
+        return res.status(200).json({
+          success: true,
+          message: "Batches retrieved successfully",
+          data: { batches: [], pagination: buildPaginationMeta(page, limit, 0) },
+        });
+      }
+      filter.instructor = teacherProfile._id;
     }
 
     const total = await Batch.countDocuments(filter);
