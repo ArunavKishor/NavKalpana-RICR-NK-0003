@@ -45,6 +45,19 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
 
     useEffect(() => {
         if (initialData) {
+            // Handle instructor field - could be an object, string ID, or null/undefined
+            let instructorValue = "";
+            if (initialData.instructor) {
+                // If instructor is an object (populated), get its _id
+                if (typeof initialData.instructor === "object" && initialData.instructor._id) {
+                    instructorValue = initialData.instructor._id;
+                }
+                // If instructor is a string (ObjectId), use it directly
+                else if (typeof initialData.instructor === "string") {
+                    instructorValue = initialData.instructor;
+                }
+            }
+
             setFormData({
                 name: initialData.name || "",
                 course: initialData.course || "",
@@ -54,7 +67,7 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
                 endDate: initialData.endDate
                     ? new Date(initialData.endDate).toISOString().split("T")[0]
                     : "",
-                instructor: initialData.instructor?._id || initialData.instructor || "",
+                instructor: instructorValue,
                 schedule: initialData.schedule || "",
                 maxStudents: initialData.maxStudents || 1,
             });

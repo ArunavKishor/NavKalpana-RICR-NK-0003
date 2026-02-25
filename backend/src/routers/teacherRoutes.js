@@ -3,6 +3,7 @@ import {
   createTeacher,
   getTeachers,
   getTeacherById,
+  getMeTeacher,
   updateTeacher,
   deleteTeacher,
   uploadProfilePhoto,
@@ -13,6 +14,9 @@ import upload from "../middlewares/uploadMiddleware.js";
 const router = express.Router();
 
 router.use(protect);
+
+// Get current teacher profile - accessible by teacher
+router.route("/me").get(authorize("teacher"), getMeTeacher);
 
 // Get teachers - accessible by admin and teacher
 router.route("/").get(authorize("admin", "teacher"), getTeachers);

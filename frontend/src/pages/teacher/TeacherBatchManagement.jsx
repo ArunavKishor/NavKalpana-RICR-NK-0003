@@ -18,8 +18,11 @@ const TeacherBatchManagement = () => {
   const [attendanceBatch, setAttendanceBatch] = useState(null);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
 
+  const [allBatches, setAllBatches] = useState([]);
+
   useEffect(() => {
     loadBatches();
+    loadAllBatchesForCounts();
   }, [activeFilter]);
 
   const loadBatches = async () => {
@@ -40,6 +43,16 @@ const TeacherBatchManagement = () => {
       toast.error("Failed to load batches");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAllBatchesForCounts = async () => {
+    try {
+      const { data } = await api.get("/api/batches");
+      const batchesList = data?.data?.batches || [];
+      setAllBatches(batchesList);
+    } catch (err) {
+      console.error("Load all batches failed:", err);
     }
   };
 
@@ -101,27 +114,27 @@ const TeacherBatchManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="summary-card">
           <p>Total Batches</p>
-          <h3>{batches.length}</h3>
+          <h3>{allBatches.length}</h3>
         </div>
 
         <div className="summary-card">
           <p>Ongoing</p>
           <h3>
-            {batches.filter((b) => b.status === "ongoing").length}
+            {allBatches.filter((b) => b.status === "ongoing").length}
           </h3>
         </div>
 
         <div className="summary-card">
           <p>Completed</p>
           <h3>
-            {batches.filter((b) => b.status === "completed").length}
+            {allBatches.filter((b) => b.status === "completed").length}
           </h3>
         </div>
 
         <div className="summary-card">
           <p>Upcoming</p>
           <h3>
-            {batches.filter((b) => b.status === "upcoming").length}
+            {allBatches.filter((b) => b.status === "upcoming").length}
           </h3>
         </div>
       </div>

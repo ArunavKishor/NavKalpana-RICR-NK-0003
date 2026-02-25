@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, Search, ChevronDown, Menu } from "lucide-react";
+import { Bell, Search, ChevronDown, Menu, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,17 +12,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getGreeting } from "@/lib/utils";
 
 const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const greeting = getGreeting();
 
     const handleLogout = () => {
         logout();
         navigate("/login");
+    };
+
+    const handleAccountClick = () => {
+        // Navigate to appropriate account page based on role
+        if (user?.role === "teacher") {
+            navigate("/teacher-dashboard/account");
+        } else {
+            // For admin or other roles, can add their account page later
+            navigate("/admin/dashboard");
+        }
     };
 
     return (
@@ -96,6 +107,16 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
                     <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+
+                        {user?.role === "teacher" && (
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={handleAccountClick}
+                            >
+                                <User className="w-4 h-4 mr-2" />
+                                Profile
+                            </DropdownMenuItem>
+                        )}
 
                         <DropdownMenuItem
                             className="text-rose-600 cursor-pointer focus:text-rose-700 focus:bg-rose-50"

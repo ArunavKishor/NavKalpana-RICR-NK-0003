@@ -156,6 +156,32 @@ export const getTeacherById = async (req, res) => {
   }
 };
 
+/* ---------------------------------- */
+/* GET CURRENT TEACHER PROFILE        */
+/* ---------------------------------- */
+export const getMeTeacher = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const teacher = await Teacher.findOne({ user: userId, isActive: true }).populate(
+      "user",
+      "fullName email",
+    );
+
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher profile not found" });
+    }
+
+    res.status(200).json({
+      message: "Teacher profile retrieved successfully",
+      data: teacher,
+    });
+  } catch (error) {
+    console.error("Get Me Teacher Error:", error);
+    res.status(500).json({ message: "Failed to retrieve teacher profile" });
+  }
+};
+
 export const updateTeacher = async (req, res) => {
   try {
     const { fullName, email, phone, status } = req.body;

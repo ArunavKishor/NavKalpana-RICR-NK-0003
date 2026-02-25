@@ -33,11 +33,9 @@ const TeacherStudentManagement = () => {
   const loadTeacherBatches = async () => {
     try {
       const { data } = await api.get("/api/batches");
-      const all = data?.data?.batches || [];
-      const mine = all.filter(
-        (b) => b.createdBy?._id && user?._id && b.createdBy._id === user._id,
-      );
-      setTeacherBatches(mine);
+      // Backend already filters batches by instructor for teachers
+      const batches = data?.data?.batches || [];
+      setTeacherBatches(batches);
     } catch (err) {
       console.error("Load teacher batches failed:", err);
       // Fallback: allow page to still work, but unscoped
@@ -403,4 +401,3 @@ const ToggleButton = ({ active, onClick, children }) => (
 );
 
 export default TeacherStudentManagement;
-
