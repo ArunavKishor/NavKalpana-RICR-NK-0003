@@ -82,6 +82,16 @@ const supportRequestSchema = new mongoose.Schema(
       topic: String,
       meetingLink: String,
     },
+    course: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    topic: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   {
     timestamps: true,

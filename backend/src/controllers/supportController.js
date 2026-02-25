@@ -8,7 +8,8 @@ import {
 
 export const createSupportRequest = async (req, res) => {
   try {
-    const { student, subject, description, category, priority } = req.body;
+    const { student, subject, description, category, priority, course, topic } =
+      req.body;
 
     const studentDoc = await Student.findById(student);
     if (!studentDoc || !studentDoc.isActive) {
@@ -23,6 +24,8 @@ export const createSupportRequest = async (req, res) => {
       priority: priority || "medium",
       status: "open",
       statusUpdatedAt: new Date(),
+      course: course || "",
+      topic: topic || "",
     });
 
     res.status(201).json({
@@ -53,10 +56,14 @@ export const getSupportRequests = async (req, res) => {
     }
 
     const { page, limit, skip } = pagination;
-    const { search, status, priority, category, student } = req.query;
+    const { search, status, priority, category, student, course, topic } =
+      req.query;
 
     const filter = {};
-    if (status && !["open", "in-progress", "resolved", "closed"].includes(status)) {
+    if (
+      status &&
+      !["open", "in-progress", "resolved", "closed"].includes(status)
+    ) {
       return res.status(400).json({ message: "Invalid status filter" });
     }
     if (priority && !["low", "medium", "high", "urgent"].includes(priority)) {
@@ -72,6 +79,8 @@ export const getSupportRequests = async (req, res) => {
     if (priority) filter.priority = priority;
     if (category) filter.category = category;
     if (student) filter.student = student;
+    if (course) filter.course = new RegExp(course, "i");
+    if (topic) filter.topic = new RegExp(topic, "i");
     if (search) {
       const regex = new RegExp(search, "i");
       filter.$or = [{ subject: regex }, { description: regex }];
@@ -248,7 +257,9 @@ export const scheduleBackupClass = async (req, res) => {
     const { date, topic, meetingLink } = req.body;
 
     if (!date || !topic) {
-      return res.status(400).json({ message: "Date and topic are required for background class" });
+      return res
+        .status(400)
+        .json({ message: "Date and topic are required for background class" });
     }
 
     const request = await SupportRequest.findById(id);
@@ -259,7 +270,7 @@ export const scheduleBackupClass = async (req, res) => {
     request.backupClassSchedule = {
       date: new Date(date),
       topic,
-      meetingLink
+      meetingLink,
     };
 
     // Automatically transition status to in-progress if it was open
@@ -272,7 +283,7 @@ export const scheduleBackupClass = async (req, res) => {
 
     res.status(200).json({
       message: "Backup class scheduled successfully",
-      data: request
+      data: request,
     });
   } catch (error) {
     console.error("Schedule Backup Class Error:", error);

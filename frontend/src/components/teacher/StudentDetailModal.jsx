@@ -12,19 +12,23 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import api from "@/config/Api";
-import { TrendingUp, User, Download } from "lucide-react";
+import { TrendingUp, User, Download, Github, Linkedin, Flame, Star } from "lucide-react";
 
 const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [progressData, setProgressData] = useState(null);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [weeklySnapshots, setWeeklySnapshots] = useState([]);
 
   useEffect(() => {
     if (isOpen && student?._id) {
@@ -35,12 +39,18 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
   const loadStudentDetails = async () => {
     try {
       setLoading(true);
-      const [progressRes, attendanceRes] = await Promise.all([
+      const [progressRes, attendanceRes, snapshotsRes] = await Promise.all([
         api.get(`/api/students/${student._id}/progress`),
         api.get(`/api/attendance?student=${student._id}&batch=${batch?._id}`),
+        api
+          .get(`/api/dashboard/students/${student._id}/weekly-snapshots`, {
+            params: { weeks: 8 },
+          })
+          .catch(() => ({ data: { data: { snapshots: [] } } })),
       ]);
       setProgressData(progressRes.data.data);
       setAttendanceRecords(attendanceRes.data.data.records || []);
+      setWeeklySnapshots(snapshotsRes.data?.data?.snapshots || []);
     } catch (err) {
       console.error("Failed to load student details:", err);
     } finally {
@@ -71,7 +81,40 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Helper for calendar modifiers
+  // Compute learning streak: consecutive recent weeks with ogi > 0
+  const learningStreak = (() => {
+    const sorted = [...weeklySnapshots].sort(
+      (a, b) => new Date(b.weekStart) - new Date(a.weekStart),
+    );
+    let streak = 0;
+    for (const snap of sorted) {
+      if ((snap.ogi || 0) > 0) streak++;
+      else break;
+    }
+    return streak;
+  })();
+
+  const latestSkills =
+    weeklySnapshots.length > 0
+      ? weeklySnapshots[weeklySnapshots.length - 1].skillAcquisitionCount || 0
+      : 0;
+
+  // Chart data: weekly snapshots sorted oldest→newest, label by week number
+  const weeklyChartData = [...weeklySnapshots]
+    .sort((a, b) => new Date(a.weekStart) - new Date(b.weekStart))
+    .map((s) => ({
+      week: new Date(s.weekStart).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      OGI: Math.round(s.ogi || 0),
+      Attendance: Math.round(s.attendancePercentage || 0),
+      Quiz: Math.round(s.quizAverage || 0),
+      Assignment: Math.round(s.assignmentAverage || 0),
+      Hours: Math.round((s.weeklyLearningHours || 0) * 10) / 10,
+    }));
+
+  // Attendance calendar modifiers
   const modifiers = {
     present: attendanceRecords
       .filter((r) => r.status === "present")
@@ -89,6 +132,11 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
     absent: { color: "white", backgroundColor: "#ef4444" },
     late: { color: "white", backgroundColor: "#f59e0b" },
   };
+
+  const attPct = progressData?.attendance?.percentage || 0;
+  const acadPct = progressData?.academics?.averageGrade || 0;
+  const attContrib = Math.round(attPct * 0.4 * 10) / 10;
+  const acadContrib = Math.round(acadPct * 0.6 * 10) / 10;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -123,15 +171,17 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
           </TabsList>
 
+          {/* ── Course Info Tab (#5, #11) ── */}
           <TabsContent value="info" className="space-y-4">
+            {/* Batch / Course grid */}
             <div className="grid grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg">
               <div>
                 <p className="text-sm text-slate-500">Batch Name</p>
-                <p className="font-semibold">{batch?.name}</p>
+                <p className="font-semibold">{batch?.name || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Course</p>
-                <p className="font-semibold">{batch?.course}</p>
+                <p className="font-semibold">{batch?.course || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Instructor</p>
@@ -144,12 +194,110 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
               <div>
                 <p className="text-sm text-slate-500">Joined Date</p>
                 <p className="font-semibold">
-                  {new Date(student?.createdAt).toLocaleDateString()}
+                  {student?.createdAt
+                    ? new Date(student.createdAt).toLocaleDateString()
+                    : "N/A"}
                 </p>
               </div>
+
+              {/* GitHub */}
+              <div>
+                <p className="text-sm text-slate-500 flex items-center gap-1">
+                  <Github className="w-3.5 h-3.5" /> GitHub
+                </p>
+                {student?.github ? (
+                  <a
+                    href={student.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-sm font-medium truncate block"
+                  >
+                    {student.github.replace(/^https?:\/\/(www\.)?/, "")}
+                  </a>
+                ) : (
+                  <p className="text-slate-400 text-sm">Not provided</p>
+                )}
+              </div>
+
+              {/* LinkedIn */}
+              <div>
+                <p className="text-sm text-slate-500 flex items-center gap-1">
+                  <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+                </p>
+                {student?.linkedin ? (
+                  <a
+                    href={student.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-sm font-medium truncate block"
+                  >
+                    {student.linkedin.replace(/^https?:\/\/(www\.)?/, "")}
+                  </a>
+                ) : (
+                  <p className="text-slate-400 text-sm">Not provided</p>
+                )}
+              </div>
             </div>
+
+            {/* Skills + Streak badges */}
+            <div className="flex gap-4">
+              <div className="flex-1 flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 rounded-lg">
+                <Star className="w-5 h-5 text-amber-500 shrink-0" />
+                <div>
+                  <p className="text-xs text-amber-600 font-semibold uppercase">
+                    Skills Acquired
+                  </p>
+                  <p className="text-2xl font-black text-amber-700">
+                    {latestSkills}
+                  </p>
+                </div>
+              </div>
+              <div className="flex-1 flex items-center gap-3 p-4 bg-orange-50 border border-orange-100 rounded-lg">
+                <Flame className="w-5 h-5 text-orange-500 shrink-0" />
+                <div>
+                  <p className="text-xs text-orange-600 font-semibold uppercase">
+                    Learning Streak
+                  </p>
+                  <p className="text-2xl font-black text-orange-700">
+                    {learningStreak}{" "}
+                    <span className="text-sm font-medium">weeks</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Weekly learning hours chart */}
+            {weeklyChartData.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold mb-3">
+                  Weekly Learning Hours
+                </h4>
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={weeklyChartData} barSize={16}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis
+                        dataKey="week"
+                        tick={{ fontSize: 10 }}
+                        interval={0}
+                        angle={-20}
+                        textAnchor="end"
+                      />
+                      <YAxis tick={{ fontSize: 10 }} width={28} />
+                      <Tooltip />
+                      <Bar
+                        dataKey="Hours"
+                        fill="#f97316"
+                        radius={[3, 3, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
+          {/* ── Academic Progress Tab (#4, #9) ── */}
           <TabsContent value="progress" className="space-y-6">
             {loading ? (
               <div className="h-64 flex items-center justify-center">
@@ -157,6 +305,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
               </div>
             ) : (
               <>
+                {/* Top 3 stat cards */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 border rounded-lg bg-blue-50">
                     <p className="text-xs text-blue-600 font-bold uppercase">
@@ -184,40 +333,153 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                <div className="h-64 w-full" style={{ minHeight: "250px" }}>
-                  <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" /> Growth Trend
+                {/* OGI Formula Breakdown */}
+                <div className="p-4 bg-slate-50 rounded-lg space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-700">
+                    OGI Breakdown (40% Attendance + 60% Academic)
                   </h4>
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <BarChart
-                      data={[
-                        {
-                          name: "Attendance",
-                          value: progressData?.attendance?.percentage,
-                        },
-                        {
-                          name: "Academic",
-                          value: progressData?.academics?.averageGrade,
-                        },
-                        { name: "Growth (OGI)", value: progressData?.ogi },
-                      ]}
+                  <div className="space-y-2">
+                    <div>
+                      <div className="flex justify-between text-xs text-slate-600 mb-1">
+                        <span>Attendance contribution (40%)</span>
+                        <span className="font-semibold text-blue-700">
+                          +{attContrib} pts
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-500 h-2 rounded-full transition-all"
+                          style={{ width: `${Math.min(attPct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs text-slate-600 mb-1">
+                        <span>Academic contribution (60%)</span>
+                        <span className="font-semibold text-emerald-700">
+                          +{acadContrib} pts
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2">
+                        <div
+                          className="bg-emerald-500 h-2 rounded-full transition-all"
+                          style={{ width: `${Math.min(acadPct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submission Statistics */}
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    {
+                      label: "Total Submitted",
+                      value: progressData?.academics?.totalSubmissions ?? 0,
+                      color: "text-slate-700",
+                    },
+                    {
+                      label: "Evaluated",
+                      value: progressData?.academics?.evaluated ?? 0,
+                      color: "text-blue-700",
+                    },
+                    {
+                      label: "Score Earned",
+                      value: progressData?.academics?.totalScore ?? 0,
+                      color: "text-emerald-700",
+                    },
+                    {
+                      label: "Max Possible",
+                      value: progressData?.academics?.maxPossibleScore ?? 0,
+                      color: "text-slate-500",
+                    },
+                  ].map(({ label, value, color }) => (
+                    <div
+                      key={label}
+                      className="p-3 border rounded-lg text-center bg-white"
                     >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis hide />
-                      <Tooltip cursor={{ fill: "transparent" }} />
-                      <Bar
-                        dataKey="value"
-                        fill="#3b82f6"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                      <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1">
+                        {label}
+                      </p>
+                      <p className={`text-xl font-black ${color}`}>{value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Weekly trend line chart (#9) */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" /> Weekly Performance Trend
+                  </h4>
+                  {weeklyChartData.length > 0 ? (
+                    <div className="h-56">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={weeklyChartData}>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#E2E8F0"
+                          />
+                          <XAxis
+                            dataKey="week"
+                            tick={{ fontSize: 10 }}
+                            interval={0}
+                            angle={-15}
+                            textAnchor="end"
+                          />
+                          <YAxis
+                            tick={{ fontSize: 10 }}
+                            domain={[0, 100]}
+                            width={28}
+                          />
+                          <Tooltip />
+                          <Legend
+                            wrapperStyle={{ fontSize: "11px" }}
+                            iconSize={10}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="OGI"
+                            stroke="#3b82f6"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="Attendance"
+                            stroke="#10b981"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="Quiz"
+                            stroke="#f59e0b"
+                            strokeWidth={1.5}
+                            dot={false}
+                            strokeDasharray="4 2"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="Assignment"
+                            stroke="#8b5cf6"
+                            strokeWidth={1.5}
+                            dot={false}
+                            strokeDasharray="4 2"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400 text-center py-8 border-2 border-dashed border-slate-100 rounded-lg">
+                      No weekly snapshot data available yet.
+                    </p>
+                  )}
                 </div>
               </>
             )}
           </TabsContent>
 
+          {/* ── Attendance Tab ── */}
           <TabsContent value="attendance" className="space-y-6">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold">Attendance Records</h4>
@@ -250,14 +512,13 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 />
                 <div className="flex gap-4 mt-4 text-xs">
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-emerald-500 rounded"></div>{" "}
-                    Present
+                    <div className="w-3 h-3 bg-emerald-500 rounded" /> Present
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-red-500 rounded"></div> Absent
+                    <div className="w-3 h-3 bg-red-500 rounded" /> Absent
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-yellow-500 rounded"></div> Late
+                    <div className="w-3 h-3 bg-yellow-500 rounded" /> Late
                   </div>
                 </div>
               </div>
@@ -265,54 +526,48 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold">Summary Breakdown</h4>
                 <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center text-sm mb-1">
-                      <span>Present Days</span>
-                      <span className="font-bold text-emerald-600">
-                        {progressData?.attendance?.present}
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div
-                        className="bg-emerald-500 h-2 rounded-full transition-all"
-                        style={{
-                          width: `${progressData?.attendance?.total ? (progressData?.attendance?.present / progressData?.attendance?.total) * 100 : 0}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center text-sm mb-1">
-                      <span>Absent Days</span>
-                      <span className="font-bold text-red-600">
-                        {progressData?.attendance?.absent}
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div
-                        className="bg-red-500 h-2 rounded-full transition-all"
-                        style={{
-                          width: `${progressData?.attendance?.total ? (progressData?.attendance?.absent / progressData?.attendance?.total) * 100 : 0}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center text-sm mb-1">
-                      <span>Late Arrivals</span>
-                      <span className="font-bold text-yellow-600">
-                        {progressData?.attendance?.late}
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div
-                        className="bg-yellow-500 h-2 rounded-full transition-all"
-                        style={{
-                          width: `${progressData?.attendance?.total ? (progressData?.attendance?.late / progressData?.attendance?.total) * 100 : 0}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
+                  {[
+                    {
+                      label: "Present Days",
+                      count: progressData?.attendance?.present,
+                      color: "bg-emerald-500",
+                      textColor: "text-emerald-600",
+                    },
+                    {
+                      label: "Absent Days",
+                      count: progressData?.attendance?.absent,
+                      color: "bg-red-500",
+                      textColor: "text-red-600",
+                    },
+                    {
+                      label: "Late Arrivals",
+                      count: progressData?.attendance?.late,
+                      color: "bg-yellow-500",
+                      textColor: "text-yellow-600",
+                    },
+                  ].map(({ label, count, color, textColor }) => {
+                    const total = progressData?.attendance?.total || 0;
+                    const pct = total ? Math.round((count / total) * 100) : 0;
+                    return (
+                      <div key={label}>
+                        <div className="flex justify-between items-center text-sm mb-1">
+                          <span>{label}</span>
+                          <span className={`font-bold ${textColor}`}>
+                            {count}
+                            <span className="text-slate-400 font-normal text-xs ml-1">
+                              ({pct}%)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2">
+                          <div
+                            className={`${color} h-2 rounded-full transition-all`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

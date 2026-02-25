@@ -38,6 +38,8 @@ const TeacherSupport = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [filterCourse, setFilterCourse] = useState("");
+  const [filterTopic, setFilterTopic] = useState("");
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
@@ -84,7 +86,14 @@ const TeacherSupport = () => {
 
   useEffect(() => {
     loadSupportRequests();
-  }, [activeFilter, selectedPriority, selectedCategory, searchQuery]);
+  }, [
+    activeFilter,
+    selectedPriority,
+    selectedCategory,
+    searchQuery,
+    filterCourse,
+    filterTopic,
+  ]);
 
   const loadStudents = async () => {
     try {
@@ -117,6 +126,8 @@ const TeacherSupport = () => {
           priority: priorityParam,
           category: categoryParam,
           search: searchQuery || undefined,
+          course: filterCourse.trim() || undefined,
+          topic: filterTopic.trim() || undefined,
         },
       });
 
@@ -233,6 +244,8 @@ const TeacherSupport = () => {
       description: "",
       category: "academic",
       priority: "medium",
+      course: "",
+      topic: "",
     });
     setCreateDialogOpen(true);
     loadStudents();
@@ -255,6 +268,8 @@ const TeacherSupport = () => {
         description: createForm.description.trim(),
         category: createForm.category,
         priority: createForm.priority,
+        course: createForm.course.trim() || undefined,
+        topic: createForm.topic.trim() || undefined,
       });
       toast.success("Support request created");
       setCreateDialogOpen(false);
@@ -432,6 +447,24 @@ const TeacherSupport = () => {
               </option>
             ))}
           </select>
+
+          {/* Course Filter */}
+          <input
+            type="text"
+            value={filterCourse}
+            onChange={(e) => setFilterCourse(e.target.value)}
+            placeholder="Filter by course..."
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+          />
+
+          {/* Topic Filter */}
+          <input
+            type="text"
+            value={filterTopic}
+            onChange={(e) => setFilterTopic(e.target.value)}
+            placeholder="Filter by topic..."
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+          />
         </div>
       </div>
 
@@ -795,6 +828,34 @@ const TeacherSupport = () => {
                   <option value="high">High</option>
                   <option value="urgent">Urgent</option>
                 </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Course{" "}
+                  <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <Input
+                  value={createForm.course}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, course: e.target.value })
+                  }
+                  placeholder="e.g. Full Stack Web"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Topic{" "}
+                  <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <Input
+                  value={createForm.topic}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, topic: e.target.value })
+                  }
+                  placeholder="e.g. React Hooks"
+                />
               </div>
             </div>
           </div>
