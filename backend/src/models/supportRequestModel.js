@@ -81,6 +81,11 @@ const supportRequestSchema = new mongoose.Schema(
       date: Date,
       topic: String,
       meetingLink: String,
+      status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending",
+      },
     },
     course: {
       type: String,

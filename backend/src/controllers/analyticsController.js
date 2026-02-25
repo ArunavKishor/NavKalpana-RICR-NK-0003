@@ -858,9 +858,48 @@ export const getStudentWeeklySnapshots = async (req, res) => {
 
     const snapshots = await buildWeeklySnapshotsForStudent(id, Number(weeks));
 
+    // Compute week-over-week deltas
+    const snapshotsWithDeltas = snapshots.map((snap, idx) => {
+      const obj = snap.toObject ? snap.toObject() : { ...snap };
+      if (idx === 0) {
+        obj.delta = {
+          attendancePercentage: 0,
+          quizAverage: 0,
+          assignmentAverage: 0,
+          ogi: 0,
+          weeklyLearningHours: 0,
+        };
+      } else {
+        const prev = snapshots[idx - 1];
+        obj.delta = {
+          attendancePercentage: Number(
+            (
+              (snap.attendancePercentage || 0) -
+              (prev.attendancePercentage || 0)
+            ).toFixed(2),
+          ),
+          quizAverage: Number(
+            ((snap.quizAverage || 0) - (prev.quizAverage || 0)).toFixed(2),
+          ),
+          assignmentAverage: Number(
+            (
+              (snap.assignmentAverage || 0) - (prev.assignmentAverage || 0)
+            ).toFixed(2),
+          ),
+          ogi: Number(((snap.ogi || 0) - (prev.ogi || 0)).toFixed(2)),
+          weeklyLearningHours: Number(
+            (
+              (snap.weeklyLearningHours || 0) - (prev.weeklyLearningHours || 0)
+            ).toFixed(1),
+          ),
+        };
+      }
+      return obj;
+    });
+
     res.status(200).json({
       message: "Student weekly snapshots retrieved successfully",
-      data: { snapshots },
+      data: { snapshots: snapshotsWithDeltas },
     });
   } catch (error) {
     console.error("Get Student Weekly Snapshots Error:", error);

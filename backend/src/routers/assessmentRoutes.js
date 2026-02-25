@@ -14,6 +14,7 @@ import {
   upsertQuizQuestions,
   deleteQuizQuestion,
   submitQuizAttempt,
+  getQuizAttempts,
 } from "../controllers/assessmentController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/uploadMiddleware.js";
@@ -59,7 +60,10 @@ router
 router
   .route("/:id/questions/:questionId")
   .delete(authorize("admin", "teacher"), deleteQuizQuestion);
-router.route("/:id/attempts").post(submitQuizAttempt);
+router
+  .route("/:id/attempts")
+  .get(authorize("admin", "teacher"), getQuizAttempts)
+  .post(submitQuizAttempt);
 router
   .route("/:id/grade/:submissionId")
   .put(authorize("admin", "teacher"), gradeSubmission);

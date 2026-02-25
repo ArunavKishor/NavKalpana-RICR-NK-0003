@@ -27,6 +27,8 @@ const SupportRequests = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("All");
+  const [filterCourse, setFilterCourse] = useState("");
+  const [filterTopic, setFilterTopic] = useState("");
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
@@ -75,6 +77,8 @@ const SupportRequests = () => {
           status: statusParam,
           priority: priorityParam,
           search: searchQuery || undefined,
+          course: filterCourse.trim() || undefined,
+          topic: filterTopic.trim() || undefined,
         },
       });
 
@@ -101,7 +105,7 @@ const SupportRequests = () => {
 
   useEffect(() => {
     loadSupportRequests();
-  }, [activeFilter, selectedPriority, searchQuery]);
+  }, [activeFilter, selectedPriority, searchQuery, filterCourse, filterTopic]);
 
   const loadStudents = async () => {
     try {
@@ -355,6 +359,24 @@ const SupportRequests = () => {
               </option>
             ))}
           </select>
+
+          {/* Course Filter */}
+          <input
+            type="text"
+            value={filterCourse}
+            onChange={(e) => setFilterCourse(e.target.value)}
+            placeholder="Filter by course..."
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+          />
+
+          {/* Topic Filter */}
+          <input
+            type="text"
+            value={filterTopic}
+            onChange={(e) => setFilterTopic(e.target.value)}
+            placeholder="Filter by topic..."
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+          />
         </div>
       </div>
 

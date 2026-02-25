@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "@/config/Api";
 
 const AuthContext = createContext();
 
@@ -43,7 +44,12 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem("token", userData.token);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch {
+      // Continue with client-side cleanup even if API call fails
+    }
     setUser(null);
     setIsLogin(false);
     setRole(null);
@@ -63,7 +69,7 @@ export const AuthProvider = ({ children }) => {
         setRole,
         login,
         logout,
-        isLoading
+        isLoading,
       }}
     >
       {!isLoading && children}

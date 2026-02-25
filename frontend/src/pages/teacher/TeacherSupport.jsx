@@ -55,6 +55,7 @@ const TeacherSupport = () => {
   const [activeRequest, setActiveRequest] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [solutionUrl, setSolutionUrl] = useState("");
+  const [solutionFile, setSolutionFile] = useState(null);
   const [backupData, setBackupData] = useState({
     date: "",
     topic: "",
@@ -224,6 +225,7 @@ const TeacherSupport = () => {
   const openResolveDialog = (request) => {
     setActiveRequest(request);
     setSolutionUrl("");
+    setSolutionFile(null);
     setResolveDialogOpen(true);
   };
 
@@ -306,9 +308,17 @@ const TeacherSupport = () => {
     if (!activeRequest) return;
     try {
       setDialogSubmitting(true);
-      await api.put(`/api/support/${activeRequest._id}/resolve`, {
-        solutionFileUrl: solutionUrl || undefined,
-      });
+      if (solutionFile) {
+        const formData = new FormData();
+        formData.append("file", solutionFile);
+        await api.put(`/api/support/${activeRequest._id}/resolve`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await api.put(`/api/support/${activeRequest._id}/resolve`, {
+          solutionFileUrl: solutionUrl || undefined,
+        });
+      }
       toast.success("Request marked as resolved");
       setResolveDialogOpen(false);
       await loadSupportRequests();
@@ -672,12 +682,36 @@ const TeacherSupport = () => {
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-slate-600">
-              Optionally attach a solution link (Drive, GitHub, etc.)
+              Attach a solution file or paste a link (Drive, GitHub, etc.)
             </p>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Upload File</label>
+              <Input
+                type="file"
+                onChange={(e) => {
+                  setSolutionFile(e.target.files?.[0] || null);
+                  if (e.target.files?.[0]) setSolutionUrl("");
+                }}
+              />
+              {solutionFile && (
+                <p className="text-xs text-slate-500">
+                  Selected: {solutionFile.name}
+                </p>
+              )}
+            </div>
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 border-t border-slate-200" />
+              <span className="text-xs text-slate-400">OR</span>
+              <div className="flex-1 border-t border-slate-200" />
+            </div>
             <Input
               placeholder="Solution file URL (optional)"
               value={solutionUrl}
-              onChange={(e) => setSolutionUrl(e.target.value)}
+              onChange={(e) => {
+                setSolutionUrl(e.target.value);
+                if (e.target.value) setSolutionFile(null);
+              }}
+              disabled={!!solutionFile}
             />
           </div>
           <DialogFooter>

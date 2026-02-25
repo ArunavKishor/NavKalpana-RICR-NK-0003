@@ -22,7 +22,7 @@ import {
   Legend,
 } from "recharts";
 import api from "@/config/Api";
-import { TrendingUp, User, Download, Github, Linkedin, Flame, Star } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, User, Download, Github, Linkedin, Flame, Star } from "lucide-react";
 
 const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
   const [loading, setLoading] = useState(true);
@@ -137,6 +137,36 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
   const acadPct = progressData?.academics?.averageGrade || 0;
   const attContrib = Math.round(attPct * 0.4 * 10) / 10;
   const acadContrib = Math.round(acadPct * 0.6 * 10) / 10;
+
+  // Week-over-week comparison: latest 2 snapshots with deltas
+  const sortedSnapshots = [...weeklySnapshots].sort(
+    (a, b) => new Date(a.weekStart) - new Date(b.weekStart),
+  );
+  const latestSnap = sortedSnapshots[sortedSnapshots.length - 1];
+  const prevSnap = sortedSnapshots.length >= 2 ? sortedSnapshots[sortedSnapshots.length - 2] : null;
+  const latestDelta = latestSnap?.delta || null;
+
+  const DeltaIndicator = ({ value }) => {
+    if (value == null || value === 0) {
+      return (
+        <span className="inline-flex items-center gap-0.5 text-xs text-slate-400">
+          <Minus className="w-3 h-3" /> 0
+        </span>
+      );
+    }
+    if (value > 0) {
+      return (
+        <span className="inline-flex items-center gap-0.5 text-xs text-emerald-600 font-semibold">
+          <TrendingUp className="w-3 h-3" /> +{value}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-0.5 text-xs text-red-600 font-semibold">
+        <TrendingDown className="w-3 h-3" /> {value}
+      </span>
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -475,6 +505,45 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                     </p>
                   )}
                 </div>
+
+                {/* Week-over-Week Comparison */}
+                {latestSnap && prevSnap && latestDelta && (
+                  <div className="p-4 bg-slate-50 rounded-lg space-y-3">
+                    <h4 className="text-sm font-semibold text-slate-700">
+                      Week-over-Week Comparison
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="p-3 bg-white rounded-lg border">
+                        <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1">
+                          Previous Week
+                        </p>
+                        <p className="text-xs text-slate-400 mb-2">
+                          {new Date(prevSnap.weekStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </p>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex justify-between"><span>OGI</span><span className="font-bold">{Math.round(prevSnap.ogi || 0)}%</span></div>
+                          <div className="flex justify-between"><span>Attendance</span><span className="font-bold">{Math.round(prevSnap.attendancePercentage || 0)}%</span></div>
+                          <div className="flex justify-between"><span>Quiz Avg</span><span className="font-bold">{Math.round(prevSnap.quizAverage || 0)}%</span></div>
+                          <div className="flex justify-between"><span>Assignment Avg</span><span className="font-bold">{Math.round(prevSnap.assignmentAverage || 0)}%</span></div>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-white rounded-lg border">
+                        <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1">
+                          Current Week
+                        </p>
+                        <p className="text-xs text-slate-400 mb-2">
+                          {new Date(latestSnap.weekStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </p>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex justify-between"><span>OGI</span><span className="font-bold">{Math.round(latestSnap.ogi || 0)}%</span> <DeltaIndicator value={latestDelta.ogi} /></div>
+                          <div className="flex justify-between"><span>Attendance</span><span className="font-bold">{Math.round(latestSnap.attendancePercentage || 0)}%</span> <DeltaIndicator value={latestDelta.attendancePercentage} /></div>
+                          <div className="flex justify-between"><span>Quiz Avg</span><span className="font-bold">{Math.round(latestSnap.quizAverage || 0)}%</span> <DeltaIndicator value={latestDelta.quizAverage} /></div>
+                          <div className="flex justify-between"><span>Assignment Avg</span><span className="font-bold">{Math.round(latestSnap.assignmentAverage || 0)}%</span> <DeltaIndicator value={latestDelta.assignmentAverage} /></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </TabsContent>

@@ -46,6 +46,7 @@ export const createBatch = async (req, res) => {
       instructor,
       schedule,
       maxStudents,
+      batchType,
     } = req.body;
 
     /* ✅ Manual validation */
@@ -77,6 +78,7 @@ export const createBatch = async (req, res) => {
     let batch = await Batch.create({
       name: name.trim(),
       course: course.trim(),
+      batchType: batchType || "regular",
       startDate: parsedStart,
       endDate: parsedEnd,
       instructor: instructorId,

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import DoubtsQueries from "@/components/Support/DoubtsQueries";
-import BackupClasses from "@/components/Support/BackupClasses";
+import DoubtsQueries from "@/components/support/SupportDoubtsQueries";
+import BackupClasses from "@/components/support/SupportBackupClasses";
 
 const SupportRequests = () => {
   const [activeTab, setActiveTab] = useState("DOUBTS");

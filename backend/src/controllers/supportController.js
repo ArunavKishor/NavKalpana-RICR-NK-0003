@@ -271,6 +271,7 @@ export const scheduleBackupClass = async (req, res) => {
       date: new Date(date),
       topic,
       meetingLink,
+      status: "pending",
     };
 
     // Automatically transition status to in-progress if it was open
@@ -288,6 +289,59 @@ export const scheduleBackupClass = async (req, res) => {
   } catch (error) {
     console.error("Schedule Backup Class Error:", error);
     res.status(500).json({ message: "Failed to schedule backup class" });
+  }
+};
+
+export const approveBackupClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status || !["approved", "rejected"].includes(status)) {
+      return res
+        .status(400)
+        .json({ message: "Status must be 'approved' or 'rejected'" });
+    }
+
+    const request = await SupportRequest.findById(id);
+    if (!request) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
+    if (!request.backupClassSchedule || !request.backupClassSchedule.date) {
+      return res
+        .status(400)
+        .json({ message: "No backup class scheduled for this request" });
+    }
+
+    request.backupClassSchedule.status = status;
+    await request.save();
+
+    res.status(200).json({
+      message: `Backup class ${status} successfully`,
+      data: request,
+    });
+  } catch (error) {
+    console.error("Approve Backup Class Error:", error);
+    res.status(500).json({ message: "Failed to update backup class status" });
+  }
+};
+
+export const deleteSupportRequest = async (req, res) => {
+  try {
+    const request = await SupportRequest.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
+    await SupportRequest.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      message: "Support request deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete Support Request Error:", error);
+    res.status(500).json({ message: "Failed to delete support request" });
   }
 };
 

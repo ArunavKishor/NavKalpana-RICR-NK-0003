@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -61,15 +61,28 @@ const TeacherAnalytics = () => {
   const [courseFilter, setCourseFilter] = useState("ALL");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedBatch, setSelectedBatch] = useState(null);
+  const leaderboardInterval = useRef(null);
 
   useEffect(() => {
     loadInitialData();
+    return () => {
+      if (leaderboardInterval.current) clearInterval(leaderboardInterval.current);
+    };
   }, []);
 
   useEffect(() => {
     if (!loading) {
       loadLeaderboard();
+
+      // Auto-refresh leaderboard every 60 seconds
+      if (leaderboardInterval.current) clearInterval(leaderboardInterval.current);
+      leaderboardInterval.current = setInterval(() => {
+        loadLeaderboard();
+      }, 60000);
     }
+    return () => {
+      if (leaderboardInterval.current) clearInterval(leaderboardInterval.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.batchId, filters.sortBy, filters.order]);
 

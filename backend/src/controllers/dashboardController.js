@@ -272,7 +272,7 @@ export const getTeacherStats = async (req, res) => {
         ? 0
         : await Submission.countDocuments({
             assessment: { $in: assessmentIds },
-            submissionStatus: "evaluated",
+            status: "evaluated",
           });
 
     // Count active batches (ongoing)

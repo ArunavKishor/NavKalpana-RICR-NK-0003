@@ -14,6 +14,11 @@ const batchSchema = new mongoose.Schema(
       required: [true, "Course is required"],
       trim: true,
     },
+    batchType: {
+      type: String,
+      enum: ["regular", "weekend", "fast-track", "self-paced"],
+      default: "regular",
+    },
     image: {
       type: String,
       default: "",

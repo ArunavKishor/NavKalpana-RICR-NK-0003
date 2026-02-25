@@ -113,7 +113,7 @@ export const getAssessments = async (req, res) => {
     const assessmentIds = assessments.map((a) => a._id);
     const submissions = await Submission.find({
       assessment: { $in: assessmentIds },
-    }).select("assessment status submissionStatus");
+    }).select("assessment status");
 
     const statsByAssessment = {};
     submissions.forEach((sub) => {
@@ -130,21 +130,15 @@ export const getAssessments = async (req, res) => {
       const entry = statsByAssessment[key];
       entry.total += 1;
 
-      const status = sub.status;
-      const submissionStatus = sub.submissionStatus;
-
-      if (status === "submitted") {
+      if (sub.status === "submitted") {
         entry.submitted += 1;
-      } else if (status === "late-submitted") {
+      } else if (sub.status === "late-submitted") {
         entry.lateSubmitted += 1;
       }
 
-      if (status === "evaluated" || submissionStatus === "evaluated") {
+      if (sub.status === "evaluated") {
         entry.evaluated += 1;
-      }
-
-      // Consider any non‑evaluated submissions as pending
-      if (!(status === "evaluated" || submissionStatus === "evaluated")) {
+      } else {
         entry.pending += 1;
       }
     });
@@ -471,7 +465,6 @@ export const submitQuizAttempt = async (req, res) => {
       submittedAt: attempt.completedAt,
       marksObtained: score,
       status: "evaluated",
-      submissionStatus: "evaluated",
       isLateSubmission: attempt.completedAt > assessment.dueDate,
     });
 
@@ -493,6 +486,35 @@ export const submitQuizAttempt = async (req, res) => {
     }
     console.error("Submit Quiz Attempt Error:", error);
     res.status(500).json({ message: "Failed to submit quiz attempt" });
+  }
+};
+
+export const getQuizAttempts = async (req, res) => {
+  try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.isActive || assessment.type !== "quiz") {
+      return res.status(404).json({ message: "Quiz assessment not found" });
+    }
+
+    const filter = { assessment: assessment._id };
+    if (req.query.studentId) {
+      filter.student = req.query.studentId;
+    }
+
+    const attempts = await QuizAttempt.find(filter)
+      .populate({
+        path: "student",
+        populate: { path: "user", select: "fullName email" },
+      })
+      .sort({ completedAt: -1 });
+
+    res.status(200).json({
+      message: "Quiz attempts retrieved successfully",
+      data: { attempts },
+    });
+  } catch (error) {
+    console.error("Get Quiz Attempts Error:", error);
+    res.status(500).json({ message: "Failed to retrieve quiz attempts" });
   }
 };
 
@@ -518,6 +540,11 @@ export const deleteAssessment = async (req, res) => {
 
 export const getAssessmentSubmissions = async (req, res) => {
   try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.isActive) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
     const submissions = await Submission.find({
       assessment: req.params.id,
     })
@@ -527,9 +554,31 @@ export const getAssessmentSubmissions = async (req, res) => {
       })
       .populate("gradedBy", "fullName email");
 
+    // Cross-reference enrolled students to find who hasn't submitted
+    let notSubmitted = [];
+    const batch = await Batch.findById(assessment.batch).populate({
+      path: "students",
+      populate: { path: "user", select: "fullName email" },
+    });
+
+    if (batch) {
+      const submittedStudentIds = new Set(
+        submissions.map((s) => s.student?._id?.toString()).filter(Boolean),
+      );
+      notSubmitted = batch.students
+        .filter(
+          (st) => st.isActive && !submittedStudentIds.has(st._id.toString()),
+        )
+        .map((st) => ({
+          _id: st._id,
+          user: st.user,
+          enrollmentId: st.enrollmentId,
+        }));
+    }
+
     res.status(200).json({
       message: "Submissions retrieved successfully",
-      data: { submissions },
+      data: { submissions, notSubmitted },
     });
   } catch (error) {
     console.error("Get Submissions Error:", error);
@@ -670,7 +719,7 @@ export const evaluateSubmission = async (req, res) => {
 
     submission.marksObtained = marks;
     submission.feedback = feedback || "";
-    submission.submissionStatus = "evaluated";
+    submission.status = "evaluated";
     submission.gradedBy = req.user._id;
     submission.gradedAt = new Date();
     await submission.save();

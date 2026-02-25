@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   GraduationCap,
@@ -60,14 +60,22 @@ const TeacherDashboardHome = () => {
     attendanceDrops: 0,
   });
   const [loading, setLoading] = useState(true);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     loadDashboardData();
+
+    // Auto-refresh every 60 seconds
+    intervalRef.current = setInterval(() => {
+      loadDashboardData(true);
+    }, 60000);
+
+    return () => clearInterval(intervalRef.current);
   }, []);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
 
       // Fetch teacher-scoped KPI stats
       const teacherStatsRes = await api.get("/api/dashboard/teacher/stats");

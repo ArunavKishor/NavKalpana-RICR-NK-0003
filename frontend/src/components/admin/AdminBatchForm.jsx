@@ -22,6 +22,7 @@ const BatchForm = ({
   const [formData, setFormData] = useState({
     name: "",
     course: "",
+    batchType: "regular",
     startDate: "",
     endDate: "",
     instructor: "",
@@ -70,6 +71,7 @@ const BatchForm = ({
       setFormData({
         name: initialData.name || "",
         course: initialData.course || "",
+        batchType: initialData.batchType || "regular",
         startDate: initialData.startDate
           ? new Date(initialData.startDate).toISOString().split("T")[0]
           : "",
@@ -138,6 +140,26 @@ const BatchForm = ({
           {errors.course && (
             <p className="text-xs text-red-500">{errors.course}</p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="batchType">Batch Type</Label>
+          <Select
+            value={formData.batchType}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, batchType: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select batch type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="regular">Regular</SelectItem>
+              <SelectItem value="weekend">Weekend</SelectItem>
+              <SelectItem value="fast-track">Fast Track</SelectItem>
+              <SelectItem value="self-paced">Self Paced</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">

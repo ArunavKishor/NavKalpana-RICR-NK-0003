@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Users,
   BookOpen,
@@ -32,11 +32,12 @@ const DashboardHome = () => {
   const [deadlines, setDeadlines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    const loadDashboard = async () => {
+    const loadDashboard = async (silent = false) => {
       try {
-        setLoading(true);
+        if (!silent) setLoading(true);
         const [statsRes, trendsRes, deadlinesRes] = await Promise.all([
           api.get("/api/dashboard/stats"),
           api.get("/api/dashboard/trends"),
@@ -120,6 +121,13 @@ const DashboardHome = () => {
     };
 
     loadDashboard();
+
+    // Auto-refresh every 60 seconds
+    intervalRef.current = setInterval(() => {
+      loadDashboard(true);
+    }, 60000);
+
+    return () => clearInterval(intervalRef.current);
   }, []);
 
   return (
