@@ -8,7 +8,7 @@ import {
   CheckCircle,
   MessageSquare,
   BarChart3,
-  Users,
+  User,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,8 @@ const baseNavItems = [
   },
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
   { icon: BarChart3, label: "Analytics", href: "/teacher-dashboard/analytics" },
-  { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support" },
+  { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support", badge: 2 },
+  { icon: User, label: "My Account", href: "/teacher-dashboard/account" },
 ];
 
 const TeacherSidebar = ({ isOpen }) => {

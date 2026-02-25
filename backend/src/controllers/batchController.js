@@ -62,12 +62,18 @@ export const createBatch = async (req, res) => {
       return res.status(400).json({ message: "Invalid date format" });
     }
 
-    const batch = await Batch.create({
+    // Handle instructor field - convert empty string or "none" to null
+    let instructorId = instructor;
+    if (instructor === "" || instructor === "none" || instructor === "null" || instructor === null || instructor === undefined) {
+      instructorId = null;
+    }
+
+    let batch = await Batch.create({
       name: name.trim(),
       course: course.trim(),
       startDate: parsedStart,
       endDate: parsedEnd,
-      instructor,
+      instructor: instructorId,
       schedule,
       maxStudents: Number(maxStudents),
       image: req.file?.path || "",
@@ -75,10 +81,24 @@ export const createBatch = async (req, res) => {
       students: [],
     });
 
+    // Populate instructor for response
+    batch = await Batch.findById(batch._id)
+      .populate("createdBy", "fullName email")
+      .populate("instructor", "user")
+
+    const batchObj = batch.toObject();
+    if (batchObj.instructor && batchObj.instructor.user) {
+      const user = await User.findById(batchObj.instructor.user).select("fullName");
+      batchObj.instructorName = user?.fullName || "Unknown";
+    } else {
+      batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+    }
+    batchObj.enrolledStudents = batch.students.length;
+
     res.status(201).json({
       success: true,
       message: "Batch created successfully",
-      data: batch,
+      data: batchObj,
     });
   } catch (error) {
     if (error.name === "CastError") {
@@ -127,7 +147,7 @@ export const getBatches = async (req, res) => {
 
     // If the caller is a teacher, restrict to only their assigned batches
     if (req.user?.role === "teacher") {
-      const teacherProfile = await Teacher.findOne({ user: req.user._id }).select("_id");
+      const teacherProfile = await Teacher.findOne({ user: req.user._id, isActive: true }).select("_id");
       if (!teacherProfile) {
         return res.status(200).json({
           success: true,
@@ -233,7 +253,17 @@ export const updateBatch = async (req, res) => {
     }
 
     Object.keys(req.body).forEach((key) => {
-      batch[key] = req.body[key];
+      // Handle instructor field specially - convert empty values to null
+      if (key === "instructor") {
+        const value = req.body[key];
+        if (value === "" || value === "none" || value === "null" || value === null || value === undefined) {
+          batch[key] = null;
+        } else {
+          batch[key] = value;
+        }
+      } else {
+        batch[key] = req.body[key];
+      }
     });
 
     if (req.file) {
@@ -244,10 +274,24 @@ export const updateBatch = async (req, res) => {
 
     await batch.save();
 
+    // Populate instructor for response
+    const updatedBatch = await Batch.findById(batch._id)
+      .populate("createdBy", "fullName email")
+      .populate("instructor", "user");
+
+    const batchObj = updatedBatch.toObject();
+    if (batchObj.instructor && batchObj.instructor.user) {
+      const user = await User.findById(batchObj.instructor.user).select("fullName");
+      batchObj.instructorName = user?.fullName || "Unknown";
+    } else {
+      batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+    }
+    batchObj.enrolledStudents = updatedBatch.students.length;
+
     res.status(200).json({
       success: true,
       message: "Batch updated successfully",
-      data: batch,
+      data: batchObj,
     });
   } catch (error) {
     console.error("Update Batch Error:", error);

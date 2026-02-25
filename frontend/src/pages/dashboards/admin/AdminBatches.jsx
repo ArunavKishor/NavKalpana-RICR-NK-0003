@@ -424,6 +424,7 @@ const BatchManagement = () => {
         title={modalMode === "create" ? "Create New Batch" : "Edit Batch"}
       >
         <BatchForm
+          key={selectedBatch?._id || "new"}
           initialData={selectedBatch}
           onSubmit={handleBatchFormSubmit}
           onCancel={() => setIsModalOpen(false)}

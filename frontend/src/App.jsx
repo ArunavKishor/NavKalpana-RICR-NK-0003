@@ -25,6 +25,7 @@ import TeacherAssessmentManagement from "./pages/teacher/TeacherAssessmentManage
 import TeacherAnalytics from "./pages/teacher/TeacherAnalytics";
 import QuizManagement from "./pages/teacher/QuizManagement";
 import TeacherSupport from "./pages/teacher/TeacherSupport";
+import TeacherAccount from "./pages/teacher/TeacherAccount";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 
@@ -90,6 +91,7 @@ const App = () => {
             <Route path="analytics" element={<TeacherAnalytics />} />
             <Route path="quizzes" element={<QuizManagement />} />
             <Route path="support" element={<TeacherSupport />} />
+            <Route path="account" element={<TeacherAccount />} />
           </Route>
 
 
