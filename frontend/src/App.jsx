@@ -1,8 +1,6 @@
 import React from "react";
-import Header from "./components/Header";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import AdminDashboard from "./pages/dashbords/AdminDashbord";
 import AdminLogin from "./pages/public/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardLayout from "./components/dashboard/DashboardMainLayout";
