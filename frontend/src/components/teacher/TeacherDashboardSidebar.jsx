@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,21 +8,54 @@ import {
   CheckCircle,
   MessageSquare,
   BarChart3,
+  Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import api from "@/config/Api";
 
-const sidebarItems = [
+const baseNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/teacher-dashboard" },
-  { icon: BookOpen, label: "Batch Management", href: "/teacher-dashboard/batches" },
-  { icon: FileText, label: "Assessments", href: "/teacher-dashboard/assessments" },
+  {
+    icon: BookOpen,
+    label: "Batch Management",
+    href: "/teacher-dashboard/batches",
+  },
+  { icon: Users, label: "Students", href: "/teacher-dashboard/students" },
+  {
+    icon: FileText,
+    label: "Assessments",
+    href: "/teacher-dashboard/assessments",
+  },
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
   { icon: BarChart3, label: "Analytics", href: "/teacher-dashboard/analytics" },
-  { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support", badge: 2 },
+  { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support" },
 ];
 
 const TeacherSidebar = ({ isOpen }) => {
   const location = useLocation();
+  const [openSupportCount, setOpenSupportCount] = useState(0);
+
+  useEffect(() => {
+    const fetchOpenCount = async () => {
+      try {
+        const { data } = await api.get("/api/support", {
+          params: { status: "open" },
+        });
+        const count = (data?.data?.requests || []).length;
+        setOpenSupportCount(count);
+      } catch {
+        // silently fail — badge simply won't show
+      }
+    };
+    fetchOpenCount();
+  }, []);
+
+  const sidebarItems = baseNavItems.map((item) =>
+    item.href === "/teacher-dashboard/support" && openSupportCount > 0
+      ? { ...item, badge: openSupportCount }
+      : item,
+  );
 
   return (
     <motion.aside
@@ -38,7 +71,7 @@ const TeacherSidebar = ({ isOpen }) => {
         "fixed top-3 left-3 z-40 h-[calc(100vh-24px)] w-64 rounded-3xl",
         "bg-white/80 backdrop-blur-xl",
         "border border-slate-200/70 shadow-sm",
-        "flex flex-col overflow-hidden"
+        "flex flex-col overflow-hidden",
       )}
     >
       {/* LOGO */}
@@ -60,9 +93,7 @@ const TeacherSidebar = ({ isOpen }) => {
             <p className="font-semibold text-slate-900 tracking-wide">
               MindRise
             </p>
-            <p className="text-xs text-slate-500">
-              Teacher Portal
-            </p>
+            <p className="text-xs text-slate-500">Teacher Portal</p>
           </div>
         </motion.div>
       </div>
@@ -85,7 +116,7 @@ const TeacherSidebar = ({ isOpen }) => {
                 to={item.href}
                 className={cn(
                   "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium",
-                  "transition-all duration-200 group"
+                  "transition-all duration-200 group",
                 )}
               >
                 {/* Active Background */}
@@ -108,13 +139,13 @@ const TeacherSidebar = ({ isOpen }) => {
                     "transition-all duration-200",
                     isActive
                       ? "bg-white/20"
-                      : "bg-slate-100 group-hover:bg-slate-200"
+                      : "bg-slate-100 group-hover:bg-slate-200",
                   )}
                 >
                   <item.icon
                     className={cn(
                       "w-4 h-4 transition-colors duration-200",
-                      isActive ? "text-white" : "text-slate-500"
+                      isActive ? "text-white" : "text-slate-500",
                     )}
                   />
                 </div>
@@ -123,7 +154,7 @@ const TeacherSidebar = ({ isOpen }) => {
                 <span
                   className={cn(
                     "relative z-10 flex-1 transition-colors duration-200",
-                    isActive ? "text-white" : "text-slate-700"
+                    isActive ? "text-white" : "text-slate-700",
                   )}
                 >
                   {item.label}
@@ -139,7 +170,7 @@ const TeacherSidebar = ({ isOpen }) => {
                       "relative z-10 text-xs px-2 py-0.5 rounded-full",
                       isActive
                         ? "bg-white/20 text-white"
-                        : "bg-amber-100 text-blue-600"
+                        : "bg-amber-100 text-blue-600",
                     )}
                   >
                     {item.badge}
@@ -158,9 +189,7 @@ const TeacherSidebar = ({ isOpen }) => {
           transition={{ duration: 0.2 }}
           className="rounded-xl bg-slate-50 p-3 cursor-pointer"
         >
-          <p className="text-xs font-medium text-slate-700">
-            Workspace Status
-          </p>
+          <p className="text-xs font-medium text-slate-700">Workspace Status</p>
 
           <div className="flex items-center gap-2 mt-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

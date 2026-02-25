@@ -3,6 +3,7 @@ import User from "../models/userModel.js";
 import Batch from "../models/batchModel.js";
 import Attendance from "../models/attendanceModel.js";
 import Submission from "../models/submissionModel.js";
+import Teacher from "../models/teacherModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -115,7 +116,34 @@ export const getStudents = async (req, res) => {
       return res.status(400).json({ message: "Invalid status filter" });
     }
     if (status) filter.status = status;
-    if (batch) filter.batches = batch;
+    
+    // Teacher scoping
+    if (req.user && req.user.role === "teacher") {
+      const teacher = await Teacher.findOne({ user: req.user._id, isActive: true });
+      if (!teacher) {
+        return res.status(200).json({
+          message: "No students found",
+          data: { students: [], pagination: buildPaginationMeta(page, limit, 0) }
+        });
+      }
+      const teacherBatches = await Batch.find({ instructor: teacher._id, isActive: true }).select("_id");
+      const teacherBatchIds = teacherBatches.map((b) => b._id);
+
+      if (batch) {
+        if (!teacherBatchIds.some(id => id.toString() === batch.toString())) {
+          return res.status(200).json({
+            message: "No students found",
+            data: { students: [], pagination: buildPaginationMeta(page, limit, 0) }
+          });
+        }
+        filter.batches = batch;
+      } else {
+        filter.batches = { $in: teacherBatchIds };
+      }
+    } else {
+      if (batch) filter.batches = batch;
+    }
+
     if (startDate || endDate) {
       filter.enrollmentDate = {};
       if (startDate) filter.enrollmentDate.$gte = new Date(startDate);

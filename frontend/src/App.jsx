@@ -20,6 +20,7 @@ import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
 import TeacherBatchManagement from "./pages/teacher/TeacherBatchManagement";
 import TeacherBatchDetail from "./pages/teacher/TeacherBatchDetail";
+import TeacherStudentManagement from "./pages/teacher/TeacherStudentManagement";
 import TeacherAssessmentManagement from "./pages/teacher/TeacherAssessmentManagement";
 import TeacherAnalytics from "./pages/teacher/TeacherAnalytics";
 import QuizManagement from "./pages/teacher/QuizManagement";
@@ -81,6 +82,7 @@ const App = () => {
             <Route index element={<TeacherDashboardHome />} />
             <Route path="batches" element={<TeacherBatchManagement />} />
             <Route path="batches/:batchId" element={<TeacherBatchDetail />} />
+            <Route path="students" element={<TeacherStudentManagement />} />
             <Route
               path="assessments"
               element={<TeacherAssessmentManagement />}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   Search,
@@ -38,6 +38,7 @@ const TeacherAssessmentManagement = () => {
   const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedModule, setSelectedModule] = useState("All");
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
@@ -92,10 +93,24 @@ const TeacherAssessmentManagement = () => {
     }
   };
 
-  const filteredAssessments = assessments.filter(
-    (a) =>
-      a.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+  const moduleOptions = useMemo(() => {
+    const names = assessments
+      .map((a) => a.moduleName)
+      .filter(Boolean);
+    return ["All", ...new Set(names)];
+  }, [assessments]);
+
+  const filteredAssessments = useMemo(
+    () =>
+      assessments.filter((a) => {
+        const matchesSearch =
+          a.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          a.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesModule =
+          selectedModule === "All" || a.moduleName === selectedModule;
+        return matchesSearch && matchesModule;
+      }),
+    [assessments, searchQuery, selectedModule],
   );
 
   const handleDelete = async (assessmentId) => {
@@ -198,15 +213,30 @@ const TeacherAssessmentManagement = () => {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-        <Input
-          placeholder="Search assessments..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-white"
-        />
+      {/* Search + Module Filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <Input
+            placeholder="Search assessments..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-white"
+          />
+        </div>
+        {moduleOptions.length > 1 && (
+          <select
+            value={selectedModule}
+            onChange={(e) => setSelectedModule(e.target.value)}
+            className="sm:w-52 px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {moduleOptions.map((m) => (
+              <option key={m} value={m}>
+                {m === "All" ? "All Modules" : m}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Loading State */}
@@ -251,12 +281,13 @@ const TeacherAssessmentManagement = () => {
                           {assessment.title}
                         </h3>
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${assessment.status === "active"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : assessment.status === "draft"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-slate-100 text-slate-700"
-                            }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            assessment.status === "active"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : assessment.status === "draft"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-slate-100 text-slate-700"
+                          }`}
                         >
                           {assessment.status || "active"}
                         </span>
@@ -362,8 +393,8 @@ const TeacherAssessmentManagement = () => {
       {/* Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
-          <strong>Note:</strong> Quiz creation and management is available in the Quiz
-          Management section.
+          <strong>Note:</strong> Quiz creation and management is available in
+          the Quiz Management section.
         </p>
       </div>
 
@@ -466,9 +497,7 @@ const TeacherAssessmentManagement = () => {
             </div>
             {/* Optional lesson metadata */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Lesson (optional)
-              </label>
+              <label className="text-sm font-medium">Lesson (optional)</label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Input
                   value={formData.moduleName}
@@ -546,10 +575,11 @@ const TeacherAssessmentManagement = () => {
                           })
                         }
                         className={`group p-4 rounded-xl border cursor-pointer transition-all bg-white
-                    ${isActive
-                            ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
-                            : "hover:border-slate-300 hover:shadow-sm"
-                          }`}
+                    ${
+                      isActive
+                        ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
+                        : "hover:border-slate-300 hover:shadow-sm"
+                    }`}
                       >
                         <div className="flex justify-between">
                           <div>
@@ -574,7 +604,10 @@ const TeacherAssessmentManagement = () => {
 
                         {sub.marksObtained !== undefined && (
                           <p className="text-xs text-slate-500 mt-2">
-                            Marks: <span className="font-medium">{sub.marksObtained}</span>
+                            Marks:{" "}
+                            <span className="font-medium">
+                              {sub.marksObtained}
+                            </span>
                           </p>
                         )}
                       </div>
@@ -601,9 +634,7 @@ const TeacherAssessmentManagement = () => {
                         </div>
 
                         <div>
-                          <p className="text-sm font-medium">
-                            Submission File
-                          </p>
+                          <p className="text-sm font-medium">Submission File</p>
                           <p className="text-xs text-slate-500 uppercase">
                             {evalData.currentSubmission.fileType || "File"}
                           </p>
@@ -616,7 +647,7 @@ const TeacherAssessmentManagement = () => {
                         onClick={() =>
                           window.open(
                             evalData.currentSubmission.fileUrl,
-                            "_blank"
+                            "_blank",
                           )
                         }
                       >
@@ -646,9 +677,7 @@ const TeacherAssessmentManagement = () => {
 
                     {/* Feedback */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Feedback
-                      </label>
+                      <label className="text-sm font-medium">Feedback</label>
                       <Textarea
                         rows={5}
                         value={evalData.feedback}
@@ -676,7 +705,7 @@ const TeacherAssessmentManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div >
+    </div>
   );
 };
 

@@ -7,6 +7,7 @@ import {
   MessageSquare,
   User,
   Calendar,
+  FileText,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+
+const getAttachmentType = (url) => {
+  if (!url) return "link";
+  const lower = url.toLowerCase().split("?")[0];
+  if (/\.(png|jpg|jpeg|gif|webp|svg)$/.test(lower)) return "image";
+  if (/\.pdf$/.test(lower)) return "pdf";
+  return "link";
+};
 
 const TeacherSupport = () => {
   const [activeFilter, setActiveFilter] = useState("All");
@@ -62,7 +71,13 @@ const TeacherSupport = () => {
 
   const filters = ["All", "OPEN", "IN_PROGRESS", "RESOLVED"];
   const priorities = ["All", "URGENT", "HIGH", "MEDIUM", "LOW"];
-  const categories = ["All", "TECHNICAL", "ACADEMIC", "ADMINISTRATIVE", "OTHER"];
+  const categories = [
+    "All",
+    "TECHNICAL",
+    "ACADEMIC",
+    "ADMINISTRATIVE",
+    "OTHER",
+  ];
 
   const normalizeStatus = (status) =>
     status ? status.toUpperCase().replace("-", "_") : "";
@@ -89,8 +104,8 @@ const TeacherSupport = () => {
         activeFilter === "All"
           ? undefined
           : activeFilter === "IN_PROGRESS"
-          ? "in-progress"
-          : activeFilter.toLowerCase();
+            ? "in-progress"
+            : activeFilter.toLowerCase();
       const priorityParam =
         selectedPriority === "All" ? undefined : selectedPriority.toLowerCase();
       const categoryParam =
@@ -499,21 +514,40 @@ const TeacherSupport = () => {
                 </p>
 
                 {/* Attachment / solution preview */}
-                {request.solutionFileUrl && (
-                  <div className="mb-4 text-xs">
-                    <span className="font-semibold text-slate-700">
-                      Solution:
-                    </span>{" "}
-                    <a
-                      href={request.solutionFileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline break-all"
-                    >
-                      {request.solutionFileUrl}
-                    </a>
-                  </div>
-                )}
+                {request.solutionFileUrl &&
+                  (() => {
+                    const fileType = getAttachmentType(request.solutionFileUrl);
+                    return (
+                      <div className="mb-4">
+                        <p className="text-xs font-semibold text-slate-700 mb-1.5">
+                          Solution Attachment
+                        </p>
+                        {fileType === "image" ? (
+                          <a
+                            href={request.solutionFileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <img
+                              src={request.solutionFileUrl}
+                              alt="Solution preview"
+                              className="max-h-40 rounded-lg border border-slate-200 object-contain cursor-pointer hover:opacity-90"
+                            />
+                          </a>
+                        ) : (
+                          <a
+                            href={request.solutionFileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50"
+                          >
+                            <FileText className="w-4 h-4 shrink-0" />
+                            {fileType === "pdf" ? "View PDF" : "View File"}
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                 {/* Footer */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -570,9 +604,7 @@ const TeacherSupport = () => {
             <DialogTitle>Reply to Student</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-slate-600">
-              {activeRequest?.subject}
-            </p>
+            <p className="text-sm text-slate-600">{activeRequest?.subject}</p>
             <Textarea
               rows={5}
               placeholder="Type your response..."
@@ -803,4 +835,3 @@ const StatsCard = ({ icon, label, value }) => (
 );
 
 export default TeacherSupport;
-

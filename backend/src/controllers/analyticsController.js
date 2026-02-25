@@ -6,6 +6,7 @@ import Batch from "../models/batchModel.js";
 import Student from "../models/studentModel.js";
 import Teacher from "../models/teacherModel.js";
 import WeeklySnapshot from "../models/weeklySnapshotModel.js";
+import QuizAttempt from "../models/quizAttemptModel.js";
 
 const DAYS_WINDOW = 42; // keep in sync with dashboard trends
 
@@ -30,7 +31,7 @@ const getWeekStart = (date) => {
 const computeOgi = (attendancePercentage, averageGrade) => {
   const att = Number(attendancePercentage || 0);
   const grade = Number(averageGrade || 0);
-  return Number(((att * 0.4) + (grade * 0.6)).toFixed(2));
+  return Number((att * 0.4 + grade * 0.6).toFixed(2));
 };
 
 const computeGrowthClassification = (ogiTrend = []) => {
@@ -72,6 +73,12 @@ const buildWeeklySnapshotsForStudent = async (studentId, weeks = 8) => {
     student: studentObjectId,
     submittedAt: { $gte: earliestDate },
     marksObtained: { $ne: null },
+  }).populate("assessment", "type totalMarks batch dueDate");
+
+  const quizAttempts = await QuizAttempt.find({
+    student: studentObjectId,
+    startedAt: { $gte: earliestDate },
+    status: { $in: ["submitted", "evaluated"] },
   }).populate("assessment", "type totalMarks batch dueDate");
 
   const weeklyMap = new Map();
@@ -123,6 +130,34 @@ const buildWeeklySnapshotsForStudent = async (studentId, weeks = 8) => {
     } else if (submission.assessment.type === "assignment") {
       week.assignmentScores.push(pct);
     }
+    week.completedAssessments += 1;
+  }
+
+  // QuizAttempts per week
+  for (const attempt of quizAttempts) {
+    if (!attempt.assessment) continue;
+    const weekKey = getWeekStart(
+      attempt.startedAt || attempt.completedAt,
+    ).toISOString();
+    if (!weeklyMap.has(weekKey)) {
+      weeklyMap.set(weekKey, {
+        attendanceTotal: 0,
+        attendancePresent: 0,
+        attendanceLate: 0,
+        attendanceAbsent: 0,
+        quizScores: [],
+        assignmentScores: [],
+        expectedAssessments: 0,
+        completedAssessments: 0,
+      });
+    }
+    const week = weeklyMap.get(weekKey);
+    const totalMarks = attempt.assessment.totalMarks || attempt.totalMarks || 0;
+    if (!totalMarks || attempt.score == null) continue;
+
+    // Convert to percentage
+    const pct = (attempt.score / totalMarks) * 100;
+    week.quizScores.push(pct);
     week.completedAssessments += 1;
   }
 
@@ -188,9 +223,7 @@ const buildWeeklySnapshotsForStudent = async (studentId, weeks = 8) => {
     const completionRate =
       weekData.completedAssessments === 0
         ? 0
-        : Number(
-            Math.min(100, weekData.completedAssessments * 10).toFixed(2),
-          );
+        : Number(Math.min(100, weekData.completedAssessments * 10).toFixed(2));
     const submissionConsistency = completionRate;
 
     const weeklyLearningHours = Number((attended * 1.5).toFixed(1));
@@ -293,25 +326,34 @@ export const getTeacherClassAnalytics = async (req, res) => {
 
     const fromDate = getDaysAgo(DAYS_WINDOW);
 
-    const [attendanceRecords, assessments, submissions, students] =
-      await Promise.all([
-        Attendance.find({
-          batch: { $in: batchIds },
-          date: { $gte: fromDate },
-        }),
-        Assessment.find({
-          batch: { $in: batchIds },
-          isActive: true,
-        }),
-        Submission.find({
-          submittedAt: { $gte: fromDate },
-          marksObtained: { $ne: null },
-        }).populate("assessment", "type totalMarks batch"),
-        Student.find({
-          isActive: true,
-          batches: { $in: batchIds },
-        }).populate("user", "fullName email"),
-      ]);
+    const [
+      attendanceRecords,
+      assessments,
+      submissions,
+      quizAttempts,
+      students,
+    ] = await Promise.all([
+      Attendance.find({
+        batch: { $in: batchIds },
+        date: { $gte: fromDate },
+      }),
+      Assessment.find({
+        batch: { $in: batchIds },
+        isActive: true,
+      }),
+      Submission.find({
+        submittedAt: { $gte: fromDate },
+        marksObtained: { $ne: null },
+      }).populate("assessment", "type totalMarks batch"),
+      QuizAttempt.find({
+        startedAt: { $gte: fromDate },
+        status: { $in: ["submitted", "evaluated"] },
+      }).populate("assessment", "type totalMarks batch"),
+      Student.find({
+        isActive: true,
+        batches: { $in: batchIds },
+      }).populate("user", "fullName email"),
+    ]);
 
     const assessmentsById = new Map(
       assessments.map((a) => [a._id.toString(), a]),
@@ -335,13 +377,25 @@ export const getTeacherClassAnalytics = async (req, res) => {
       submissionsByStudent.get(key).push({ submission, assessment: a, pct });
     }
 
+    for (const attempt of quizAttempts) {
+      const a = attempt.assessment;
+      if (!a || !assessmentsById.has(a._id.toString())) continue;
+      if (!a.totalMarks || attempt.score == null) continue;
+      const pct = (attempt.score / a.totalMarks) * 100;
+      quizScores.push(pct);
+
+      const key = attempt.student.toString();
+      if (!submissionsByStudent.has(key)) submissionsByStudent.set(key, []);
+      submissionsByStudent.get(key).push({ attempt, assessment: a, pct });
+    }
+
     const averageQuizScore =
       quizScores.length === 0
         ? 0
         : Number(
-            (quizScores.reduce((sum, v) => sum + v, 0) / quizScores.length).toFixed(
-              2,
-            ),
+            (
+              quizScores.reduce((sum, v) => sum + v, 0) / quizScores.length
+            ).toFixed(2),
           );
 
     const averageAssignmentScore =
@@ -370,9 +424,7 @@ export const getTeacherClassAnalytics = async (req, res) => {
     const submissionConsistency =
       expectedSubmissions === 0
         ? 0
-        : Number(
-            ((actualSubmissions / expectedSubmissions) * 100).toFixed(2),
-          );
+        : Number(((actualSubmissions / expectedSubmissions) * 100).toFixed(2));
 
     const moduleCompletionRate = submissionConsistency;
 
@@ -413,19 +465,17 @@ export const getTeacherClassAnalytics = async (req, res) => {
       }
     }
 
-    const moduleAttendanceComparison = Array.from(attendanceByBatch.values()).map(
-      (entry) => ({
-        batchId: entry.batchId,
-        name: entry.name,
-        course: entry.course,
-        attendancePercentage:
-          entry.totalSessions === 0
-            ? 0
-            : Number(
-                ((entry.attended / entry.totalSessions) * 100).toFixed(2),
-              ),
-      }),
-    );
+    const moduleAttendanceComparison = Array.from(
+      attendanceByBatch.values(),
+    ).map((entry) => ({
+      batchId: entry.batchId,
+      name: entry.name,
+      course: entry.course,
+      attendancePercentage:
+        entry.totalSessions === 0
+          ? 0
+          : Number(((entry.attended / entry.totalSessions) * 100).toFixed(2)),
+    }));
 
     // Weekly activity trend (per week over the window)
     const weeklyMap = new Map();
@@ -462,6 +512,25 @@ export const getTeacherClassAnalytics = async (req, res) => {
       const pct = (submission.marksObtained / a.totalMarks) * 100;
       if (a.type === "quiz") w.quizScores.push(pct);
       if (a.type === "assignment") w.assignmentScores.push(pct);
+    }
+
+    for (const attempt of quizAttempts) {
+      const a = attempt.assessment;
+      if (!a || !a.totalMarks || attempt.score == null) continue;
+      const key = getWeekStart(
+        attempt.startedAt || attempt.completedAt,
+      ).toISOString();
+      if (!weeklyMap.has(key)) {
+        weeklyMap.set(key, {
+          attendanceTotal: 0,
+          attendancePresentOrLate: 0,
+          quizScores: [],
+          assignmentScores: [],
+        });
+      }
+      const w = weeklyMap.get(key);
+      const pct = (attempt.score / a.totalMarks) * 100;
+      w.quizScores.push(pct);
     }
 
     const weeklyActivityTrend = Array.from(weeklyMap.entries())
@@ -539,9 +608,7 @@ export const getTeacherClassAnalytics = async (req, res) => {
         intensity:
           entry.totalSessions === 0
             ? 0
-            : Number(
-                ((entry.attended / entry.totalSessions) * 100).toFixed(2),
-              ),
+            : Number(((entry.attended / entry.totalSessions) * 100).toFixed(2)),
       }),
     );
 
@@ -560,9 +627,7 @@ export const getTeacherClassAnalytics = async (req, res) => {
       const attendancePercentage =
         totalSessions === 0
           ? 0
-          : Number(
-              ((attendedSessions / totalSessions) * 100).toFixed(2),
-            );
+          : Number(((attendedSessions / totalSessions) * 100).toFixed(2));
 
       const studentSubs = submissionsByStudent.get(sid) || [];
       const academicAverage =
@@ -587,9 +652,7 @@ export const getTeacherClassAnalytics = async (req, res) => {
       const completionRate =
         studentSubs.length === 0
           ? 0
-          : Number(
-              Math.min(100, studentSubs.length * 10).toFixed(2),
-            );
+          : Number(Math.min(100, studentSubs.length * 10).toFixed(2));
 
       const weeklyLearningHours =
         snapshots.length === 0
@@ -729,17 +792,13 @@ export const getLeaderboard = async (req, res) => {
       const attendancePercentage =
         totalSessions === 0
           ? 0
-          : Number(
-              ((attendedSessions / totalSessions) * 100).toFixed(2),
-            );
+          : Number(((attendedSessions / totalSessions) * 100).toFixed(2));
 
       const studentSubs = submissionsByStudent.get(sid) || [];
       const assignmentSubs = studentSubs.filter(
         (s) => s.assessment.type === "assignment",
       );
-      const quizSubs = studentSubs.filter(
-        (s) => s.assessment.type === "quiz",
-      );
+      const quizSubs = studentSubs.filter((s) => s.assessment.type === "quiz");
 
       const averageAssignmentScore =
         assignmentSubs.length === 0
@@ -773,9 +832,7 @@ export const getLeaderboard = async (req, res) => {
     }
 
     const sortKey =
-      sortBy === "attendance" || sortBy === "assignmentScore"
-        ? sortBy
-        : "ogi";
+      sortBy === "attendance" || sortBy === "assignmentScore" ? sortBy : "ogi";
     leaderboard.sort((a, b) => {
       const aVal = a[sortKey] || 0;
       const bVal = b[sortKey] || 0;
@@ -812,4 +869,3 @@ export const getStudentWeeklySnapshots = async (req, res) => {
     });
   }
 };
-

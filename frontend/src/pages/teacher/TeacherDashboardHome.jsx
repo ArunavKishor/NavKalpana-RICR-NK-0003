@@ -459,6 +459,14 @@ const TeacherDashboardHome = () => {
                 <MessageSquare className="w-6 h-6" />
                 <span className="text-sm font-semibold">Support</span>
               </a>
+
+              <a
+                href="/teacher-dashboard/students"
+                className="w-full bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-emerald-200"
+              >
+                <Users className="w-6 h-6" />
+                <span className="text-sm font-semibold">Students</span>
+              </a>
             </div>
           </div>
 
