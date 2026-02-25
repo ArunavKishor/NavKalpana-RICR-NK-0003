@@ -171,7 +171,7 @@ const TeacherDashboardHome = () => {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Greeting Header */}
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
@@ -450,14 +450,6 @@ const TeacherDashboardHome = () => {
               >
                 <FileText className="w-6 h-6" />
                 <span className="text-sm font-semibold">Assessments</span>
-              </a>
-
-              <a
-                href="/teacher-dashboard/students"
-                className="w-full bg-slate-50 hover:bg-green-50 hover:text-green-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-green-200"
-              >
-                <GraduationCap className="w-6 h-6" />
-                <span className="text-sm font-semibold">Students</span>
               </a>
 
               <a

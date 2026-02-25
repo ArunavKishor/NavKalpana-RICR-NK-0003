@@ -4,6 +4,7 @@ import Submission from "../models/submissionModel.js";
 import Assessment from "../models/assessmentModel.js";
 import Batch from "../models/batchModel.js";
 import Student from "../models/studentModel.js";
+import Teacher from "../models/teacherModel.js";
 import WeeklySnapshot from "../models/weeklySnapshotModel.js";
 
 const DAYS_WINDOW = 42; // keep in sync with dashboard trends
@@ -237,11 +238,32 @@ const buildWeeklySnapshotsForStudent = async (studentId, weeks = 8) => {
 
 export const getTeacherClassAnalytics = async (req, res) => {
   try {
-    const teacherId = req.user._id;
+    const userId = req.user._id;
     const { batchId, course } = req.query;
 
+    const teacher = await Teacher.findOne({ user: userId, isActive: true });
+
+    if (!teacher) {
+      return res.status(200).json({
+        message: "No teacher profile found for user",
+        data: {
+          classMetrics: {
+            averageQuizScore: 0,
+            averageAssignmentScore: 0,
+            submissionConsistency: 0,
+            moduleCompletionRate: 0,
+            overallClassOgi: 0,
+          },
+          moduleAttendanceComparison: [],
+          weeklyActivityTrend: [],
+          attendanceHeatmap: [],
+          students: [],
+        },
+      });
+    }
+
     const batchFilter = {
-      createdBy: teacherId,
+      instructor: teacher._id,
       isActive: true,
     };
     if (batchId) batchFilter._id = batchId;
@@ -638,11 +660,20 @@ export const getTeacherClassAnalytics = async (req, res) => {
 
 export const getLeaderboard = async (req, res) => {
   try {
-    const teacherId = req.user._id;
+    const userId = req.user._id;
     const { batchId, course, sortBy = "ogi", order = "desc" } = req.query;
 
+    const teacher = await Teacher.findOne({ user: userId, isActive: true });
+
+    if (!teacher) {
+      return res.status(200).json({
+        message: "No teacher profile found for user",
+        data: { leaderboard: [] },
+      });
+    }
+
     const batchFilter = {
-      createdBy: teacherId,
+      instructor: teacher._id,
       isActive: true,
     };
     if (batchId) batchFilter._id = batchId;
