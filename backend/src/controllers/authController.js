@@ -48,7 +48,7 @@ export const register = async (req, res, next) => {
       fullName,
       email,
       password,
-      role: role || "student", // Default to student if not provided
+      role: role || "teacher", // Default to teacher if not provided
     });
 
     // Generate token
