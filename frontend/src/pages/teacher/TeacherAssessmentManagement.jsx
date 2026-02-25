@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TeacherAssessmentManagement = () => {
-  const [activeTab, setActiveTab] = useState("assignments");
+  const [activeTab] = useState("assignments");
   const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -191,26 +191,11 @@ const TeacherAssessmentManagement = () => {
         </Button>
       </div>
 
-      {/* Tabs */}
+      {/* Single Tab Header (Assignments Only) */}
       <div className="flex gap-4 border-b border-slate-200 pb-0">
-        <button
-          onClick={() => setActiveTab("assignments")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "assignments"
-            ? "text-blue-600 border-blue-600"
-            : "text-slate-500 border-transparent hover:text-slate-700"
-            }`}
-        >
+        <div className="px-4 py-3 font-medium border-b-2 text-blue-600 border-blue-600">
           Assignments
-        </button>
-        <button
-          onClick={() => setActiveTab("quizzes")}
-          className={`px-4 py-3 font-medium transition-all border-b-2 ${activeTab === "quizzes"
-            ? "text-blue-600 border-blue-600"
-            : "text-slate-500 border-transparent hover:text-slate-700"
-            }`}
-        >
-          Quizzes
-        </button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -377,8 +362,8 @@ const TeacherAssessmentManagement = () => {
       {/* Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-900">
-          <strong>Note:</strong> Quizzes are managed through the dedicated Quiz
-          Builder component.
+          <strong>Note:</strong> Quiz creation and management is available in the Quiz
+          Management section.
         </p>
       </div>
 
