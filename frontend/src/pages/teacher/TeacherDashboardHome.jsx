@@ -95,14 +95,22 @@ const TeacherDashboardHome = () => {
         activeBatches: batches.filter((b) => b.status === "ongoing").length,
       });
 
-      // Prepare performance data (weekly average scores)
-      const weeks = [];
-      for (let i = 0; i < 5; i++) {
-        const weekNum = i + 1;
-        const average = 75 + Math.random() * 20; // Dummy calculation
-        weeks.push({ name: `Week ${weekNum}`, score: Math.round(average) });
+      // Fetch teacher performance data (weekly average scores)
+      try {
+        const performanceRes = await api.get("/api/dashboard/teacher/performance");
+        const performanceData = performanceRes?.data?.data?.performanceData || [];
+
+        // Transform the data to match the chart format
+        const chartData = performanceData.map((item, index) => ({
+          name: item.week ? `Week ${item.week.slice(-2)}` : `Week ${index + 1}`,
+          score: Math.round(item.averageScore || 0),
+        }));
+
+        setPerformanceData(chartData);
+      } catch (err) {
+        console.log("Could not fetch performance data");
+        setPerformanceData([]);
       }
-      setPerformanceData(weeks);
 
       // Fetch and process deadlines (next 7 days)
       const deadlinesData = assessments
