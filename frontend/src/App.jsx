@@ -27,13 +27,6 @@ import TeacherAnalytics from "./pages/teacher/TeacherAnalytics";
 import QuizManagement from "./pages/teacher/QuizManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import StudentDashboardLayout from "./components/dashboard/StudentDashboardLayout";
-import StudentDashboardHome from "./pages/student/StudentDashboardHome";
-import AssignmentManagement from "./pages/student/AssignmentManagement";
-import AttendanceSummary from "./pages/student/AttendanceSummary";
-import StudentProfile from "./pages/student/StudentProfile";
-import Quizzes from "./pages/student/Quizzes";
-import QuizQuestions from "./pages/student/QuizQuestions";
 
 const App = () => {
   return (
@@ -99,22 +92,7 @@ const App = () => {
             <Route path="support" element={<SupportRequests />} />
           </Route>
 
-          {/* Student Dashboard Routes */}
-          <Route
-            path="/student-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <StudentDashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<StudentDashboardHome />} />
-            <Route path="assignments" element={<AssignmentManagement />} />
-            <Route path="attendance" element={<AttendanceSummary />} />
-            <Route path="profile" element={<StudentProfile />} />
-            <Route path="quizzes" element={<Quizzes />} />
-            <Route path="quizzes/:quizId" element={<QuizQuestions />} />
-          </Route>
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>

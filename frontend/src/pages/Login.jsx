@@ -53,13 +53,13 @@ const Login = () => {
         return;
       }
 
-      if (role !== "admin" && role !== "teacher" && role !== "student") {
+      if (role !== "admin" && role !== "teacher") {
         toast.error("Access denied.");
         sessionStorage.removeItem("Token");
         return;
       }
 
-      toast.success(`Welcome ${role === "admin" ? "Admin" : role === "teacher" ? "Teacher" : "Student"}`);
+      toast.success(`Welcome ${role === "admin" ? "Admin" : "Teacher"}`);
 
       setUser(user);
       setIsLogin(true);
@@ -73,8 +73,6 @@ const Login = () => {
         navigate("/admin-dashboard");
       } else if (role === "teacher") {
         navigate("/teacher-dashboard");
-      } else if (role === "student") {
-        navigate("/student-dashboard");
       }
       handleClearForm();
     } catch (error) {
