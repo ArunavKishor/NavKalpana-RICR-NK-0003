@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Pencil,
   Trash2,
+  BookOpen,
 } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
@@ -148,16 +149,26 @@ const BatchManagement = () => {
 
     try {
       setIsSubmitting(true);
+
+      const formDataToSend = new FormData();
+      Object.keys(data).forEach((key) => {
+        if (key === "imageFile") {
+          if (data.imageFile) formDataToSend.append("image", data.imageFile);
+        } else if (key === "maxStudents") {
+          formDataToSend.append(key, Number(data[key]));
+        } else if (data[key] !== undefined && data[key] !== null) {
+          formDataToSend.append(key, data[key]);
+        }
+      });
+
       if (modalMode === "create") {
-        await api.post("/api/batches", {
-          ...data,
-          maxStudents: Number(data.maxStudents),
+        await api.post("/api/batches", formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Batch created successfully");
       } else {
-        await api.put(`/api/batches/${selectedBatch._id}`, {
-          ...data,
-          maxStudents: Number(data.maxStudents),
+        await api.put(`/api/batches/${selectedBatch._id}`, formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("Batch updated successfully");
       }
@@ -295,12 +306,18 @@ const BatchManagement = () => {
             className="shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full"
           >
             {/* Image */}
-            <div className="relative h-40 xs:h-44 sm:h-48 md:h-52 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085"
-                alt={batch.name}
-                className="w-full h-full object-cover hover:scale-105 transition duration-300"
-              />
+            <div className="relative h-40 xs:h-44 sm:h-48 md:h-52 overflow-hidden bg-slate-100">
+              {batch.image ? (
+                <img
+                  src={batch.image}
+                  alt={batch.name}
+                  className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                  <BookOpen className="w-12 h-12" />
+                </div>
+              )}
               <div className="absolute top-3 right-3">
                 <Badge
                   className={`${getStatusColor(batch.status?.toUpperCase())} border text-xs`}
@@ -390,6 +407,36 @@ const BatchManagement = () => {
           <p className="text-slate-600 text-sm">No batches found</p>
         </div>
       )}
+
+      {/* Modals */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={modalMode === "create" ? "Create New Batch" : "Edit Batch"}
+      >
+        <BatchForm
+          initialData={selectedBatch}
+          onSubmit={handleBatchFormSubmit}
+          onCancel={() => setIsModalOpen(false)}
+          isLoading={isSubmitting}
+          errors={formErrors}
+        />
+      </Modal>
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Batch"
+        description={
+          <>
+            Are you sure you want to delete{" "}
+            <strong>{batchToDelete?.name}</strong>? This action cannot be
+            undone.
+          </>
+        }
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };
