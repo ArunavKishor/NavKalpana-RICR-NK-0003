@@ -62,15 +62,6 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
 
       {/* Right Section */}
       <div className="flex items-center gap-3 sm:gap-6">
-        {/* Search Bar */}
-        <div className="relative w-52 lg:w-80 hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <Input
-            placeholder="Search students, batches..."
-            className="pl-10 bg-slate-50 border-slate-200 focus-visible:ring-blue-600 rounded-full"
-          />
-        </div>
-
         {/* Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none">
