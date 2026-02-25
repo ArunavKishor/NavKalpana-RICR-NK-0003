@@ -12,9 +12,13 @@ import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
-router.use(protect, authorize("admin"));
+router.use(protect);
 
-router.route("/").get(getTeachers).post(createTeacher);
+// Get teachers - accessible by admin and teacher
+router.route("/").get(authorize("admin", "teacher"), getTeachers);
+
+// Create teacher - admin only
+router.route("/").post(authorize("admin"), createTeacher);
 
 router
   .route("/:id")

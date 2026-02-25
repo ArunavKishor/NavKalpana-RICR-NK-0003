@@ -38,8 +38,9 @@ const batchSchema = new mongoose.Schema(
       },
     },
     instructor: {
-      type: String,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+      index: true,
     },
     schedule: {
       type: String,
