@@ -16,7 +16,6 @@ const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/teacher-dashboard" },
   { icon: BookOpen, label: "Batch Management", href: "/teacher-dashboard/batches" },
   { icon: FileText, label: "Assessments", href: "/teacher-dashboard/assessments" },
-  { icon: GraduationCap, label: "Students", href: "/teacher-dashboard/students" },
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
   { icon: BarChart3, label: "Analytics", href: "/teacher-dashboard/analytics" },
   { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support", badge: 2 },

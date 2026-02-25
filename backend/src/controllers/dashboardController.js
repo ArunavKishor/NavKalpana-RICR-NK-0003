@@ -4,6 +4,7 @@ import Assessment from "../models/assessmentModel.js";
 import Attendance from "../models/attendanceModel.js";
 import Submission from "../models/submissionModel.js";
 import SupportRequest from "../models/supportRequestModel.js";
+import Teacher from "../models/teacherModel.js";
 
 const daysAgo = (days) => {
   const date = new Date();
@@ -221,10 +222,28 @@ export const getTrends = async (req, res) => {
 
 export const getTeacherStats = async (req, res) => {
   try {
-    const teacherId = req.user._id;
+    const userId = req.user._id;
 
-    // Get all batches for teacher
-    const batches = await Batch.find({ createdBy: teacherId, isActive: true });
+    // Resolve the Teacher profile for the logged-in user
+    const teacher = await Teacher.findOne({ user: userId, isActive: true });
+
+    if (!teacher) {
+      return res.status(200).json({
+        message: "No teacher profile found for user",
+        data: {
+          totalStudents: 0,
+          pendingAssignments: 0,
+          completedGrades: 0,
+          activeBatches: 0,
+        },
+      });
+    }
+
+    // Get all batches assigned to this teacher
+    const batches = await Batch.find({
+      instructor: teacher._id,
+      isActive: true,
+    });
     const batchIds = batches.map((b) => b._id);
 
     // Count total students enrolled in teacher's batches
@@ -234,18 +253,25 @@ export const getTeacherStats = async (req, res) => {
     });
 
     // Count pending assignments (not yet evaluated)
-    const pendingAssignments = await Assessment.countDocuments({
+    const assignments = await Assessment.find({
       batch: { $in: batchIds },
       type: "assignment",
       status: "published",
       isActive: true,
-    });
+    }).select("_id");
+
+    const pendingAssignments = assignments.length;
 
     // Count completed grades (evaluated submissions)
-    const completedGrades = await Submission.countDocuments({
-      assessment: { $in: batchIds },
-      submissionStatus: "evaluated",
-    });
+    const assessmentIds = assignments.map((a) => a._id);
+
+    const completedGrades =
+      assessmentIds.length === 0
+        ? 0
+        : await Submission.countDocuments({
+            assessment: { $in: assessmentIds },
+            submissionStatus: "evaluated",
+          });
 
     // Count active batches (ongoing)
     const activeBatches = batches.filter((b) => b.status === "ongoing").length;
@@ -267,17 +293,47 @@ export const getTeacherStats = async (req, res) => {
 
 export const getTeacherPerformance = async (req, res) => {
   try {
-    const teacherId = req.user._id;
-    const batches = await Batch.find({ createdBy: teacherId, isActive: true });
+    const userId = req.user._id;
+
+    const teacher = await Teacher.findOne({ user: userId, isActive: true });
+
+    if (!teacher) {
+      return res.status(200).json({
+        message: "No teacher profile found for user",
+        data: { performanceData: [] },
+      });
+    }
+
+    const batches = await Batch.find({
+      instructor: teacher._id,
+      isActive: true,
+    });
     const batchIds = batches.map((b) => b._id);
+
+    if (!batchIds.length) {
+      return res.status(200).json({
+        message: "No batches found for teacher",
+        data: { performanceData: [] },
+      });
+    }
 
     // Get weekly performance data
     const fromDate = daysAgo(42);
-    const submissions = await Submission.find({
-      assessment: { $in: batchIds },
-      submittedAt: { $gte: fromDate },
-      marksObtained: { $ne: null },
-    });
+    const assessments = await Assessment.find({
+      batch: { $in: batchIds },
+      isActive: true,
+    }).select("_id");
+
+    const assessmentIds = assessments.map((a) => a._id);
+
+    const submissions =
+      assessmentIds.length === 0
+        ? []
+        : await Submission.find({
+            assessment: { $in: assessmentIds },
+            submittedAt: { $gte: fromDate },
+            marksObtained: { $ne: null },
+          });
 
     const scoreByWeek = submissions.reduce((acc, submission) => {
       const week = getWeekStart(submission.submittedAt);
