@@ -27,14 +27,13 @@ const TeacherSupport = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
     urgent: 0,
     inProgress: 0,
     resolved: 0,
-    avgResponseHours: 0,
-    avgResolutionHours: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -53,14 +52,14 @@ const TeacherSupport = () => {
 
   const filters = ["All", "OPEN", "IN_PROGRESS", "RESOLVED"];
   const priorities = ["All", "URGENT", "HIGH", "MEDIUM", "LOW"];
+  const categories = ["All", "TECHNICAL", "ACADEMIC", "ADMINISTRATIVE", "OTHER"];
 
   const normalizeStatus = (status) =>
     status ? status.toUpperCase().replace("-", "_") : "";
 
   useEffect(() => {
     loadSupportRequests();
-    loadSupportStats();
-  }, [activeFilter, selectedPriority, searchQuery]);
+  }, [activeFilter, selectedPriority, selectedCategory, searchQuery]);
 
   const loadSupportRequests = async () => {
     try {
@@ -73,11 +72,14 @@ const TeacherSupport = () => {
           : activeFilter.toLowerCase();
       const priorityParam =
         selectedPriority === "All" ? undefined : selectedPriority.toLowerCase();
+      const categoryParam =
+        selectedCategory === "All" ? undefined : selectedCategory.toLowerCase();
 
       const { data: requestsRes } = await api.get("/api/support", {
         params: {
           status: statusParam,
           priority: priorityParam,
+          category: categoryParam,
           search: searchQuery || undefined,
         },
       });
@@ -104,25 +106,6 @@ const TeacherSupport = () => {
     }
   };
 
-  const loadSupportStats = async () => {
-    try {
-      const { data } = await api.get("/api/support/statistics");
-      const d = data?.data;
-      if (!d) return;
-      setStats((prev) => ({
-        ...prev,
-        avgResolutionHours: Number(
-          (d.averageResolutionTimeMs / (1000 * 60 * 60) || 0).toFixed(1),
-        ),
-        avgResponseHours: Number(
-          (d.averageResponseTimeMs / (1000 * 60 * 60) || 0).toFixed(1),
-        ),
-      }));
-    } catch (err) {
-      console.error("Load support statistics failed:", err);
-    }
-  };
-
   const filteredRequests = requests.filter((request) => {
     const matchesFilter =
       activeFilter === "All" ||
@@ -138,7 +121,10 @@ const TeacherSupport = () => {
     const matchesPriority =
       selectedPriority === "All" ||
       request.priority?.toUpperCase() === selectedPriority;
-    return matchesFilter && matchesSearch && matchesPriority;
+    const matchesCategory =
+      selectedCategory === "All" ||
+      request.category?.toUpperCase() === selectedCategory;
+    return matchesFilter && matchesSearch && matchesPriority && matchesCategory;
   });
 
   const getStatusColor = (status) => {
@@ -286,7 +272,7 @@ const TeacherSupport = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StatsCard
           icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
           label="Total (filtered)"
@@ -296,16 +282,6 @@ const TeacherSupport = () => {
           icon={<AlertCircle className="w-5 h-5 text-red-600" />}
           label="Urgent"
           value={stats.urgent}
-        />
-        <StatsCard
-          icon={<Clock className="w-5 h-5 text-orange-600" />}
-          label="Avg Response"
-          value={`${stats.avgResponseHours}h`}
-        />
-        <StatsCard
-          icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
-          label="Avg Resolution"
-          value={`${stats.avgResolutionHours}h`}
         />
       </div>
 
@@ -355,6 +331,21 @@ const TeacherSupport = () => {
               </option>
             ))}
           </select>
+
+          {/* Category Filter */}
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+          >
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category === "All"
+                  ? "All Categories"
+                  : `Category: ${category}`}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -393,6 +384,11 @@ const TeacherSupport = () => {
                       >
                         {request.priority?.toUpperCase()}
                       </Badge>
+                      {request.category && (
+                        <Badge className="bg-slate-100 text-slate-700 px-2 py-1 text-xs font-semibold">
+                          {request.category.toUpperCase()}
+                        </Badge>
+                      )}
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">
                       {request.subject}
@@ -433,6 +429,23 @@ const TeacherSupport = () => {
                 <p className="text-slate-600 mb-4 text-sm line-clamp-2">
                   {request.description}
                 </p>
+
+                {/* Attachment / solution preview */}
+                {request.solutionFileUrl && (
+                  <div className="mb-4 text-xs">
+                    <span className="font-semibold text-slate-700">
+                      Solution:
+                    </span>{" "}
+                    <a
+                      href={request.solutionFileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 underline break-all"
+                    >
+                      {request.solutionFileUrl}
+                    </a>
+                  </div>
+                )}
 
                 {/* Footer */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
-import { Trophy, Users, Activity, Flame } from "lucide-react";
+import { Trophy, Users, Activity, Flame, FileText } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
