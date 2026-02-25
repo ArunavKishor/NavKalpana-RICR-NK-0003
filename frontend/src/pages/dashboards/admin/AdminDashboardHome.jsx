@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Users, BookOpen, ClipboardCheck, Calendar } from "lucide-react";
+import { Users, BookOpen, ClipboardCheck, Calendar, GraduationCap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import api from "@/config/Api";
@@ -46,6 +46,14 @@ const DashboardHome = () => {
             icon: Users,
             color: "text-blue-600",
             bgColor: "bg-blue-100",
+          },
+          {
+            title: "Total Teachers",
+            value: statsData.totalTeachers ?? 0,
+            change: "Active teaching staff",
+            icon: GraduationCap,
+            color: "text-emerald-600",
+            bgColor: "bg-emerald-100",
           },
           {
             title: "Active Batches",
@@ -131,7 +139,7 @@ const DashboardHome = () => {
       )}
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
           <Card
             key={index}

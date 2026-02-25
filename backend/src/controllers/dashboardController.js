@@ -24,6 +24,7 @@ const getWeekStart = (date) => {
 export const getDashboardStats = async (req, res) => {
   try {
     const totalStudents = await Student.countDocuments({ isActive: true });
+    const totalTeachers = await Teacher.countDocuments({ isActive: true });
     const activeBatches = await Batch.countDocuments({
       isActive: true,
       status: "ongoing",
@@ -42,6 +43,7 @@ export const getDashboardStats = async (req, res) => {
       message: "Dashboard statistics retrieved successfully",
       data: {
         totalStudents,
+        totalTeachers,
         activeBatches,
         pendingAssessments,
         openSupportRequests: openRequests,

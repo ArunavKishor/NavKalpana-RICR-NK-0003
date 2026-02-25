@@ -13,10 +13,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getGreeting } from "@/lib/utils";
 
 const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const greeting = getGreeting();
 
     const handleLogout = () => {
         logout();
@@ -40,7 +42,7 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
                 {/* Welcome Message */}
                 <div className="truncate">
                     <h2 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
-                        Good Morning,{" "}
+                        {greeting},{" "}
                         <span className="text-blue-600">
                             {user?.fullName?.split(" ")[0] || "Admin"}
                         </span>
