@@ -59,40 +59,17 @@ const TeacherDashboardHome = () => {
     try {
       setLoading(true);
 
-      // Fetch batches
-      const batchesRes = await api.get("/api/batches");
-      const batches = batchesRes?.data?.data?.batches || [];
-
-      // Calculate total students across all batches
-      const totalStudents = batches.reduce(
-        (sum, b) => sum + (b.students?.length || 0),
-        0,
+      // Fetch teacher-scoped KPI stats
+      const teacherStatsRes = await api.get(
+        "/api/dashboard/teacher/stats",
       );
-
-      // Fetch assessments for pending count
-      const assessmentsRes = await api.get("/api/assessments");
-      const assessments = assessmentsRes?.data?.data?.assessments || [];
-
-      // Count pending assignments (not evaluated)
-      const pendingAssignments = assessments.filter(
-        (a) =>
-          a.type === "assignment" &&
-          a.submissions?.filter((s) => s.status !== "evaluated").length > 0,
-      ).length;
-
-      // Count evaluated submissions
-      const completedGrades = assessments.reduce((sum, a) => {
-        return (
-          sum +
-          (a.submissions?.filter((s) => s.status === "evaluated").length || 0)
-        );
-      }, 0);
+      const teacherStats = teacherStatsRes?.data?.data || {};
 
       setStats({
-        totalStudents,
-        pendingAssignments,
-        completedGrades,
-        activeBatches: batches.filter((b) => b.status === "ongoing").length,
+        totalStudents: teacherStats.totalStudents || 0,
+        pendingAssignments: teacherStats.pendingAssignments || 0,
+        completedGrades: teacherStats.completedGrades || 0,
+        activeBatches: teacherStats.activeBatches || 0,
       });
 
       // Fetch teacher performance data (weekly average scores)
@@ -112,39 +89,37 @@ const TeacherDashboardHome = () => {
         setPerformanceData([]);
       }
 
-      // Fetch and process deadlines (next 7 days)
-      const deadlinesData = assessments
-        .filter((a) => {
-          const dueDate = new Date(a.dueDate);
-          const today = new Date();
-          const daysUntilDue = (dueDate - today) / (1000 * 60 * 60 * 24);
-          return daysUntilDue > 0 && daysUntilDue <= 7;
-        })
-        .slice(0, 5)
-        .map((a) => ({
-          title: a.title,
-          dueDate: new Date(a.dueDate).toLocaleDateString(),
-          type: a.type,
-        }));
-      setUpcomingDeadlines(deadlinesData);
-
-      // Fetch and process low performing students (avg score < 65)
+      // Fetch and process upcoming deadlines for teacher's batches
       try {
-        const performanceRes = await api.get("/api/dashboard/performance");
-        const studentPerformance =
-          performanceRes?.data?.data?.studentPerformance || [];
+        const deadlinesRes = await api.get("/api/dashboard/deadlines");
+        const upcoming =
+          deadlinesRes?.data?.data?.assessments?.slice(0, 5)?.map((a) => ({
+            title: a.title,
+            dueDate: new Date(a.dueDate).toLocaleDateString(),
+            type: a.type,
+          })) || [];
+        setUpcomingDeadlines(upcoming);
+      } catch (err) {
+        console.log("Could not fetch upcoming deadlines");
+        setUpcomingDeadlines([]);
+      }
 
-        const lowPerformers = studentPerformance
-          .filter((sp) => sp.averageScore < 65)
+      // Fetch and process low performing students (using teacher analytics)
+      try {
+        const analyticsRes = await api.get("/api/dashboard/teacher/analytics");
+        const students = analyticsRes?.data?.data?.students || [];
+
+        const lowPerformers = students
+          .filter((st) => (st.academicAverage || 0) < 65)
           .slice(0, 3)
-          .map((sp) => ({
-            name: sp.student?.fullName || "Unknown",
-            course: sp.student?.batches?.[0]?.name || "Unassigned",
-            score: Math.round(sp.averageScore),
+          .map((st) => ({
+            name: st.name || "Unknown",
+            course: st.email || "Unassigned",
+            score: Math.round(st.academicAverage || 0),
           }));
         setLowPerformingStudents(lowPerformers);
       } catch (err) {
-        console.log("Could not fetch performance metrics");
+        console.log("Could not fetch teacher analytics metrics");
       }
     } catch (err) {
       console.error("Load dashboard data failed:", err);

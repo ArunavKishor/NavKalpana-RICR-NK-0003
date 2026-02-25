@@ -129,15 +129,9 @@ const TeacherAssessmentManagement = () => {
     try {
       const payload = {
         ...formData,
-
-        /* ✅ Always send correct type */
         type: activeTab === "assignments" ? "assignment" : "quiz",
-
-        /* ✅ Convert numbers safely (adjust fields as needed) */
-        maxMarks: Number(formData.maxMarks),
-        duration: formData.duration ? Number(formData.duration) : undefined,
-
-        /* ✅ Convert dates safely */
+        totalMarks: Number(formData.totalMarks),
+        submissionType: formData.submissionType,
         dueDate: formData.dueDate
           ? new Date(formData.dueDate).toISOString()
           : undefined,
@@ -329,25 +323,19 @@ const TeacherAssessmentManagement = () => {
                       <div>
                         <p className="text-slate-600">Submitted</p>
                         <p className="text-lg font-bold text-emerald-600">
-                          {assessment.submissions?.filter(
-                            (s) => s.status === "submitted",
-                          ).length || 0}
+                          {assessment.submissionStats?.submitted || 0}
                         </p>
                       </div>
                       <div>
                         <p className="text-slate-600">Pending</p>
                         <p className="text-lg font-bold text-yellow-600">
-                          {assessment.submissions?.filter(
-                            (s) => s.status === "pending",
-                          ).length || 0}
+                          {assessment.submissionStats?.pending || 0}
                         </p>
                       </div>
                       <div>
                         <p className="text-slate-600">Evaluated</p>
                         <p className="text-lg font-bold text-blue-600">
-                          {assessment.submissions?.filter(
-                            (s) => s.status === "evaluated",
-                          ).length || 0}
+                          {assessment.submissionStats?.evaluated || 0}
                         </p>
                       </div>
                     </div>

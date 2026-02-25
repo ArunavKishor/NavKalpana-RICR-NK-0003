@@ -7,6 +7,7 @@ import {
   respondToSupportRequest,
   resolveSupportRequest,
   getSupportStatistics,
+  scheduleBackupClass,
 } from "../controllers/supportController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 
@@ -31,5 +32,9 @@ router
 router
   .route("/:id/resolve")
   .put(authorize("admin", "teacher"), resolveSupportRequest);
+
+router
+  .route("/:id/schedule-backup-class")
+  .post(authorize("admin", "teacher"), scheduleBackupClass);
 
 export default router;

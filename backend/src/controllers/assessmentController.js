@@ -92,12 +92,67 @@ export const getAssessments = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Attach lightweight submission statistics so clients don't need embedded arrays
+    const assessmentIds = assessments.map((a) => a._id);
+    const submissions = await Submission.find({
+      assessment: { $in: assessmentIds },
+    }).select("assessment status submissionStatus");
+
+    const statsByAssessment = {};
+    submissions.forEach((sub) => {
+      const key = sub.assessment.toString();
+      if (!statsByAssessment[key]) {
+        statsByAssessment[key] = {
+          total: 0,
+          submitted: 0,
+          lateSubmitted: 0,
+          evaluated: 0,
+          pending: 0,
+        };
+      }
+      const entry = statsByAssessment[key];
+      entry.total += 1;
+
+      const status = sub.status;
+      const submissionStatus = sub.submissionStatus;
+
+      if (status === "submitted") {
+        entry.submitted += 1;
+      } else if (status === "late-submitted") {
+        entry.lateSubmitted += 1;
+      }
+
+      if (status === "evaluated" || submissionStatus === "evaluated") {
+        entry.evaluated += 1;
+      }
+
+      // Consider any non‑evaluated submissions as pending
+      if (!(status === "evaluated" || submissionStatus === "evaluated")) {
+        entry.pending += 1;
+      }
+    });
+
+    const assessmentsWithStats = assessments.map((a) => {
+      const plain = a.toObject();
+      const key = a._id.toString();
+      return {
+        ...plain,
+        submissionStats: statsByAssessment[key] || {
+          total: 0,
+          submitted: 0,
+          lateSubmitted: 0,
+          evaluated: 0,
+          pending: 0,
+        },
+      };
+    });
+
     const paginationMeta = buildPaginationMeta(page, limit, total);
 
     res.status(200).json({
       message: "Assessments retrieved successfully",
       data: {
-        assessments,
+        assessments: assessmentsWithStats,
         pagination: paginationMeta,
       },
     });

@@ -1,0 +1,406 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Users, CheckCircle, Clock, Search, Mail, Phone } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/config/Api";
+import toast from "react-hot-toast";
+import StudentDetailModal from "@/components/teacher/StudentDetailModal";
+
+const TeacherStudentManagement = () => {
+  const { user } = useAuth();
+  const [students, setStudents] = useState([]);
+  const [teacherBatches, setTeacherBatches] = useState([]);
+  const [activeTab, setActiveTab] = useState("ONGOING");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [studentToView, setStudentToView] = useState(null);
+
+  useEffect(() => {
+    loadTeacherBatches();
+  }, []);
+
+  useEffect(() => {
+    if (teacherBatches.length) {
+      loadStudents();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teacherBatches, activeTab, searchTerm]);
+
+  const loadTeacherBatches = async () => {
+    try {
+      const { data } = await api.get("/api/batches");
+      const all = data?.data?.batches || [];
+      const mine = all.filter(
+        (b) => b.createdBy?._id && user?._id && b.createdBy._id === user._id,
+      );
+      setTeacherBatches(mine);
+    } catch (err) {
+      console.error("Load teacher batches failed:", err);
+      // Fallback: allow page to still work, but unscoped
+      setTeacherBatches([]);
+    }
+  };
+
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const status = activeTab === "COMPLETED" ? "completed" : "active";
+      const { data } = await api.get("/api/students", {
+        params: {
+          status,
+          search: searchTerm || undefined,
+        },
+      });
+
+      const list = data?.data?.students || [];
+      const teacherBatchIds = new Set(
+        teacherBatches.map((b) => b._id?.toString()),
+      );
+
+      const scoped = list.filter((student) =>
+        (student.batches || []).some((b) =>
+          teacherBatchIds.has(b._id?.toString()),
+        ),
+      );
+
+      const mapped = scoped.map((student) => {
+        const primaryBatch = student.batches?.[0];
+        const course = primaryBatch?.course || "Unassigned";
+        const modules = student.batches?.map((b) => b.name) || [];
+
+        return {
+          raw: student,
+          id: student._id,
+          name: student.user?.fullName || "Unknown",
+          email: student.user?.email || "N/A",
+          phone: student.phone || "N/A",
+          course,
+          enrollmentId: student.enrollmentId,
+          modules,
+          status: student.status === "completed" ? "COMPLETED" : "ONGOING",
+        };
+      });
+
+      setStudents(mapped);
+    } catch (err) {
+      console.error("Load students failed:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to load students. Please try again.",
+      );
+      toast.error("Failed to load students");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uniqueCourses = useMemo(() => {
+    return ["All", ...new Set(students.map((s) => s.course).filter(Boolean))];
+  }, [students]);
+
+  const filteredStudents = useMemo(
+    () =>
+      students.filter((student) => {
+        const matchesTab = student.status === activeTab;
+        const matchesSearch =
+          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.enrollmentId
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
+        const matchesCourse =
+          selectedCourse === "All" || student.course === selectedCourse;
+        return matchesTab && matchesSearch && matchesCourse;
+      }),
+    [students, activeTab, searchTerm, selectedCourse],
+  );
+
+  const total = students.length;
+  const ongoing = students.filter((s) => s.status === "ONGOING").length;
+  const completed = students.filter((s) => s.status === "COMPLETED").length;
+
+  const getAttendanceStyle = (attendance) => {
+    if (attendance >= 85)
+      return "bg-emerald-100 text-emerald-700";
+    if (attendance >= 75)
+      return "bg-yellow-100 text-yellow-700";
+    return "bg-red-100 text-red-700";
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {loading && (
+          <div className="text-sm text-slate-500">Loading students...</div>
+        )}
+
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+            {error}
+          </div>
+        )}
+
+        {/* Title + Stats */}
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+          <div className="text-center xl:text-left">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              Student Management
+            </h1>
+            <p className="text-slate-500 text-sm sm:text-base">
+              View and monitor students across your batches
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 justify-center xl:justify-end">
+            <StatCard
+              icon={<Users className="w-5 h-5 text-blue-600" />}
+              label="TOTAL"
+              value={total}
+            />
+            <StatCard
+              icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
+              label="ACTIVE"
+              value={ongoing}
+            />
+            <StatCard
+              icon={<Clock className="w-5 h-5 text-slate-600" />}
+              label="COMPLETED"
+              value={completed}
+            />
+          </div>
+        </div>
+
+        {/* Filters */}
+        <Card className="bg-white shadow-sm rounded-xl">
+          <CardContent className="p-4 sm:p-6 space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <input
+                  placeholder="Search by Name, ID, or Email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 pr-4 py-2 w-full border rounded-lg bg-slate-50 text-sm focus:outline-none"
+                />
+              </div>
+
+              <select
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                className="w-full md:w-56 px-4 py-2 border rounded-lg bg-slate-50 text-sm"
+              >
+                {uniqueCourses.map((course) => (
+                  <option key={course} value={course}>
+                    {course}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <ToggleButton
+                active={activeTab === "ONGOING"}
+                onClick={() => setActiveTab("ONGOING")}
+              >
+                Ongoing Students
+              </ToggleButton>
+
+              <ToggleButton
+                active={activeTab === "COMPLETED"}
+                onClick={() => setActiveTab("COMPLETED")}
+              >
+                Completed Students
+              </ToggleButton>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Table */}
+        <Card className="bg-white shadow-sm rounded-xl">
+          <CardContent className="p-0">
+            {/* Desktop Header */}
+            <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-sm font-semibold text-slate-500 border-b">
+              <div className="col-span-4">STUDENT DETAILS</div>
+              <div className="col-span-3">COURSE & ID</div>
+              <div className="col-span-2">STATUS</div>
+              <div className="col-span-2">MODULES</div>
+              <div className="col-span-1 text-right">ACTIONS</div>
+            </div>
+
+            {filteredStudents.length === 0 && (
+              <div className="p-10 text-center text-slate-500">
+                No students found.
+              </div>
+            )}
+
+            {filteredStudents.map((student) => (
+              <div
+                key={student.id}
+                className="border-b last:border-0"
+              >
+                {/* Desktop Row */}
+                <div className="hidden lg:grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition">
+                  <div className="col-span-4 flex items-center gap-4">
+                    <img
+                      src={`https://i.pravatar.cc/50?u=${student.email}`}
+                      alt={student.name}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    <div>
+                      <p className="font-semibold text-slate-900">
+                        {student.name}
+                      </p>
+                      <div className="flex gap-4 text-sm text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Mail className="w-4 h-4" />
+                          {student.email}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          {student.phone}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-span-3">
+                    <p className="font-medium">{student.course}</p>
+                    <p className="text-sm text-slate-500">
+                      {student.enrollmentId}
+                    </p>
+                  </div>
+
+                  <div className="col-span-2">
+                    <Badge
+                      className={getAttendanceStyle(
+                        student.raw?.attendancePercentage || 0,
+                      )}
+                    >
+                      {student.raw?.attendancePercentage || 0}%
+                    </Badge>
+                  </div>
+
+                  <div className="col-span-2 flex gap-2 flex-wrap">
+                    {student.modules.map((mod) => (
+                      <Badge
+                        key={mod}
+                        className="bg-slate-200 text-slate-700 text-xs"
+                      >
+                        {mod.toUpperCase()}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="col-span-1 text-right">
+                    <button
+                      className="p-2 rounded-lg hover:bg-slate-100 text-slate-600"
+                      onClick={() => {
+                        setStudentToView(student.raw);
+                        setIsDetailModalOpen(true);
+                      }}
+                      title="View Details"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="lg:hidden p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={`https://i.pravatar.cc/50?u=${student.email}`}
+                      alt={student.name}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    <div>
+                      <p className="font-semibold">{student.name}</p>
+                      <p className="text-sm text-slate-500">
+                        {student.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-slate-600">
+                    <p>
+                      <strong>Course:</strong> {student.course}
+                    </p>
+                    <p>
+                      <strong>ID:</strong> {student.enrollmentId}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {student.modules.map((mod) => (
+                      <Badge
+                        key={mod}
+                        className="bg-slate-200 text-slate-700 text-xs"
+                      >
+                        {mod.toUpperCase()}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      className="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium"
+                      onClick={() => {
+                        setStudentToView(student.raw);
+                        setIsDetailModalOpen(true);
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <StudentDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          student={studentToView}
+          batch={
+            teacherBatches.find((b) =>
+              (studentToView?.batches || []).some(
+                (sb) => sb._id?.toString() === b._id?.toString(),
+              ),
+            ) || null
+          }
+        />
+      </div>
+    </div>
+  );
+};
+
+const StatCard = ({ icon, label, value }) => (
+  <div className="bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35">
+    <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
+    <div>
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className="text-xl font-bold">{value}</p>
+    </div>
+  </div>
+);
+
+const ToggleButton = ({ active, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
+      active ? "bg-slate-200" : "bg-white border"
+    }`}
+  >
+    {children}
+  </button>
+);
+
+export default TeacherStudentManagement;
+
