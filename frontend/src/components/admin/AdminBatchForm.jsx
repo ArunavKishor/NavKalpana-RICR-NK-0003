@@ -3,6 +3,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import api from "@/config/Api";
 
 const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) => {
     const [formData, setFormData] = useState({
@@ -15,6 +23,25 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
         maxStudents: 1,
     });
     const [imageFile, setImageFile] = useState(null);
+    const [teachers, setTeachers] = useState([]);
+    const [loadingTeachers, setLoadingTeachers] = useState(false);
+
+    // Fetch teachers on component mount
+    useEffect(() => {
+        const fetchTeachers = async () => {
+            try {
+                setLoadingTeachers(true);
+                const response = await api.get("/api/teachers");
+                const teachersList = response.data?.data?.teachers || [];
+                setTeachers(teachersList);
+            } catch (error) {
+                console.error("Failed to fetch teachers:", error);
+            } finally {
+                setLoadingTeachers(false);
+            }
+        };
+        fetchTeachers();
+    }, []);
 
     useEffect(() => {
         if (initialData) {
@@ -27,7 +54,7 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
                 endDate: initialData.endDate
                     ? new Date(initialData.endDate).toISOString().split("T")[0]
                     : "",
-                instructor: initialData.instructor || "",
+                instructor: initialData.instructor?._id || initialData.instructor || "",
                 schedule: initialData.schedule || "",
                 maxStudents: initialData.maxStudents || 1,
             });
@@ -127,15 +154,28 @@ const BatchForm = ({ initialData, onSubmit, onCancel, isLoading, errors = {} }) 
 
                 <div className="space-y-2">
                     <Label htmlFor="instructor">Instructor</Label>
-                    <Input
-                        id="instructor"
-                        name="instructor"
-                        placeholder="e.g. John Doe"
-                        value={formData.instructor}
-                        onChange={handleChange}
-                        required
-                        className={errors.instructor ? "border-red-500" : ""}
-                    />
+                    <Select
+                        value={formData.instructor || "none"}
+                        onValueChange={(value) =>
+                            setFormData((prev) => ({ ...prev, instructor: value === "none" ? "" : value }))
+                        }
+                        disabled={loadingTeachers}
+                    >
+                        <SelectTrigger className={errors.instructor ? "border-red-500" : ""}>
+                            <SelectValue placeholder={loadingTeachers ? "Loading teachers..." : "Select instructor"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">Not Assigned</SelectItem>
+                            {teachers.map((teacher) => (
+                                <SelectItem key={teacher._id} value={teacher._id}>
+                                    {teacher.user?.fullName || "Unknown"} ({teacher.employeeId})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.instructor && (
+                        <p className="text-xs text-red-500">{errors.instructor}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">

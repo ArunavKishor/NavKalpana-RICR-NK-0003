@@ -33,7 +33,7 @@ router
 router
   .route("/:id/submit")
   .post(
-    authorize("student", "admin", "teacher"),
+    authorize("admin", "teacher"),
     upload.single("file"),
     submitAssessment,
   );

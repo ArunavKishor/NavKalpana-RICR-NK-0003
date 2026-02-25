@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setIsLogin(true);
-        setRole(parsedUser.role || "student");
+        setRole(parsedUser.role);
       } catch (error) {
         console.error("Failed to parse stored user", error);
         sessionStorage.removeItem("user");
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     setIsLogin(true);
-    setRole(userData.role || "student");
+    setRole(userData.role);
     sessionStorage.setItem("user", JSON.stringify(userData));
     sessionStorage.setItem("token", userData.token);
   };

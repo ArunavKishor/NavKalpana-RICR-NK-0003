@@ -8,16 +8,11 @@ import {
   getStudentBatches,
   enrollStudentInBatch,
   unenrollStudentFromBatch,
-  getStudentProfile,
-  updateStudentProfile,
   getStudentProgress,
-  uploadProfilePhoto,
   getStudentAttendance
 } from "../controllers/studentController.js";
 
-import { getStudentDashboard } from "../controllers/studentDashboardController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
-import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -25,30 +20,6 @@ const router = express.Router();
    PROTECTED ROUTES (Logged-in users)
 ===================================== */
 router.use(protect);
-
-/* =====================================
-   STUDENT / ADMIN ROUTES
-===================================== */
-
-// Dashboard
-router
-  .route("/me/dashboard")
-  .get(authorize("student", "admin"), getStudentDashboard);
-
-// Profile
-router
-  .route("/me")
-  .get(authorize("student", "admin"), getStudentProfile)
-  .put(authorize("student", "admin"), updateStudentProfile);
-
-// Profile Photo Upload
-router
-  .route("/me/upload-photo")
-  .post(
-    authorize("student", "admin"),
-    upload.single("file"),
-    uploadProfilePhoto
-  );
 
 /* =====================================
    ADMIN / TEACHER ONLY ROUTES
