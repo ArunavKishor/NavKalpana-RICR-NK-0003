@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -49,6 +50,15 @@ const TeacherSupport = () => {
     meetingLink: "",
   });
   const [dialogSubmitting, setDialogSubmitting] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    studentId: "",
+    subject: "",
+    description: "",
+    category: "academic",
+    priority: "medium",
+  });
+  const [students, setStudents] = useState([]);
 
   const filters = ["All", "OPEN", "IN_PROGRESS", "RESOLVED"];
   const priorities = ["All", "URGENT", "HIGH", "MEDIUM", "LOW"];
@@ -60,6 +70,17 @@ const TeacherSupport = () => {
   useEffect(() => {
     loadSupportRequests();
   }, [activeFilter, selectedPriority, selectedCategory, searchQuery]);
+
+  const loadStudents = async () => {
+    try {
+      const { data } = await api.get("/api/students", {
+        params: { limit: 100, status: "active" },
+      });
+      setStudents(data?.data?.students || []);
+    } catch (err) {
+      console.error("Load students failed:", err);
+    }
+  };
 
   const loadSupportRequests = async () => {
     try {
@@ -190,6 +211,49 @@ const TeacherSupport = () => {
     setBackupDialogOpen(true);
   };
 
+  const openCreateDialog = () => {
+    setCreateForm({
+      studentId: "",
+      subject: "",
+      description: "",
+      category: "academic",
+      priority: "medium",
+    });
+    setCreateDialogOpen(true);
+    loadStudents();
+  };
+
+  const handleCreate = async () => {
+    if (
+      !createForm.studentId ||
+      !createForm.subject.trim() ||
+      !createForm.description.trim()
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    try {
+      setDialogSubmitting(true);
+      await api.post("/api/support", {
+        student: createForm.studentId,
+        subject: createForm.subject.trim(),
+        description: createForm.description.trim(),
+        category: createForm.category,
+        priority: createForm.priority,
+      });
+      toast.success("Support request created");
+      setCreateDialogOpen(false);
+      await loadSupportRequests();
+    } catch (err) {
+      console.error("Create support request failed:", err);
+      toast.error(
+        err.response?.data?.message || "Failed to create support request",
+      );
+    } finally {
+      setDialogSubmitting(false);
+    }
+  };
+
   const handleReply = async () => {
     if (!activeRequest || !replyMessage.trim()) return;
     try {
@@ -269,6 +333,13 @@ const TeacherSupport = () => {
             Review doubts, respond to students, and schedule backup classes.
           </p>
         </div>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
+          onClick={openCreateDialog}
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>New Request</span>
+        </Button>
       </div>
 
       {/* Stats Section */}
@@ -374,9 +445,6 @@ const TeacherSupport = () => {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge className="bg-slate-200 text-slate-700 px-2 py-1 text-xs font-semibold">
-                        {request._id}
-                      </Badge>
                       <Badge
                         className={`${getPriorityColor(
                           request.priority?.toUpperCase(),
@@ -612,6 +680,106 @@ const TeacherSupport = () => {
               disabled={dialogSubmitting}
             >
               Schedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Request Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Support Request</DialogTitle>
+            <DialogDescription>
+              Log a new support ticket on behalf of a student.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Student</label>
+              <select
+                className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                value={createForm.studentId}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, studentId: e.target.value })
+                }
+              >
+                <option value="">Select student</option>
+                {students.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.user?.fullName || "Unnamed"} ({s.user?.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Subject</label>
+              <Input
+                value={createForm.subject}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, subject: e.target.value })
+                }
+                placeholder="Short summary of the issue"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                rows={4}
+                value={createForm.description}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, description: e.target.value })
+                }
+                placeholder="Detailed description of the doubt or issue"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Category</label>
+                <select
+                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                  value={createForm.category}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, category: e.target.value })
+                  }
+                >
+                  <option value="technical">Technical</option>
+                  <option value="academic">Academic</option>
+                  <option value="administrative">Administrative</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Priority</label>
+                <select
+                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                  value={createForm.priority}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, priority: e.target.value })
+                  }
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setCreateDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCreate}
+              disabled={dialogSubmitting}
+            >
+              Create
             </Button>
           </DialogFooter>
         </DialogContent>
