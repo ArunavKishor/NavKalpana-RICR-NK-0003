@@ -138,25 +138,6 @@ const Sidebar = ({ isOpen }) => {
         })}
       </nav>
 
-      {/* FOOTER */}
-      <div className="p-4 border-t border-slate-100">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.2 }}
-          className="rounded-xl bg-slate-50 p-3 cursor-pointer"
-        >
-          <p className="text-xs font-medium text-slate-700">
-            System Status
-          </p>
-
-          <div className="flex items-center gap-2 mt-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-slate-500">
-              All services operational
-            </span>
-          </div>
-        </motion.div>
-      </div>
     </motion.aside>
   );
 };
