@@ -51,6 +51,9 @@ const TeacherAssessmentManagement = () => {
     dueDate: "",
     totalMarks: 100,
     submissionType: "PDF",
+    moduleName: "",
+    lessonName: "",
+    lessonId: "",
   });
   const [evalData, setEvalData] = useState({
     marks: "",
@@ -475,6 +478,35 @@ const TeacherAssessmentManagement = () => {
                   </Select>
                 </div>
               )}
+            </div>
+            {/* Optional lesson metadata */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Lesson (optional)
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <Input
+                  value={formData.moduleName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, moduleName: e.target.value })
+                  }
+                  placeholder="Module / Unit"
+                />
+                <Input
+                  value={formData.lessonName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lessonName: e.target.value })
+                  }
+                  placeholder="Lesson name"
+                />
+                <Input
+                  value={formData.lessonId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lessonId: e.target.value })
+                  }
+                  placeholder="Lesson ID (optional)"
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button

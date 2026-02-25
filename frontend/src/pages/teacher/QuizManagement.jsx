@@ -25,7 +25,13 @@ const QuizManagement = () => {
     batch: "",
     dueDate: "",
     totalMarks: 100,
+    moduleName: "",
+    lessonName: "",
+    lessonId: "",
   });
+  const [questionEditorQuiz, setQuestionEditorQuiz] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [isSavingQuestions, setIsSavingQuestions] = useState(false);
 
   useEffect(() => {
     loadBatches();
@@ -81,6 +87,9 @@ const QuizManagement = () => {
           ? new Date(formData.dueDate).toISOString()
           : undefined,
         status: "published",
+        moduleName: formData.moduleName,
+        lessonName: formData.lessonName,
+        lessonId: formData.lessonId,
       };
 
       await api.post("/api/assessments", payload);
@@ -92,6 +101,9 @@ const QuizManagement = () => {
         batch: "",
         dueDate: "",
         totalMarks: 100,
+        moduleName: "",
+        lessonName: "",
+        lessonId: "",
       });
       await loadQuizzes();
     } catch (err) {
@@ -108,6 +120,69 @@ const QuizManagement = () => {
     (sum, q) => sum + (q.submissionStats?.total || 0),
     0,
   );
+
+  const openQuestionEditor = async (quiz) => {
+    setQuestionEditorQuiz(quiz);
+    try {
+      const { data } = await api.get(`/api/assessments/${quiz._id}/questions`);
+      setQuestions(data?.data?.questions || []);
+    } catch (err) {
+      console.error("Load questions failed:", err);
+      toast.error("Failed to load quiz questions");
+      setQuestions([]);
+    }
+  };
+
+  const handleQuestionChange = (index, updated) => {
+    setQuestions((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], ...updated };
+      return copy;
+    });
+  };
+
+  const addEmptyQuestion = () => {
+    setQuestions((prev) => [
+      ...prev,
+      {
+        prompt: "",
+        options: [
+          { label: "", isCorrect: false },
+          { label: "", isCorrect: false },
+        ],
+        marks: 1,
+      },
+    ]);
+  };
+
+  const handleSaveQuestions = async () => {
+    if (!questionEditorQuiz) return;
+    try {
+      setIsSavingQuestions(true);
+      const payload = questions.map((q, index) => ({
+        _id: q._id,
+        prompt: q.prompt,
+        options: (q.options || []).map((opt) => ({
+          label: opt.label,
+          isCorrect: !!opt.isCorrect,
+        })),
+        marks: Number(q.marks ?? 1),
+        order: q.order ?? index,
+        isActive: q.isActive !== false,
+      }));
+      await api.post(`/api/assessments/${questionEditorQuiz._id}/questions`, {
+        questions: payload,
+      });
+      toast.success("Questions saved");
+      setQuestionEditorQuiz(null);
+      setQuestions([]);
+    } catch (err) {
+      console.error("Save questions failed:", err);
+      toast.error(err.response?.data?.message || "Failed to save questions");
+    } finally {
+      setIsSavingQuestions(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -263,17 +338,13 @@ const QuizManagement = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4 border-top border-slate-200">
+                  <div className="flex gap-2 pt-4 border-t border-slate-200">
                     <Button
                       variant="outline"
                       className="flex-1"
-                      onClick={() =>
-                        toast(
-                          "Student quiz taking is handled via the student portal.",
-                        )
-                      }
+                      onClick={() => openQuestionEditor(quiz)}
                     >
-                      View Submissions
+                      Manage Questions
                     </Button>
                     <Button
                       onClick={() => handleDeleteQuiz(quiz._id)}
@@ -365,6 +436,35 @@ const QuizManagement = () => {
                   }
                 />
               </div>
+              {/* Optional lesson metadata */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Lesson (optional)
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <Input
+                    value={formData.moduleName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, moduleName: e.target.value })
+                    }
+                    placeholder="Module / Unit"
+                  />
+                  <Input
+                    value={formData.lessonName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lessonName: e.target.value })
+                    }
+                    placeholder="Lesson name"
+                  />
+                  <Input
+                    value={formData.lessonId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lessonId: e.target.value })
+                    }
+                    placeholder="Lesson ID (optional)"
+                  />
+                </div>
+              </div>
               <DialogFooter>
                 <Button
                   type="button"
@@ -376,6 +476,139 @@ const QuizManagement = () => {
                 <Button type="submit">Create Quiz</Button>
               </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Question Editor Modal */}
+        <Dialog
+          open={!!questionEditorQuiz}
+          onOpenChange={(open) => {
+            if (!open) {
+              setQuestionEditorQuiz(null);
+              setQuestions([]);
+            }
+          }}
+        >
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                Manage Questions • {questionEditorQuiz?.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {questions.length === 0 && (
+                <p className="text-sm text-slate-500">
+                  No questions yet. Start by adding a question.
+                </p>
+              )}
+              {questions.map((q, index) => (
+                <div
+                  key={q._id || index}
+                  className="border border-slate-200 rounded-lg p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                      Question {index + 1}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() =>
+                        setQuestions((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <Input
+                    value={q.prompt}
+                    onChange={(e) =>
+                      handleQuestionChange(index, { prompt: e.target.value })
+                    }
+                    placeholder="Question text"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    {(q.options || []).map((opt, optIdx) => (
+                      <div key={optIdx} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={!!opt.isCorrect}
+                          onChange={(e) => {
+                            const newOptions = [...(q.options || [])];
+                            newOptions[optIdx] = {
+                              ...newOptions[optIdx],
+                              isCorrect: e.target.checked,
+                            };
+                            handleQuestionChange(index, {
+                              options: newOptions,
+                            });
+                          }}
+                        />
+                        <Input
+                          value={opt.label}
+                          onChange={(e) => {
+                            const newOptions = [...(q.options || [])];
+                            newOptions[optIdx] = {
+                              ...newOptions[optIdx],
+                              label: e.target.value,
+                            };
+                            handleQuestionChange(index, {
+                              options: newOptions,
+                            });
+                          }}
+                          placeholder={`Option ${optIdx + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const newOptions = [
+                          ...(q.options || []),
+                          { label: "", isCorrect: false },
+                        ];
+                        handleQuestionChange(index, { options: newOptions });
+                      }}
+                    >
+                      Add Option
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">
+                        Marks:
+                      </span>
+                      <Input
+                        type="number"
+                        className="w-20"
+                        value={q.marks ?? 1}
+                        onChange={(e) =>
+                          handleQuestionChange(index, {
+                            marks: Number(e.target.value || 1),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="flex justify-between items-center pt-2">
+                <Button variant="outline" onClick={addEmptyQuestion}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Question
+                </Button>
+                <Button
+                  onClick={handleSaveQuestions}
+                  disabled={isSavingQuestions}
+                >
+                  {isSavingQuestions ? "Saving..." : "Save Questions"}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

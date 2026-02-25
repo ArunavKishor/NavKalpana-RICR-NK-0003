@@ -2,6 +2,8 @@ import Assessment from "../models/assessmentModel.js";
 import Submission from "../models/submissionModel.js";
 import Batch from "../models/batchModel.js";
 import Student from "../models/studentModel.js";
+import QuizQuestion from "../models/quizQuestionModel.js";
+import QuizAttempt from "../models/quizAttemptModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -10,8 +12,19 @@ import {
 
 export const createAssessment = async (req, res) => {
   try {
-    const { title, description, type, submissionType, batch, dueDate, totalMarks, status } =
-      req.body;
+    const {
+      title,
+      description,
+      type,
+      submissionType,
+      batch,
+      dueDate,
+      totalMarks,
+      status,
+      moduleName,
+      lessonName,
+      lessonId,
+    } = req.body;
 
     if (dueDate && new Date(dueDate) <= new Date()) {
       return res.status(400).json({
@@ -30,6 +43,9 @@ export const createAssessment = async (req, res) => {
       status,
       pdfUrl: req.file ? req.file.path : "",
       createdBy: req.user._id,
+      moduleName,
+      lessonName,
+      lessonId,
     });
 
     res.status(201).json({
@@ -197,6 +213,10 @@ export const updateAssessment = async (req, res) => {
       "dueDate",
       "totalMarks",
       "status",
+      "moduleName",
+      "lessonName",
+      "lessonId",
+      "submissionType",
     ];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) {
@@ -224,6 +244,240 @@ export const updateAssessment = async (req, res) => {
     }
     console.error("Update Assessment Error:", error);
     res.status(500).json({ message: "Failed to update assessment" });
+  }
+};
+
+// ============================
+// Quiz Question management
+// ============================
+
+export const getQuizQuestions = async (req, res) => {
+  try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.isActive || assessment.type !== "quiz") {
+      return res.status(404).json({ message: "Quiz assessment not found" });
+    }
+
+    const questions = await QuizQuestion.find({
+      assessment: assessment._id,
+      isActive: true,
+    }).sort({ order: 1, createdAt: 1 });
+
+    res.status(200).json({
+      message: "Quiz questions retrieved successfully",
+      data: { questions },
+    });
+  } catch (error) {
+    console.error("Get Quiz Questions Error:", error);
+    res.status(500).json({ message: "Failed to retrieve quiz questions" });
+  }
+};
+
+export const upsertQuizQuestions = async (req, res) => {
+  try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.isActive || assessment.type !== "quiz") {
+      return res.status(404).json({ message: "Quiz assessment not found" });
+    }
+
+    const questionsInput = Array.isArray(req.body)
+      ? req.body
+      : req.body.questions || [];
+
+    if (!questionsInput.length) {
+      return res.status(400).json({
+        message: "At least one question is required",
+      });
+    }
+
+    const createdOrUpdated = [];
+
+    for (let index = 0; index < questionsInput.length; index += 1) {
+      const q = questionsInput[index];
+      const payload = {
+        assessment: assessment._id,
+        prompt: q.prompt,
+        options: q.options,
+        marks: q.marks ?? 1,
+        order: q.order ?? index,
+        isActive: q.isActive !== false,
+      };
+
+      if (q._id) {
+        const updated = await QuizQuestion.findOneAndUpdate(
+          { _id: q._id, assessment: assessment._id },
+          payload,
+          { new: true },
+        );
+        if (updated) createdOrUpdated.push(updated);
+      } else {
+        const created = await QuizQuestion.create(payload);
+        createdOrUpdated.push(created);
+      }
+    }
+
+    res.status(200).json({
+      message: "Quiz questions saved successfully",
+      data: { questions: createdOrUpdated },
+    });
+  } catch (error) {
+    const validationErrors = formatValidationErrors(error);
+    if (validationErrors) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+    console.error("Upsert Quiz Questions Error:", error);
+    res.status(500).json({ message: "Failed to save quiz questions" });
+  }
+};
+
+export const deleteQuizQuestion = async (req, res) => {
+  try {
+    const question = await QuizQuestion.findById(req.params.questionId);
+    if (!question || !question.isActive) {
+      return res.status(404).json({ message: "Resource not found" });
+    }
+
+    question.isActive = false;
+    await question.save();
+
+    res.status(200).json({
+      message: "Quiz question deleted successfully",
+      data: {},
+    });
+  } catch (error) {
+    console.error("Delete Quiz Question Error:", error);
+    res.status(500).json({ message: "Failed to delete quiz question" });
+  }
+};
+
+// ============================
+// Quiz Attempts (student side)
+// ============================
+
+export const submitQuizAttempt = async (req, res) => {
+  try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.isActive || assessment.type !== "quiz") {
+      return res.status(404).json({ message: "Quiz assessment not found" });
+    }
+
+    const { studentId, answers } = req.body;
+    if (!studentId || !Array.isArray(answers) || !answers.length) {
+      return res.status(400).json({
+        message: "studentId and answers are required",
+      });
+    }
+
+    const student = await Student.findById(studentId);
+    if (!student || !student.isActive) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const batch = await Batch.findById(assessment.batch);
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+    const isEnrolled = batch.students.some(
+      (id) => id.toString() === student._id.toString(),
+    );
+    if (!isEnrolled) {
+      return res
+        .status(400)
+        .json({ message: "Student is not enrolled in this batch" });
+    }
+
+    const questions = await QuizQuestion.find({
+      assessment: assessment._id,
+      isActive: true,
+    }).sort({ order: 1, createdAt: 1 });
+
+    if (!questions.length) {
+      return res.status(400).json({
+        message: "Quiz has no questions configured",
+      });
+    }
+
+    let totalMarks = 0;
+    let score = 0;
+    const answerDocs = [];
+
+    questions.forEach((question) => {
+      const provided = answers.find(
+        (a) => String(a.questionId) === String(question._id),
+      );
+      const marksForQuestion = question.marks ?? 1;
+      totalMarks += marksForQuestion;
+
+      if (!provided) {
+        answerDocs.push({
+          question: question._id,
+          selectedIndex: -1,
+          isCorrect: false,
+          awardedMarks: 0,
+        });
+        return;
+      }
+
+      const selectedIndex = provided.selectedIndex ?? -1;
+      const isCorrectOption =
+        selectedIndex >= 0 &&
+        question.options?.[selectedIndex] &&
+        question.options[selectedIndex].isCorrect;
+
+      const awardedMarks = isCorrectOption ? marksForQuestion : 0;
+      score += awardedMarks;
+
+      answerDocs.push({
+        question: question._id,
+        selectedIndex,
+        isCorrect: !!isCorrectOption,
+        awardedMarks,
+      });
+    });
+
+    const attempt = await QuizAttempt.create({
+      assessment: assessment._id,
+      student: student._id,
+      batch: batch._id,
+      answers: answerDocs,
+      totalMarks,
+      score,
+      completedAt: new Date(),
+      status: "evaluated",
+    });
+
+    // Also write a Submission record so existing analytics includes quiz scores
+    await Submission.create({
+      student: student._id,
+      assessment: assessment._id,
+      submittedAt: attempt.completedAt,
+      marksObtained: score,
+      status: "evaluated",
+      submissionStatus: "evaluated",
+      isLateSubmission: attempt.completedAt > assessment.dueDate,
+    });
+
+    res.status(201).json({
+      message: "Quiz attempt submitted successfully",
+      data: {
+        attempt,
+        totalMarks,
+        score,
+      },
+    });
+  } catch (error) {
+    const validationErrors = formatValidationErrors(error);
+    if (validationErrors) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+    console.error("Submit Quiz Attempt Error:", error);
+    res.status(500).json({ message: "Failed to submit quiz attempt" });
   }
 };
 

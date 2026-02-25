@@ -22,16 +22,27 @@ const assessmentSchema = new mongoose.Schema(
       },
       index: true,
     },
-    submissionType: {
-      type: String,
-      enum: ["PDF", "Image", "JPG", "Any"],
-      default: "Any",
-    },
     batch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Batch",
       required: [true, "Batch is required"],
       index: true,
+    },
+    // Optional lesson-level metadata to attach assessments/quizzes
+    moduleName: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Module name must not exceed 200 characters"],
+    },
+    lessonName: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Lesson name must not exceed 200 characters"],
+    },
+    lessonId: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Lesson ID must not exceed 100 characters"],
     },
     dueDate: {
       type: Date,
@@ -64,7 +75,7 @@ const assessmentSchema = new mongoose.Schema(
     },
     submissionType: {
       type: String,
-      enum: ["PDF", "Image", "JPG", "Video", "Text"],
+      enum: ["PDF", "Image", "JPG", "Video", "Text", "Any"],
       default: "PDF",
     },
   },
