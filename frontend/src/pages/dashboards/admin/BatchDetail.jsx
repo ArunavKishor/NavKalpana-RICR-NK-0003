@@ -306,7 +306,7 @@ const BatchDetail = () => {
                                         <div key={s._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.user?.fullName)}&background=random`}
+                                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.user?.fullName || "S")}&background=random`}
                                                     className="w-10 h-10 rounded-full"
                                                     alt=""
                                                 />
@@ -457,7 +457,7 @@ const BatchDetail = () => {
                                     <div key={s._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.user?.fullName)}&background=random`}
+                                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(s.user?.fullName || "S")}&background=random`}
                                                 className="w-10 h-10 rounded-full"
                                                 alt=""
                                             />

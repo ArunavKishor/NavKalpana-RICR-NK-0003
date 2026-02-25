@@ -154,7 +154,7 @@ const StudentManagement = () => {
       console.error("Load students failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load students. Please try again.",
+        "Failed to load students. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -390,7 +390,9 @@ const StudentManagement = () => {
                 <div className="hidden lg:grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition">
                   <div className="col-span-4 flex items-center gap-4">
                     <img
-                      src={`https://i.pravatar.cc/50?u=${student.email}`}
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        student.name || "S"
+                      )}&background=random`}
                       alt={student.name}
                       className="w-12 h-12 rounded-full"
                     />
@@ -467,7 +469,9 @@ const StudentManagement = () => {
                 <div className="lg:hidden p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <img
-                      src={`https://i.pravatar.cc/50?u=${student.email}`}
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        student.name || "S"
+                      )}&background=random`}
                       alt={student.name}
                       className="w-12 h-12 rounded-full"
                     />
@@ -564,9 +568,8 @@ const StudentManagement = () => {
 const StatCard = ({ icon, label, value, onClick, active }) => (
   <div
     onClick={onClick}
-    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${
-      onClick ? "cursor-pointer hover:shadow-md" : ""
-    } ${active ? "ring-2 ring-blue-500" : ""}`}
+    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${onClick ? "cursor-pointer hover:shadow-md" : ""
+      } ${active ? "ring-2 ring-blue-500" : ""}`}
   >
     <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
     <div>
@@ -579,9 +582,8 @@ const StatCard = ({ icon, label, value, onClick, active }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-      active ? "bg-slate-200" : "bg-white border"
-    }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
+      }`}
   >
     {children}
   </button>

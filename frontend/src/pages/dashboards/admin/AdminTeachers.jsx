@@ -122,7 +122,7 @@ const TeacherManagement = () => {
       console.error("Load teachers failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load teachers. Please try again.",
+        "Failed to load teachers. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -342,7 +342,9 @@ const TeacherManagement = () => {
               >
                 <div className="col-span-5 flex items-center gap-4">
                   <img
-                    src={`https://i.pravatar.cc/50?u=${teacher.email}`}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      teacher.name || "T"
+                    )}&background=random`}
                     alt={teacher.name}
                     className="w-12 h-12 rounded-full"
                   />
@@ -447,9 +449,8 @@ const StatCard = ({ icon, label, value }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-      active ? "bg-slate-200" : "bg-white border"
-    }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
+      }`}
   >
     {children}
   </button>
