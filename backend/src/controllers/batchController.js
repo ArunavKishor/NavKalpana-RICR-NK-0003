@@ -1,6 +1,7 @@
 import Batch from "../models/batchModel.js";
 import Student from "../models/studentModel.js";
 import Attendance from "../models/attendanceModel.js";
+import User from "../models/userModel.js";
 import { parsePagination, buildPaginationMeta } from "../utils/pagination.js";
 import {
   formatValidationErrors,
@@ -127,20 +128,34 @@ export const getBatches = async (req, res) => {
 
     let batches = await Batch.find(filter)
       .populate("createdBy", "fullName email")
+      .populate("instructor", "user")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
+    // Apply status updates first (needs Mongoose documents)
     batches = await applyBatchStatusUpdates(batches);
+
+    // Populate instructor user details and convert to objects
+    const populatedBatches = await Promise.all(
+      batches.map(async (batch) => {
+        const batchObj = batch.toObject();
+        if (batchObj.instructor && batchObj.instructor.user) {
+          const user = await User.findById(batchObj.instructor.user).select("fullName");
+          batchObj.instructorName = user?.fullName || "Unknown";
+        } else {
+          batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+        }
+        batchObj.enrolledStudents = batch.students.length;
+        return batchObj;
+      })
+    );
 
     res.status(200).json({
       success: true,
       message: "Batches retrieved successfully",
       data: {
-        batches: batches.map((batch) => ({
-          ...batch.toObject(),
-          enrolledStudents: batch.students.length,
-        })),
+        batches: populatedBatches,
         pagination: buildPaginationMeta(page, limit, total),
       },
     });
@@ -155,10 +170,9 @@ export const getBatches = async (req, res) => {
 /* ---------------------------------- */
 export const getBatchById = async (req, res) => {
   try {
-    const batch = await Batch.findById(req.params.id).populate(
-      "createdBy",
-      "fullName email"
-    );
+    const batch = await Batch.findById(req.params.id)
+      .populate("createdBy", "fullName email")
+      .populate("instructor", "user");
 
     if (!batch || !batch.isActive) {
       return res.status(404).json({ message: "Batch not found" });
@@ -170,10 +184,20 @@ export const getBatchById = async (req, res) => {
       await batch.save();
     }
 
+    const batchObj = batch.toObject();
+
+    // Get instructor name if instructor exists
+    if (batchObj.instructor && batchObj.instructor.user) {
+      const user = await User.findById(batchObj.instructor.user).select("fullName");
+      batchObj.instructorName = user?.fullName || "Unknown";
+    } else {
+      batchObj.instructorName = batchObj.instructor ? "Unknown" : "Not Assigned";
+    }
+
     res.status(200).json({
       success: true,
       data: {
-        ...batch.toObject(),
+        ...batchObj,
         enrolledStudents: batch.students.length,
       },
     });
