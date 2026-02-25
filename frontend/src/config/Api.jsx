@@ -39,7 +39,7 @@ api.interceptors.response.use(
 
       // Redirect to login page if running in browser
       if (typeof window !== "undefined") {
-        window.location.href = "/login";
+        window.location.href = "/";
       }
     }
 
