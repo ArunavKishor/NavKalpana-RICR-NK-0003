@@ -39,6 +39,7 @@ const TeacherAssessmentManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModule, setSelectedModule] = useState("All");
+  const [selectedLesson, setSelectedLesson] = useState("All");
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showEvaluation, setShowEvaluation] = useState(false);
@@ -94,9 +95,12 @@ const TeacherAssessmentManagement = () => {
   };
 
   const moduleOptions = useMemo(() => {
-    const names = assessments
-      .map((a) => a.moduleName)
-      .filter(Boolean);
+    const names = assessments.map((a) => a.moduleName).filter(Boolean);
+    return ["All", ...new Set(names)];
+  }, [assessments]);
+
+  const lessonOptions = useMemo(() => {
+    const names = assessments.map((a) => a.lessonName).filter(Boolean);
     return ["All", ...new Set(names)];
   }, [assessments]);
 
@@ -108,9 +112,11 @@ const TeacherAssessmentManagement = () => {
           a.description?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesModule =
           selectedModule === "All" || a.moduleName === selectedModule;
-        return matchesSearch && matchesModule;
+        const matchesLesson =
+          selectedLesson === "All" || a.lessonName === selectedLesson;
+        return matchesSearch && matchesModule && matchesLesson;
       }),
-    [assessments, searchQuery, selectedModule],
+    [assessments, searchQuery, selectedModule, selectedLesson],
   );
 
   const handleDelete = async (assessmentId) => {
@@ -213,7 +219,7 @@ const TeacherAssessmentManagement = () => {
         </div>
       </div>
 
-      {/* Search + Module Filter */}
+      {/* Search + Module + Lesson Filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -233,6 +239,19 @@ const TeacherAssessmentManagement = () => {
             {moduleOptions.map((m) => (
               <option key={m} value={m}>
                 {m === "All" ? "All Modules" : m}
+              </option>
+            ))}
+          </select>
+        )}
+        {lessonOptions.length > 1 && (
+          <select
+            value={selectedLesson}
+            onChange={(e) => setSelectedLesson(e.target.value)}
+            className="sm:w-52 px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {lessonOptions.map((l) => (
+              <option key={l} value={l}>
+                {l === "All" ? "All Lessons" : l}
               </option>
             ))}
           </select>

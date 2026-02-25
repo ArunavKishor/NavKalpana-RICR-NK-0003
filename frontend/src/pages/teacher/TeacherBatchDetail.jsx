@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Calendar, Users, BookOpen, Zap, Download } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Calendar,
+  Users,
+  BookOpen,
+  Zap,
+  Download,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import AttendanceModal from "@/components/teacher/AttendanceModal";
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const TeacherBatchDetail = () => {
   const { batchId } = useParams();
@@ -102,15 +116,21 @@ const TeacherBatchDetail = () => {
 
   const handleExportAttendance = async () => {
     try {
-      const response = await api.get(`/api/attendance/export?batch=${batchId}`, {
-        responseType: 'blob'
-      });
+      const response = await api.get(
+        `/api/attendance/export?batch=${batchId}`,
+        {
+          responseType: "blob",
+        },
+      );
 
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `attendance_${batch?.name || batchId}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute(
+        "download",
+        `attendance_${batch?.name || batchId}_${new Date().toISOString().split("T")[0]}.csv`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -125,14 +145,29 @@ const TeacherBatchDetail = () => {
 
   const getAttendanceStats = () => {
     const stats = { present: 0, absent: 0, late: 0 };
-    attendanceHistory.forEach(r => {
+    attendanceHistory.forEach((r) => {
       stats[r.status] = (stats[r.status] || 0) + 1;
     });
     return [
       { name: "Present", value: stats.present, color: "#10b981" },
       { name: "Absent", value: stats.absent, color: "#ef4444" },
       { name: "Late", value: stats.late, color: "#f59e0b" },
-    ].filter(s => s.value > 0);
+    ].filter((s) => s.value > 0);
+  };
+
+  const getBatchAnalytics = () => {
+    const uniqueDates = new Set(
+      attendanceHistory.map((r) => new Date(r.date).toDateString()),
+    );
+    const sessionCount = uniqueDates.size;
+    const presentCount = attendanceHistory.filter(
+      (r) => r.status === "present",
+    ).length;
+    const attendanceRate =
+      attendanceHistory.length > 0
+        ? Math.round((presentCount / attendanceHistory.length) * 100)
+        : 0;
+    return { sessionCount, attendanceRate };
   };
 
   const startEditRecord = (record) => {
@@ -273,37 +308,41 @@ const TeacherBatchDetail = () => {
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("details")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "details"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-600 border-transparent hover:text-slate-900"
-              }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${
+              activeTab === "details"
+                ? "text-blue-600 border-blue-600"
+                : "text-slate-600 border-transparent hover:text-slate-900"
+            }`}
           >
             Batch Details
           </button>
           <button
             onClick={() => setActiveTab("mark-attendance")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "mark-attendance"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-600 border-transparent hover:text-slate-900"
-              }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${
+              activeTab === "mark-attendance"
+                ? "text-blue-600 border-blue-600"
+                : "text-slate-600 border-transparent hover:text-slate-900"
+            }`}
           >
             Mark Attendance
           </button>
           <button
             onClick={() => setActiveTab("attendance-history")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "attendance-history"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-600 border-transparent hover:text-slate-900"
-              }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${
+              activeTab === "attendance-history"
+                ? "text-blue-600 border-blue-600"
+                : "text-slate-600 border-transparent hover:text-slate-900"
+            }`}
           >
             History
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "analytics"
-              ? "text-blue-600 border-blue-600"
-              : "text-slate-600 border-transparent hover:text-slate-900"
-              }`}
+            className={`px-4 py-3 font-medium border-b-2 transition-all ${
+              activeTab === "analytics"
+                ? "text-blue-600 border-blue-600"
+                : "text-slate-600 border-transparent hover:text-slate-900"
+            }`}
           >
             Analytics
           </button>
@@ -329,7 +368,9 @@ const TeacherBatchDetail = () => {
             <div>
               <p className="text-sm text-slate-600 mb-1">Instructor</p>
               <p className="text-lg font-semibold text-slate-900">
-                {batch.instructorName || batch.instructor?.user?.fullName || "Not assigned"}
+                {batch.instructorName ||
+                  batch.instructor?.user?.fullName ||
+                  "Not assigned"}
               </p>
             </div>
             <div>
@@ -378,14 +419,15 @@ const TeacherBatchDetail = () => {
                           onClick={() =>
                             handleAttendanceStatusChange(student._id, status)
                           }
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${attendanceForm[student._id] === status
-                            ? status === "present"
-                              ? "bg-emerald-500 text-white"
-                              : status === "absent"
-                                ? "bg-red-500 text-white"
-                                : "bg-yellow-500 text-white"
-                            : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                            }`}
+                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                            attendanceForm[student._id] === status
+                              ? status === "present"
+                                ? "bg-emerald-500 text-white"
+                                : status === "absent"
+                                  ? "bg-red-500 text-white"
+                                  : "bg-yellow-500 text-white"
+                              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                          }`}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </button>
@@ -428,9 +470,7 @@ const TeacherBatchDetail = () => {
       {activeTab === "attendance-history" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-900">
-              Attendance History
-            </h3>
+            <h3 className="font-semibold text-slate-900">Attendance History</h3>
             <Button
               variant="outline"
               size="sm"
@@ -441,7 +481,7 @@ const TeacherBatchDetail = () => {
               Export CSV
             </Button>
           </div>
-            {attendanceHistory.length === 0 ? (
+          {attendanceHistory.length === 0 ? (
             <p className="text-slate-500 text-center py-8">
               No attendance records yet
             </p>
@@ -478,12 +518,13 @@ const TeacherBatchDetail = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${record.status === "present"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : record.status === "absent"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
-                            }`}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            record.status === "present"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : record.status === "absent"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
+                          }`}
                         >
                           {record.status.charAt(0).toUpperCase() +
                             record.status.slice(1)}
@@ -525,8 +566,8 @@ const TeacherBatchDetail = () => {
                           ? status === "present"
                             ? "bg-emerald-500 text-white"
                             : status === "absent"
-                            ? "bg-red-500 text-white"
-                            : "bg-yellow-500 text-white"
+                              ? "bg-red-500 text-white"
+                              : "bg-yellow-500 text-white"
                           : "bg-slate-200 text-slate-700 hover:bg-slate-300"
                       }`}
                     >
@@ -562,9 +603,9 @@ const TeacherBatchDetail = () => {
                 </div>
               </div>
               <p className="text-[11px] text-slate-500">
-                Attendance can only be edited on the same day it was recorded and within
-                10 minutes of submission. If this window has passed, the server will
-                reject the update.
+                Attendance can only be edited on the same day it was recorded
+                and within 10 minutes of submission. If this window has passed,
+                the server will reject the update.
               </p>
             </div>
           )}
@@ -573,8 +614,10 @@ const TeacherBatchDetail = () => {
       {activeTab === "analytics" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-6 text-center">Batch Attendance Distribution</h3>
-            <div className="h-64 w-full" style={{ minHeight: '250px' }}>
+            <h3 className="font-semibold text-slate-900 mb-6 text-center">
+              Batch Attendance Distribution
+            </h3>
+            <div className="h-64 w-full" style={{ minHeight: "250px" }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <PieChart>
                   <Pie
@@ -593,39 +636,60 @@ const TeacherBatchDetail = () => {
               </ResponsiveContainer>
             </div>
             <div className="flex justify-center gap-6 mt-4 text-xs font-medium">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500"></div> Present</div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500"></div> Absent</div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-yellow-500"></div> Late</div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>{" "}
+                Present
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div> Absent
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div> Late
+              </div>
             </div>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-6">Module-wise Breakdown</h3>
+            <h3 className="font-semibold text-slate-900 mb-6">
+              Module-wise Breakdown
+            </h3>
             <div className="space-y-4">
-              {(batch.content || []).map((module, idx) => (
-                <div key={idx} className="p-4 bg-slate-50 border border-slate-100 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm font-semibold">{module.title}</p>
-                    <Badge variant="outline">Module {idx + 1}</Badge>
+              {(batch.content || []).map((module, idx) => {
+                const { sessionCount, attendanceRate } = getBatchAnalytics();
+                return (
+                  <div
+                    key={idx}
+                    className="p-4 bg-slate-50 border border-slate-100 rounded-lg"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-semibold">{module.title}</p>
+                      <Badge variant="outline">Module {idx + 1}</Badge>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-[10px] uppercase font-bold text-center">
+                      <div className="p-2 bg-white rounded border border-slate-100">
+                        <p className="text-slate-400">Sessions</p>
+                        <p className="text-slate-900">{sessionCount}</p>
+                      </div>
+                      <div className="p-2 bg-white rounded border border-slate-100">
+                        <p className="text-emerald-400">Avg Presence</p>
+                        <p className="text-emerald-600">{attendanceRate}%</p>
+                      </div>
+                      <div className="p-2 bg-white rounded border border-slate-100">
+                        <p className="text-slate-400">Content</p>
+                        <p className="text-slate-900">
+                          {module.body.length > 20
+                            ? module.body.substring(0, 20) + "..."
+                            : module.body}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-[10px] uppercase font-bold text-center">
-                    <div className="p-2 bg-white rounded border border-slate-100">
-                      <p className="text-slate-400">Target</p>
-                      <p className="text-slate-900">10 Sessions</p>
-                    </div>
-                    <div className="p-2 bg-white rounded border border-slate-100">
-                      <p className="text-emerald-400">Avg Presence</p>
-                      <p className="text-emerald-600">85%</p>
-                    </div>
-                    <div className="p-2 bg-white rounded border border-slate-100">
-                      <p className="text-slate-400">Content</p>
-                      <p className="text-slate-900">{module.body.length > 20 ? module.body.substring(0, 20) + '...' : module.body}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {(!batch.content || batch.content.length === 0) && (
-                <p className="text-center text-slate-500 py-8">No course content/modules defined</p>
+                <p className="text-center text-slate-500 py-8">
+                  No course content/modules defined
+                </p>
               )}
             </div>
           </div>
