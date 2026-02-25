@@ -294,8 +294,36 @@ const TeacherSupport = () => {
         message: replyMessage.trim(),
       });
       toast.success("Reply sent");
+      const newReply = {
+        message: replyMessage.trim(),
+        createdAt: new Date().toISOString(),
+      };
+
+      // Optimistically update local state so the reply shows immediately
+      setRequests((prev) =>
+        prev.map((req) =>
+          req._id === activeRequest._id
+            ? {
+                ...req,
+                responses: [...(req.responses || []), newReply],
+              }
+            : req,
+        ),
+      );
+
+      setActiveRequest((prev) =>
+        prev
+          ? {
+              ...prev,
+              responses: [...(prev.responses || []), newReply],
+            }
+          : prev,
+      );
+
       setReplyDialogOpen(false);
-      await loadSupportRequests();
+      setReplyMessage("");
+      // Also refresh from server in background to stay in sync
+      loadSupportRequests();
     } catch (err) {
       console.error("Reply failed:", err);
       toast.error("Failed to send reply");
@@ -552,45 +580,39 @@ const TeacherSupport = () => {
                 </div>
 
                 {/* Description */}
-                <p className="text-slate-600 mb-4 text-sm line-clamp-2">
+                <p className="text-slate-600 mb-2 text-sm line-clamp-2">
                   {request.description}
                 </p>
 
-                {/* Attachment / solution preview */}
-                {request.solutionFileUrl &&
-                  (() => {
-                    const fileType = getAttachmentType(request.solutionFileUrl);
-                    return (
-                      <div className="mb-4">
-                        <p className="text-xs font-semibold text-slate-700 mb-1.5">
-                          Solution Attachment
-                        </p>
-                        {fileType === "image" ? (
-                          <a
-                            href={request.solutionFileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            <img
-                              src={request.solutionFileUrl}
-                              alt="Solution preview"
-                              className="max-h-40 rounded-lg border border-slate-200 object-contain cursor-pointer hover:opacity-90"
-                            />
-                          </a>
-                        ) : (
-                          <a
-                            href={request.solutionFileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50"
-                          >
-                            <FileText className="w-4 h-4 shrink-0" />
-                            {fileType === "pdf" ? "View PDF" : "View File"}
-                          </a>
-                        )}
+                {/* Latest Reply Preview */}
+                {request.responses && request.responses.length > 0 && (() => {
+                  const lastReply =
+                    request.responses[request.responses.length - 1];
+                  return (
+                    <div className="mb-4 rounded-md bg-slate-50 border border-slate-200 px-3 py-2 text-xs">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-slate-700">
+                          Latest teacher reply
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {lastReply.createdAt
+                            ? new Date(lastReply.createdAt).toLocaleString(
+                                "en-US",
+                                {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                },
+                              )
+                            : ""}
+                        </span>
                       </div>
-                    );
-                  })()}
+                      <p className="text-[11px] text-slate-700 line-clamp-2">
+                        {lastReply.message}
+                      </p>
+                    </div>
+                  );
+                })()}
+
 
                 {/* Footer */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -646,10 +668,39 @@ const TeacherSupport = () => {
           <DialogHeader>
             <DialogTitle>Reply to Student</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-slate-600">{activeRequest?.subject}</p>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 font-medium">
+              {activeRequest?.subject}
+            </p>
+
+            {activeRequest?.responses?.length > 0 && (
+              <div className="max-h-48 overflow-y-auto rounded-md border border-slate-200 bg-slate-50/80 p-3 space-y-2">
+                {activeRequest.responses.map((resp, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-md bg-white px-3 py-2 border border-slate-200"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-semibold text-slate-700">
+                        Teacher reply
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {resp.createdAt
+                          ? new Date(resp.createdAt).toLocaleString("en-US", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })
+                          : ""}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-700">{resp.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <Textarea
-              rows={5}
+              rows={4}
               placeholder="Type your response..."
               value={replyMessage}
               onChange={(e) => setReplyMessage(e.target.value)}

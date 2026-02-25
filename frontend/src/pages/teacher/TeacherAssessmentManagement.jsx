@@ -176,7 +176,16 @@ const TeacherAssessmentManagement = () => {
       loadAssessments();
     } catch (err) {
       console.error("Create Assessment Error:", err.response?.data || err);
-      toast.error(err.response?.data?.message || "Failed to create assessment");
+      const errors = err.response?.data?.errors;
+      let errMsg = err.response?.data?.message || "Failed to create assessment";
+
+      if (errors && Array.isArray(errors) && errors.length > 0) {
+        errMsg = errors.map(e => e.message || e.msg || JSON.stringify(e)).join(", ");
+      } else if (errors && typeof errors === 'object') {
+        errMsg = Object.values(errors).map(e => e.message || e).join(", ");
+      }
+
+      toast.error(errMsg);
     }
   };
 
@@ -304,13 +313,12 @@ const TeacherAssessmentManagement = () => {
                           {assessment.title}
                         </h3>
                         <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            assessment.status === "active"
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${assessment.status === "active"
                               ? "bg-emerald-100 text-emerald-700"
                               : assessment.status === "draft"
                                 ? "bg-yellow-100 text-yellow-700"
                                 : "bg-slate-100 text-slate-700"
-                          }`}
+                            }`}
                         >
                           {assessment.status || "active"}
                         </span>
@@ -615,11 +623,10 @@ const TeacherAssessmentManagement = () => {
                           })
                         }
                         className={`group p-4 rounded-xl border cursor-pointer transition-all bg-white
-                    ${
-                      isActive
-                        ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
-                        : "hover:border-slate-300 hover:shadow-sm"
-                    }`}
+                    ${isActive
+                            ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
+                            : "hover:border-slate-300 hover:shadow-sm"
+                          }`}
                       >
                         <div className="flex justify-between">
                           <div>
@@ -644,7 +651,7 @@ const TeacherAssessmentManagement = () => {
                             {selectedAssessment?.dueDate &&
                               sub.submittedAt &&
                               new Date(sub.submittedAt) >
-                                new Date(selectedAssessment.dueDate) && (
+                              new Date(selectedAssessment.dueDate) && (
                                 <Badge className="bg-red-100 text-red-700 text-[10px]">
                                   Late
                                 </Badge>
