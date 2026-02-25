@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ["admin", "teacher"],
+        values: ["admin", "teacher", "student"],
         message: "{VALUE} is not a valid role",
       },
       default: "teacher",
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Hash password before saving
