@@ -32,7 +32,6 @@ const baseNavItems = [
     icon: MessageSquare,
     label: "Support",
     href: "/teacher-dashboard/support",
-    badge: 2,
   },
   { icon: User, label: "My Account", href: "/teacher-dashboard/account" },
 ];
