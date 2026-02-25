@@ -71,7 +71,9 @@ const AttendanceManagement = () => {
           list.map((student) => ({
             id: student._id,
             name: student.user?.fullName || "Unknown",
-            avatar: `https://i.pravatar.cc/150?u=${student.user?.email || student._id}`,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              student.user?.fullName || "S"
+            )}&background=random`,
             status: null,
           })),
         );
@@ -80,7 +82,7 @@ const AttendanceManagement = () => {
         console.error("Load attendance data failed:", err);
         setError(
           err.response?.data?.message ||
-            "Failed to load batch attendance data.",
+          "Failed to load batch attendance data.",
         );
       } finally {
         setLoading(false);
@@ -119,7 +121,7 @@ const AttendanceManagement = () => {
       console.error("Submit attendance failed:", err);
       alert(
         err.response?.data?.message ||
-          "Failed to submit attendance. Please try again.",
+        "Failed to submit attendance. Please try again.",
       );
     }
   };
@@ -229,15 +231,14 @@ const AttendanceManagement = () => {
                         <button
                           key={type}
                           onClick={() => markAttendance(student.id, type)}
-                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                            student.status === type
+                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${student.status === type
                               ? type === "present"
                                 ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
                                 : type === "absent"
-                                ? "bg-red-100 text-red-700 border-2 border-red-500"
-                                : "bg-orange-100 text-orange-700 border-2 border-orange-500"
+                                  ? "bg-red-100 text-red-700 border-2 border-red-500"
+                                  : "bg-orange-100 text-orange-700 border-2 border-orange-500"
                               : "bg-white border border-slate-200 text-slate-600"
-                          }`}
+                            }`}
                         >
                           {type === "present" && <CheckCircle2 className="w-4 h-4" />}
                           {type === "absent" && <XCircle className="w-4 h-4" />}

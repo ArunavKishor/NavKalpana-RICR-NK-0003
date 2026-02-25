@@ -52,9 +52,14 @@ const TeacherDashboardHeader = () => {
 
             <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-white shadow-sm cursor-pointer">
               <AvatarImage
-                src={`https://ui-avatars.com/api/?name=${user?.fullName || "Teacher"}&background=2563eb&color=fff`}
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  user?.fullName || "Teacher"
+                )}&background=2563eb&color=fff`}
+                alt="Profile"
               />
-              <AvatarFallback>TC</AvatarFallback>
+              <AvatarFallback>
+                {user?.fullName?.charAt(0) || "T"}
+              </AvatarFallback>
             </Avatar>
 
             <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />

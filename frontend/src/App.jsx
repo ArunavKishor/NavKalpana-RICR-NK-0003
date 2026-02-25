@@ -1,11 +1,18 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import AdminLogin from "./pages/public/AdminLogin";
 import { AuthProvider } from "./context/AuthContext";
 import DashboardLayout from "./components/dashboard/DashboardMainLayout";
 import DashboardHome from "./pages/dashboards/admin/AdminDashboardHome";
 import Login from "./pages/Login";
+import {
+  BatchManagement,
+  AssessmentManagement,
+  StudentManagement,
+  SupportRequests,
+  BatchDetail,
+  TeacherManagement,
+} from "./pages/dashboards/admin/AdminHome";
 
 import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
 import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
@@ -27,18 +34,23 @@ const App = () => {
         <Toaster />
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/admin" element={<AdminLogin />} />
 
           {/* Admin Routes */}
           <Route
-            path="/admin-dashboard"
+            path="/admin"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DashboardLayout />
               </ProtectedRoute>
             }
           >
-            <Route index element={<DashboardHome />} />
+            <Route path="dashboard" element={<DashboardHome />} />
+            <Route path="batches" element={<BatchManagement />} />
+            <Route path="batches/:batchId" element={<BatchDetail />} />
+            <Route path="teachers" element={<TeacherManagement />} />
+            <Route path="students" element={<StudentManagement />} />
+            <Route path="assessments" element={<AssessmentManagement />} />
+            <Route path="support" element={<SupportRequests />} />
           </Route>
 
 
