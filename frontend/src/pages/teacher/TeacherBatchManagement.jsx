@@ -217,7 +217,7 @@ const TeacherBatchManagement = () => {
                   <div className="flex justify-between text-sm">
                     <span>Total Students</span>
                     <span className="font-semibold">
-                      {batch.students?.length || 0}
+                      {batch.enrolledStudents ?? batch.students?.length ?? 0}
                     </span>
                   </div>
 

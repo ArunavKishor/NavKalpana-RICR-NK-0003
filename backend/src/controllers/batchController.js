@@ -249,9 +249,14 @@ export const getBatchStudents = async (req, res) => {
       return res.status(404).json({ message: "Batch not found" });
     }
 
-    const students = await Student.find({ _id: { $in: batch.students } });
+    const students = await Student.find({ _id: { $in: batch.students } })
+      .populate("user", "fullName email");
 
-    res.status(200).json({ success: true, data: students });
+    res.status(200).json({
+      success: true,
+      message: "Batch students retrieved successfully",
+      data: { students },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to retrieve students" });
@@ -265,7 +270,11 @@ export const getBatchAttendance = async (req, res) => {
   try {
     const records = await Attendance.find({ batch: req.params.id });
 
-    res.status(200).json({ success: true, data: records });
+    res.status(200).json({
+      success: true,
+      message: "Batch attendance retrieved successfully",
+      data: { attendance: records },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to retrieve attendance" });

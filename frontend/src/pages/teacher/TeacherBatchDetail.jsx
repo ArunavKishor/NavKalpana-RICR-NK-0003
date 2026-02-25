@@ -19,6 +19,10 @@ const TeacherBatchDetail = () => {
   const [attendanceRemarks, setAttendanceRemarks] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [editStatus, setEditStatus] = useState("present");
+  const [editRemarks, setEditRemarks] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
 
   useEffect(() => {
@@ -40,7 +44,8 @@ const TeacherBatchDetail = () => {
       setBatch(batchData);
       const studentsList = studentsRes?.data?.data?.students || [];
       setStudents(studentsList);
-      setAttendanceHistory(attendanceRes?.data?.data?.attendance || []);
+      // API returns { data: { records, pagination } }
+      setAttendanceHistory(attendanceRes?.data?.data?.records || []);
 
       // Initialize attendance form with "present" for all students
       const initialForm = {};
@@ -128,6 +133,44 @@ const TeacherBatchDetail = () => {
       { name: "Absent", value: stats.absent, color: "#ef4444" },
       { name: "Late", value: stats.late, color: "#f59e0b" },
     ].filter(s => s.value > 0);
+  };
+
+  const startEditRecord = (record) => {
+    setEditingRecord(record);
+    setEditStatus(record.status);
+    setEditRemarks(record.remarks || "");
+  };
+
+  const cancelEdit = () => {
+    setEditingRecord(null);
+    setEditStatus("present");
+    setEditRemarks("");
+  };
+
+  const handleUpdateAttendance = async () => {
+    if (!editingRecord) return;
+    if (!editRemarks.trim()) {
+      toast.error("Remarks are mandatory when editing attendance");
+      return;
+    }
+    try {
+      setIsUpdating(true);
+      await api.put(`/api/attendance/${editingRecord._id}`, {
+        status: editStatus,
+        remarks: editRemarks,
+      });
+      toast.success("Attendance updated");
+      cancelEdit();
+      await loadBatchData();
+    } catch (err) {
+      console.error("Update attendance failed:", err);
+      toast.error(
+        err.response?.data?.message ||
+          "Failed to update attendance. Note: records can only be edited same day within 10 minutes.",
+      );
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   if (loading) {
@@ -398,7 +441,7 @@ const TeacherBatchDetail = () => {
               Export CSV
             </Button>
           </div>
-          {attendanceHistory.length === 0 ? (
+            {attendanceHistory.length === 0 ? (
             <p className="text-slate-500 text-center py-8">
               No attendance records yet
             </p>
@@ -418,6 +461,9 @@ const TeacherBatchDetail = () => {
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-900">
                       Remarks
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -446,10 +492,80 @@ const TeacherBatchDetail = () => {
                       <td className="px-4 py-3 text-slate-600">
                         {record.remarks || "-"}
                       </td>
+                      <td className="px-4 py-3">
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => startEditRecord(record)}
+                        >
+                          Edit
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {editingRecord && (
+            <div className="mt-6 border-t border-slate-200 pt-4 space-y-3">
+              <h4 className="font-semibold text-slate-900 text-sm">
+                Edit Attendance – {editingRecord.student?.user?.fullName} on{" "}
+                {new Date(editingRecord.date).toLocaleDateString()}
+              </h4>
+              <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex gap-2">
+                  {["present", "absent", "late"].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setEditStatus(status)}
+                      className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                        editStatus === status
+                          ? status === "present"
+                            ? "bg-emerald-500 text-white"
+                            : status === "absent"
+                            ? "bg-red-500 text-white"
+                            : "bg-yellow-500 text-white"
+                          : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                      }`}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                  <textarea
+                    value={editRemarks}
+                    onChange={(e) => setEditRemarks(e.target.value)}
+                    rows="2"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Update remarks (mandatory)..."
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleUpdateAttendance}
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? "Saving..." : "Save"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={cancelEdit}
+                    disabled={isUpdating}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Attendance can only be edited on the same day it was recorded and within
+                10 minutes of submission. If this window has passed, the server will
+                reject the update.
+              </p>
             </div>
           )}
         </div>
