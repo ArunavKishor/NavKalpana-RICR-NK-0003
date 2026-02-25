@@ -291,7 +291,8 @@ const BatchDetail = () => {
                                 {filteredStudents.map((s) => {
                                     // Calculate progress from attendance history
                                     const studentRecords = attendanceHistory.reduce((acc, day) => {
-                                        const record = day.records.find(r => r.student._id === s._id);
+                                        const records = day.records || [];
+                                        const record = records.find(r => r.student?._id === s._id);
                                         if (record) acc.push(record);
                                         return acc;
                                     }, []);
@@ -406,10 +407,10 @@ const BatchDetail = () => {
                                         <div key={day.date} className="border rounded-lg overflow-hidden">
                                             <div className="bg-slate-50 px-4 py-2 border-b flex justify-between items-center">
                                                 <span className="font-semibold">{new Date(day.date).toLocaleDateString()}</span>
-                                                <Badge variant="outline">{day.records.length} Records</Badge>
+                                                <Badge variant="outline">{(day.records || []).length} Records</Badge>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-4">
-                                                {day.records.map((r) => (
+                                                {(day.records || []).map((r) => (
                                                     <div key={r._id} className="flex justify-between items-center p-2 border rounded">
                                                         <span className="text-sm truncate mr-2">{r.student?.user?.fullName}</span>
                                                         <Badge
