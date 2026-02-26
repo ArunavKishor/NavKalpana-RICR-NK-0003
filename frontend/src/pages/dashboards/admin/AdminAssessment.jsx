@@ -18,6 +18,7 @@ import Modal from "@/components/admin/AdminModal";
 import AssessmentForm from "@/components/admin/AdminAssessmentForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
 import SubmissionListModal from "@/components/admin/AdminSubmissionListModal";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AssessmentManagement = () => {
   const [activeTab, setActiveTab] = useState("assignments");
@@ -104,6 +105,45 @@ const AssessmentManagement = () => {
     }
   };
 
+  if (loading && assignments.length === 0 && quizzes.length === 0) {
+    return (
+      <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 max-w-[1600px] mx-auto">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="flex flex-col lg:flex-row justify-between gap-4">
+          <Skeleton className="h-10 w-48 rounded-lg" />
+          <Skeleton className="h-10 w-64 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex justify-between gap-3">
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-12 w-full" />
+                <div className="flex gap-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="flex justify-between pt-3 border-t">
+                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 max-w-[1600px] mx-auto">
       {/* Header */}
@@ -131,21 +171,19 @@ const AssessmentManagement = () => {
         <div className="flex bg-white border rounded-lg p-1 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab("assignments")}
-            className={`flex-1 px-4 py-2 rounded-md text-sm ${
-              activeTab === "assignments"
+            className={`flex-1 px-4 py-2 rounded-md text-sm ${activeTab === "assignments"
                 ? "bg-blue-50 text-blue-600"
                 : "text-slate-600"
-            }`}
+              }`}
           >
             Assignments
           </button>
           <button
             onClick={() => setActiveTab("quizzes")}
-            className={`flex-1 px-4 py-2 rounded-md text-sm ${
-              activeTab === "quizzes"
+            className={`flex-1 px-4 py-2 rounded-md text-sm ${activeTab === "quizzes"
                 ? "bg-blue-50 text-blue-600"
                 : "text-slate-600"
-            }`}
+              }`}
           >
             Quizzes
           </button>

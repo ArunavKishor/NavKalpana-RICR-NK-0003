@@ -21,7 +21,7 @@ const TeacherDashboardHeader = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const roleLabel = user?.role

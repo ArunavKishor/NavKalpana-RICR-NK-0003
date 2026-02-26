@@ -24,6 +24,8 @@ import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 const StudentManagement = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -56,17 +58,14 @@ const StudentManagement = () => {
     }
   }, [searchParams]);
 
-  /* ---------------- COUNTS ---------------- */
   const total = counts.total;
   const ongoing = counts.active;
   const completed = counts.completed;
 
-  /* ---------------- UNIQUE COURSES ---------------- */
   const uniqueCourses = useMemo(() => {
     return ["All", ...new Set(students.map((s) => s.course).filter(Boolean))];
   }, [students]);
 
-  /* ---------------- FILTER LOGIC ---------------- */
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
       const matchesTab = student.status === activeTab;
@@ -106,7 +105,6 @@ const StudentManagement = () => {
     loadCounts();
   }, []);
 
-  /* ---------------- FETCH DATA ---------------- */
   const loadStudents = async () => {
     try {
       setLoading(true);
@@ -158,7 +156,7 @@ const StudentManagement = () => {
       console.error("Load students failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load students. Please try again.",
+        "Failed to load students. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -268,13 +266,59 @@ const StudentManagement = () => {
     return "bg-red-100 text-red-700";
   };
 
+  if (loading && students.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-100">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-64" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+            <div className="flex gap-4">
+              <Skeleton className="h-10 w-32" />
+              <div className="flex gap-3">
+                <Skeleton className="h-20 w-32 rounded-xl" />
+                <Skeleton className="h-20 w-32 rounded-xl" />
+                <Skeleton className="h-20 w-32 rounded-xl" />
+              </div>
+            </div>
+          </div>
+          <Card className="bg-white shadow-sm rounded-xl p-6">
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 w-56" />
+              </div>
+              <div className="flex gap-3">
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-32" />
+              </div>
+            </div>
+          </Card>
+          <Card className="bg-white shadow-sm rounded-xl">
+            <div className="space-y-4 p-6">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-8 w-10" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {loading && (
-          <div className="text-sm text-slate-500">Loading students...</div>
-        )}
-
         {error && (
           <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
             {error}
@@ -382,13 +426,13 @@ const StudentManagement = () => {
               <div className="col-span-1 text-right">ACTIONS</div>
             </div>
 
-            {filteredStudents.length === 0 && (
+            {filteredStudents.length === 0 && !loading && (
               <div className="p-10 text-center text-slate-500">
                 No students found.
               </div>
             )}
 
-            {filteredStudents.map((student) => (
+            {!loading && filteredStudents.map((student) => (
               <div key={student.id} className="border-b last:border-0">
                 {/* Desktop Row */}
                 <div className="hidden lg:grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition">
@@ -604,9 +648,8 @@ const StudentManagement = () => {
 const StatCard = ({ icon, label, value, onClick, active }) => (
   <div
     onClick={onClick}
-    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${
-      onClick ? "cursor-pointer hover:shadow-md" : ""
-    } ${active ? "ring-2 ring-blue-500" : ""}`}
+    className={`bg-white shadow-sm rounded-xl px-6 py-4 flex items-center gap-4 min-w-35 transition-all ${onClick ? "cursor-pointer hover:shadow-md" : ""
+      } ${active ? "ring-2 ring-blue-500" : ""}`}
   >
     <div className="p-2 bg-slate-100 rounded-lg">{icon}</div>
     <div>
@@ -619,9 +662,8 @@ const StatCard = ({ icon, label, value, onClick, active }) => (
 const ToggleButton = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-      active ? "bg-slate-200" : "bg-white border"
-    }`}
+    className={`px-5 py-2 rounded-lg text-sm font-medium transition ${active ? "bg-slate-200" : "bg-white border"
+      }`}
   >
     {children}
   </button>

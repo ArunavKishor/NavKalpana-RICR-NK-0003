@@ -15,6 +15,7 @@ import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import AttendanceModal from "@/components/teacher/AttendanceModal";
 
 const TeacherBatchManagement = () => {
@@ -180,11 +181,10 @@ const TeacherBatchManagement = () => {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${
-                activeFilter === filter
-                  ? "bg-indigo-600 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
+              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${activeFilter === filter
+                ? "bg-indigo-600 text-white"
+                : "text-slate-600 hover:bg-slate-100"
+                }`}
             >
               {filter}
             </button>
@@ -206,8 +206,27 @@ const TeacherBatchManagement = () => {
 
       {/* LOADING */}
       {loading && (
-        <div className="text-center py-16 text-slate-500 text-sm">
-          Loading batches...
+        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <Card key={i} className="shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[400px]">
+              <Skeleton className="h-40 xs:h-44 sm:h-48 md:h-52 w-full" />
+              <CardContent className="p-4 sm:p-5 space-y-4 flex flex-col flex-1">
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-2.5 w-full rounded-full" />
+                </div>
+                <div className="mt-auto pt-3 grid grid-cols-2 gap-2">
+                  <Skeleton className="h-9 w-full rounded-lg" />
+                  <Skeleton className="h-9 w-full rounded-lg" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -271,9 +290,9 @@ const TeacherBatchManagement = () => {
                     <span className="font-medium text-slate-700">
                       {batch.startDate
                         ? new Date(batch.startDate).toLocaleDateString(
-                            "en-US",
-                            { month: "short", year: "numeric" },
-                          )
+                          "en-US",
+                          { month: "short", year: "numeric" },
+                        )
                         : "N/A"}
                     </span>
                   </div>

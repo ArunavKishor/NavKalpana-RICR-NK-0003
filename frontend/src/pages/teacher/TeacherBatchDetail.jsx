@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import AttendanceModal from "@/components/teacher/AttendanceModal";
 import {
@@ -242,10 +243,49 @@ const TeacherBatchDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-          <p className="mt-4 text-slate-600">Loading batch details...</p>
+      <div className="w-full space-y-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center gap-3 mb-6">
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48 rounded" />
+            <Skeleton className="h-4 w-32 rounded" />
+          </div>
+          <Skeleton className="ml-auto h-10 w-40 rounded-lg" />
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 flex items-center gap-4">
+              <Skeleton className="w-12 h-12 rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-6 w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="border-b border-slate-200">
+          <div className="flex gap-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-10 w-24 rounded-t-lg" />
+            ))}
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-full rounded" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -341,8 +381,8 @@ const TeacherBatchDetail = () => {
           <button
             onClick={() => setActiveTab("details")}
             className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "details"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
               }`}
           >
             Batch Details
@@ -350,8 +390,8 @@ const TeacherBatchDetail = () => {
           <button
             onClick={() => setActiveTab("mark-attendance")}
             className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "mark-attendance"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
               }`}
           >
             Mark Attendance
@@ -359,8 +399,8 @@ const TeacherBatchDetail = () => {
           <button
             onClick={() => setActiveTab("manage-content")}
             className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "manage-content"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
               }`}
           >
             Manage Content
@@ -368,8 +408,8 @@ const TeacherBatchDetail = () => {
           <button
             onClick={() => setActiveTab("attendance-history")}
             className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "attendance-history"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
               }`}
           >
             History
@@ -377,8 +417,8 @@ const TeacherBatchDetail = () => {
           <button
             onClick={() => setActiveTab("analytics")}
             className={`px-4 py-3 font-medium border-b-2 transition-all ${activeTab === "analytics"
-                ? "text-blue-600 border-blue-600"
-                : "text-slate-600 border-transparent hover:text-slate-900"
+              ? "text-blue-600 border-blue-600"
+              : "text-slate-600 border-transparent hover:text-slate-900"
               }`}
           >
             Analytics
@@ -464,12 +504,12 @@ const TeacherBatchDetail = () => {
                             handleAttendanceStatusChange(student._id, status)
                           }
                           className={`px-3 py-1 rounded text-xs font-medium transition-all ${attendanceForm[student._id] === status
-                              ? status === "present"
-                                ? "bg-emerald-500 text-white"
-                                : status === "absent"
-                                  ? "bg-red-500 text-white"
-                                  : "bg-yellow-500 text-white"
-                              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                            ? status === "present"
+                              ? "bg-emerald-500 text-white"
+                              : status === "absent"
+                                ? "bg-red-500 text-white"
+                                : "bg-yellow-500 text-white"
+                            : "bg-slate-200 text-slate-700 hover:bg-slate-300"
                             }`}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -609,10 +649,10 @@ const TeacherBatchDetail = () => {
                       <td className="px-4 py-3">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-semibold ${record.status === "present"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : record.status === "absent"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : record.status === "absent"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
                             }`}
                         >
                           {record.status.charAt(0).toUpperCase() +
@@ -651,12 +691,12 @@ const TeacherBatchDetail = () => {
                       key={status}
                       onClick={() => setEditStatus(status)}
                       className={`px-3 py-1 rounded text-xs font-medium transition-all ${editStatus === status
-                          ? status === "present"
-                            ? "bg-emerald-500 text-white"
-                            : status === "absent"
-                              ? "bg-red-500 text-white"
-                              : "bg-yellow-500 text-white"
-                          : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                        ? status === "present"
+                          ? "bg-emerald-500 text-white"
+                          : status === "absent"
+                            ? "bg-red-500 text-white"
+                            : "bg-yellow-500 text-white"
+                        : "bg-slate-200 text-slate-700 hover:bg-slate-300"
                         }`}
                     >
                       {status.charAt(0).toUpperCase() + status.slice(1)}

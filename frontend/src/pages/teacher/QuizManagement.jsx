@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -302,8 +303,28 @@ const QuizManagement = () => {
         {/* Quizzes List */}
         <div>
           {loading ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 border border-slate-200 text-center">
-              <p className="text-slate-600">Loading quizzes...</p>
+            <div className="grid gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-7 w-1/2 rounded" />
+                      <Skeleton className="h-4 w-1/3 rounded" />
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {[1, 2, 3, 4, 5].map((j) => (
+                      <Skeleton key={j} className="h-4 w-full" />
+                    ))}
+                  </div>
+                  <div className="flex gap-3 pt-4 border-t border-slate-100">
+                    <Skeleton className="h-11 flex-1 rounded-xl" />
+                    <Skeleton className="h-11 flex-1 rounded-xl" />
+                    <Skeleton className="h-11 flex-1 rounded-xl" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : quizzes.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 border border-slate-200 text-center">

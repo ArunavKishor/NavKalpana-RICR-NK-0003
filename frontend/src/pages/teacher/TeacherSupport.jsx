@@ -12,6 +12,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
@@ -171,7 +172,7 @@ const TeacherSupport = () => {
       console.error("Load support requests failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load support requests. Please try again.",
+        "Failed to load support requests. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -347,9 +348,9 @@ const TeacherSupport = () => {
         prev.map((req) =>
           req._id === activeRequest._id
             ? {
-                ...req,
-                responses: [...(req.responses || []), newReply],
-              }
+              ...req,
+              responses: [...(req.responses || []), newReply],
+            }
             : req,
         ),
       );
@@ -357,9 +358,9 @@ const TeacherSupport = () => {
       setActiveRequest((prev) =>
         prev
           ? {
-              ...prev,
-              responses: [...(prev.responses || []), newReply],
-            }
+            ...prev,
+            responses: [...(prev.responses || []), newReply],
+          }
           : prev,
       );
 
@@ -424,10 +425,6 @@ const TeacherSupport = () => {
 
   return (
     <div className="space-y-6">
-      {loading && (
-        <div className="text-sm text-slate-500">Loading requests...</div>
-      )}
-
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
           {error}
@@ -459,21 +456,25 @@ const TeacherSupport = () => {
           icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
           label="Total (filtered)"
           value={stats.total}
+          loading={loading}
         />
         <StatsCard
           icon={<AlertCircle className="w-5 h-5 text-red-600" />}
           label="Urgent"
           value={stats.urgent}
+          loading={loading}
         />
         <StatsCard
           icon={<Clock className="w-5 h-5 text-yellow-600" />}
           label="Avg Response"
           value={supportStats.avgResponseTime}
+          loading={loading}
         />
         <StatsCard
           icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
           label="Resolution Rate"
           value={`${supportStats.resolutionRate}%`}
+          loading={loading}
         />
       </div>
 
@@ -498,11 +499,10 @@ const TeacherSupport = () => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeFilter === filter
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeFilter === filter
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-50"
+                  }`}
               >
                 {filter}
               </button>
@@ -561,7 +561,42 @@ const TeacherSupport = () => {
 
       {/* Requests List */}
       <div className="space-y-4">
-        {filteredRequests.length === 0 ? (
+        {loading ? (
+          [1, 2, 3].map((i) => (
+            <Card key={i} className="border-none shadow-sm">
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <Skeleton className="h-5 w-20" />
+                      <Skeleton className="h-5 w-24" />
+                    </div>
+                    <Skeleton className="h-7 w-3/4" />
+                  </div>
+                  <Skeleton className="h-6 w-24" />
+                </div>
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-4 w-40" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-9 w-20" />
+                    <Skeleton className="h-9 w-28" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : filteredRequests.length === 0 ? (
           <Card className="border-none shadow-sm">
             <CardContent className="p-12 text-center">
               <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
@@ -650,12 +685,12 @@ const TeacherSupport = () => {
                         <span className="text-[10px] text-slate-400">
                           {lastReply.createdAt
                             ? new Date(lastReply.createdAt).toLocaleString(
-                                "en-US",
-                                {
-                                  dateStyle: "short",
-                                  timeStyle: "short",
-                                },
-                              )
+                              "en-US",
+                              {
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              },
+                            )
                             : ""}
                         </span>
                       </div>
@@ -740,9 +775,9 @@ const TeacherSupport = () => {
                       <span className="text-[10px] text-slate-400">
                         {resp.createdAt
                           ? new Date(resp.createdAt).toLocaleString("en-US", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })
                           : ""}
                       </span>
                     </div>
@@ -1023,15 +1058,19 @@ const TeacherSupport = () => {
   );
 };
 
-const StatsCard = ({ icon, label, value }) => (
+const StatsCard = ({ icon, label, value, loading }) => (
   <Card className="border-none shadow-sm">
     <CardContent className="p-4 sm:p-5 flex items-center gap-4">
       <div className="p-2.5 bg-slate-100 rounded-lg shrink-0">{icon}</div>
-      <div>
+      <div className="flex-1">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
           {label}
         </p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
+        {loading ? (
+          <Skeleton className="h-8 w-16 mt-1" />
+        ) : (
+          <p className="text-2xl font-bold text-slate-900">{value}</p>
+        )}
       </div>
     </CardContent>
   </Card>

@@ -32,6 +32,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TeacherAssessmentManagement = () => {
@@ -278,14 +279,41 @@ const TeacherAssessmentManagement = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-lg border border-slate-200 p-4 animate-pulse"
-            >
-              <div className="h-5 bg-slate-200 rounded mb-2 w-1/3"></div>
-              <div className="h-4 bg-slate-100 rounded w-2/3"></div>
+            <div key={i} className="bg-white rounded-2xl shadow-premium border border-slate-100 p-6 md:p-8 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-64 rounded-lg" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full max-w-2xl rounded" />
+                    <Skeleton className="h-4 w-3/4 max-w-xl rounded" />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Skeleton className="h-8 w-40 rounded-lg" />
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                    <Skeleton className="h-8 w-32 rounded-lg" />
+                  </div>
+                </div>
+                <div className="flex flex-row md:flex-col gap-3">
+                  <Skeleton className="h-11 w-32 rounded-xl" />
+                  <Skeleton className="h-11 w-32 rounded-xl" />
+                </div>
+              </div>
+              <div className="pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                    <Skeleton className="h-3 w-16 mb-2" />
+                    <Skeleton className="h-8 w-12" />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
