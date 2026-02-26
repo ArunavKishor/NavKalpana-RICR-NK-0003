@@ -249,7 +249,7 @@ const buildWeeklySnapshotsForStudent = async (studentId, weeks = 8) => {
     const snapshot = await WeeklySnapshot.findOneAndUpdate(
       { student: studentObjectId, weekStart },
       payload,
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
     );
 
     existingSnapshots.push(snapshot);
@@ -687,7 +687,19 @@ export const getTeacherClassAnalytics = async (req, res) => {
       });
     }
 
-    const overallClassOgi =
+    const averageAttendance =
+      studentsAnalytics.length === 0
+        ? 0
+        : Number(
+            (
+              studentsAnalytics.reduce(
+                (s, st) => s + (st.attendancePercentage || 0),
+                0,
+              ) / studentsAnalytics.length
+            ).toFixed(2),
+          );
+
+    const averageOgi =
       studentsAnalytics.length === 0
         ? 0
         : Number(
@@ -705,7 +717,8 @@ export const getTeacherClassAnalytics = async (req, res) => {
           averageAssignmentScore,
           submissionConsistency,
           moduleCompletionRate,
-          overallClassOgi,
+          averageOgi,
+          averageAttendance,
         },
         moduleAttendanceComparison,
         weeklyActivityTrend,
