@@ -1,13 +1,13 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
+import PageLoader from "@/components/common/PageLoader";
 import DashboardLayout from "./components/dashboard/DashboardMainLayout";
 import DashboardHome from "./pages/dashboards/admin/AdminDashboardHome";
 import Login from "./pages/Login";
 import {
   BatchManagement,
-  AssessmentManagement,
   StudentManagement,
   SupportRequests,
   BatchDetail,
@@ -25,7 +25,6 @@ import QuizManagement from "./pages/teacher/QuizManagement";
 import TeacherSupport from "./pages/teacher/TeacherSupport";
 import TeacherAccount from "./pages/teacher/TeacherAccount";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 
 const App = () => {
   return (
@@ -53,10 +52,8 @@ const App = () => {
             <Route path="batches/:batchId" element={<BatchDetail />} />
             <Route path="teachers" element={<TeacherManagement />} />
             <Route path="students" element={<StudentManagement />} />
-            <Route path="assessments" element={<AssessmentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
-
 
           {/* Teacher Dashboard Routes (Admin can view too) */}
           <Route
@@ -80,8 +77,6 @@ const App = () => {
             <Route path="support" element={<TeacherSupport />} />
             <Route path="account" element={<TeacherAccount />} />
           </Route>
-
-
         </Routes>
       </AuthProvider>
     </BrowserRouter>

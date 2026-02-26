@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 
@@ -161,8 +162,44 @@ const BatchDetail = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+                {/* Header Skeleton */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="w-10 h-10 rounded-lg" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-6 w-20" />
+                </div>
+
+                {/* Tabs Skeleton */}
+                <div className="w-full space-y-6">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <Skeleton key={i} className="h-12 w-full" />
+                        ))}
+                    </div>
+
+                    <Card>
+                        <CardContent className="p-6 space-y-6">
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-7 w-48" />
+                                <Skeleton className="h-10 w-32" />
+                            </div>
+                            <div className="space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="p-4 bg-slate-50 rounded-lg border space-y-3">
+                                        <Skeleton className="h-9 w-full" />
+                                        <Skeleton className="h-24 w-full" />
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         );
     }

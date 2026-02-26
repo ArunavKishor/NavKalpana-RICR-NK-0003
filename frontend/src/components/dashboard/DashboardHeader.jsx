@@ -1,7 +1,6 @@
 import React from "react";
-import { ChevronDown, Menu, User } from "lucide-react";
+import { ChevronDown, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,15 +12,16 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getGreeting } from "@/lib/utils";
+import { MobileSidebar } from "./Sidebar";
 
-const DashboardHeader = ({ toggleSidebar }) => {
+const DashboardHeader = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const greeting = getGreeting();
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const roleLabel =
@@ -32,22 +32,15 @@ const DashboardHeader = ({ toggleSidebar }) => {
         : "Staff";
 
   return (
-    <header className="h-16 sm:h-20 bg-card border-b border-border flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 shadow-premium">
-      {/* Left — Greeting */}
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="text-slate-500 hover:text-slate-900"
-        >
-          <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-        </Button>
+    <header className="h-16 sm:h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30 transition-all duration-300">
+      {/* Left — Greeting & Mobile Menu */}
+      <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+        <MobileSidebar />
 
         <div className="truncate">
-          <h2 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
+          <h2 className="text-lg sm:text-2xl font-black text-[#0F4C5C] tracking-tight truncate">
             {greeting},{" "}
-            <span className="text-primary capitalize">
+            <span className="text-primary capitalize opacity-80">
               {user?.fullName?.split(" ")[0] || user?.role || "User"}
             </span>
           </h2>

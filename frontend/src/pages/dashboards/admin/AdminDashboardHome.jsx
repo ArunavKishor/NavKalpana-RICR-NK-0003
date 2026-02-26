@@ -24,6 +24,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 /* ------------------ COMPONENT ------------------ */
 
 const DashboardHome = () => {
@@ -137,6 +139,31 @@ const DashboardHome = () => {
     return () => clearInterval(intervalRef.current);
   }, []);
 
+  if (loading && stats.length === 0) {
+    return (
+      <div className="p-5 lg:p-7 space-y-8 max-w-7xl mx-auto">
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-xl shadow-premium" />
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="lg:col-span-2 h-80 rounded-2xl shadow-premium" />
+          <div className="space-y-4">
+            <Skeleton className="h-40 rounded-2xl shadow-premium" />
+            <Skeleton className="h-40 rounded-2xl shadow-premium" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-5 lg:p-7 space-y-6 max-w-7xl mx-auto">
       {/* ---------------- HEADER ---------------- */}
@@ -148,13 +175,6 @@ const DashboardHome = () => {
           Here's what's happening across your institution today.
         </p>
       </div>
-
-      {loading && (
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin inline-block" />
-          Loading dashboard data...
-        </div>
-      )}
 
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border rounded-lg p-3">

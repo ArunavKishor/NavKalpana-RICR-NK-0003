@@ -304,7 +304,7 @@ export const upsertQuizQuestions = async (req, res) => {
         const updated = await QuizQuestion.findOneAndUpdate(
           { _id: q._id, assessment: assessment._id },
           payload,
-          { new: true },
+          { returnDocument: "after" },
         );
         if (updated) createdOrUpdated.push(updated);
       } else {

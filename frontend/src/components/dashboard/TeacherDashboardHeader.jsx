@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getGreeting } from "@/lib/utils";
+import { MobileTeacherSidebar } from "@/components/teacher/TeacherDashboardSidebar";
 
 const TeacherDashboardHeader = () => {
   const { user, logout } = useAuth();
@@ -20,7 +21,7 @@ const TeacherDashboardHeader = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const roleLabel = user?.role
@@ -28,15 +29,19 @@ const TeacherDashboardHeader = () => {
     : "Teacher";
 
   return (
-    <header className="h-16 sm:h-20 bg-card border-b border-border flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 shadow-premium">
-      {/* Left Section — Greeting */}
-      <div className="truncate">
-        <h2 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
-          {greeting},{" "}
-          <span className="text-primary">
-            {user?.fullName?.split(" ")[0] || "Teacher"}
-          </span>
-        </h2>
+    <header className="h-16 sm:h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-30 transition-all duration-300">
+      {/* Left Section — Greeting & Mobile Menu */}
+      <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+        <MobileTeacherSidebar />
+
+        <div className="truncate">
+          <h2 className="text-lg sm:text-2xl font-black text-[#0F4C5C] tracking-tight truncate">
+            {greeting},{" "}
+            <span className="text-primary capitalize opacity-80">
+              {user?.fullName?.split(" ")[0] || "Teacher"}
+            </span>
+          </h2>
+        </div>
       </div>
 
       {/* Right Section — Profile Dropdown */}

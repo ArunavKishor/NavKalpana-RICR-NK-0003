@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import Modal from "@/components/admin/AdminModal";
 import SupportRequestForm from "@/components/admin/AdminSupportForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const SupportRequests = () => {
   const [searchParams] = useSearchParams();
@@ -96,7 +97,7 @@ const SupportRequests = () => {
       console.error("Load support requests failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load support requests. Please try again.",
+        "Failed to load support requests. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -187,7 +188,7 @@ const SupportRequests = () => {
       console.error("Delete support request failed:", err);
       toast.error(
         err.response?.data?.message ||
-          "Failed to delete support request. Please try again.",
+        "Failed to delete support request. Please try again.",
         { duration: 5000 },
       );
     } finally {
@@ -258,12 +259,76 @@ const SupportRequests = () => {
     }
   };
 
+  if (loading && requests.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="p-5 flex items-center gap-4">
+              <Skeleton className="h-10 w-10 rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-6 w-12" />
+              </div>
+            </Card>
+          ))}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6 space-y-4">
+              <div className="flex justify-between">
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                  <Skeleton className="h-8 w-64" />
+                </div>
+                <Skeleton className="h-8 w-24" />
+              </div>
+              <div className="flex items-center gap-3 py-4 border-y">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <Skeleton className="h-12 w-full" />
+              <div className="flex justify-between">
+                <div className="flex gap-4">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {loading && (
-        <div className="text-sm text-slate-500">Loading requests...</div>
-      )}
-
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
           {error}
@@ -334,11 +399,10 @@ const SupportRequests = () => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  activeFilter === filter
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeFilter === filter
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-50"
+                  }`}
               >
                 {filter}
               </button>

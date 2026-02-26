@@ -90,16 +90,11 @@ const Login = () => {
 
   return (
     <>
-      <div className="relative min-h-screen flex flex-col items-center justify-center bg-background px-3 sm:px-4 py-4 sm:py-6">
+      <div className="relative min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 py-4 sm:py-6 overflow-hidden">
         {/* Background Grid Layer */}
-        <div
-          className="absolute inset-0 -z-10 h-full w-full"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, oklch(0.90 0.01 255.4 / 0.5) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.90 0.01 255.4 / 0.5) 1px, transparent 1px)",
-            backgroundSize: "6rem 4rem",
-          }}
-        />
+        <div className="absolute inset-0 -z-10 bg-white">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+        </div>
 
         <div className="w-full max-w-md flex-1 flex flex-col justify-center">
           {/* Logo Mark */}
@@ -110,18 +105,9 @@ const Login = () => {
             className="flex flex-col items-center mb-8"
           >
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium mb-3"
-              style={{ backgroundColor: "var(--primary)" }}
+              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-premium mb-3 bg-white"
             >
-              <span
-                className="text-xl font-bold tracking-tight select-none"
-                style={{
-                  color: "var(--primary-foreground)",
-                  fontFamily: "'Outfit', sans-serif",
-                }}
-              >
-                MR
-              </span>
+              <img src="/logo.png" alt="MindRise Logo" className="w-16 h-16 object-contain" />
             </div>
             <h1
               className="text-2xl font-bold text-foreground tracking-tight"

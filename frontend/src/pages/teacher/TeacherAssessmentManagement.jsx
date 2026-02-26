@@ -32,6 +32,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TeacherAssessmentManagement = () => {
@@ -208,19 +209,22 @@ const TeacherAssessmentManagement = () => {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-8 animate-in fade-in duration-700">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight font-heading">
             Assessment Management
           </h1>
           <p className="text-slate-500 mt-1">
-            Create and manage assignments and quizzes
+            Create, track and evaluate student assignments
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="w-full md:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button
+          onClick={() => setShowForm(true)}
+          className="w-full md:w-auto py-6 px-8 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] hover:shadow-lg text-white font-bold rounded-2xl flex items-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5"
+        >
+          <Plus className="w-5 h-5" />
           Create Assessment
         </Button>
       </div>
@@ -233,54 +237,83 @@ const TeacherAssessmentManagement = () => {
       </div>
 
       {/* Search + Module + Lesson Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+        <div className="sm:col-span-6 relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
           <Input
-            placeholder="Search assessments..."
+            placeholder="Search by title or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white"
+            className="pl-12 bg-slate-50 border-none h-12 rounded-xl focus-visible:ring-primary focus-visible:bg-white transition-all"
           />
         </div>
-        {moduleOptions.length > 1 && (
-          <select
-            value={selectedModule}
-            onChange={(e) => setSelectedModule(e.target.value)}
-            className="sm:w-52 px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {moduleOptions.map((m) => (
-              <option key={m} value={m}>
-                {m === "All" ? "All Modules" : m}
-              </option>
-            ))}
-          </select>
-        )}
-        {lessonOptions.length > 1 && (
-          <select
-            value={selectedLesson}
-            onChange={(e) => setSelectedLesson(e.target.value)}
-            className="sm:w-52 px-4 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {lessonOptions.map((l) => (
-              <option key={l} value={l}>
-                {l === "All" ? "All Lessons" : l}
-              </option>
-            ))}
-          </select>
-        )}
+        <div className="sm:col-span-3">
+          <Select value={selectedModule} onValueChange={setSelectedModule}>
+            <SelectTrigger className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary">
+              <SelectValue placeholder="All Modules" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 shadow-lg">
+              {moduleOptions.map((m) => (
+                <SelectItem key={m} value={m} className="rounded-lg">
+                  {m === "All" ? "All Modules" : m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="sm:col-span-3">
+          <Select value={selectedLesson} onValueChange={setSelectedLesson}>
+            <SelectTrigger className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary">
+              <SelectValue placeholder="All Lessons" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 shadow-lg">
+              {lessonOptions.map((l) => (
+                <SelectItem key={l} value={l} className="rounded-lg">
+                  {l === "All" ? "All Lessons" : l}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Loading State */}
       {loading && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-lg border border-slate-200 p-4 animate-pulse"
-            >
-              <div className="h-5 bg-slate-200 rounded mb-2 w-1/3"></div>
-              <div className="h-4 bg-slate-100 rounded w-2/3"></div>
+            <div key={i} className="bg-white rounded-2xl shadow-premium border border-slate-100 p-6 md:p-8 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-64 rounded-lg" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full max-w-2xl rounded" />
+                    <Skeleton className="h-4 w-3/4 max-w-xl rounded" />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Skeleton className="h-8 w-40 rounded-lg" />
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                    <Skeleton className="h-8 w-32 rounded-lg" />
+                  </div>
+                </div>
+                <div className="flex flex-row md:flex-col gap-3">
+                  <Skeleton className="h-11 w-32 rounded-xl" />
+                  <Skeleton className="h-11 w-32 rounded-xl" />
+                </div>
+              </div>
+              <div className="pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                    <Skeleton className="h-3 w-16 mb-2" />
+                    <Skeleton className="h-8 w-12" />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -302,89 +335,98 @@ const TeacherAssessmentManagement = () => {
             filteredAssessments.map((assessment) => (
               <motion.div
                 key={assessment._id}
-                whileHover={{ x: 4 }}
-                className="bg-white rounded-lg border border-slate-200 hover:shadow-md transition-all"
+                whileHover={{ y: -4 }}
+                className="bg-white rounded-2xl shadow-premium border border-slate-100/50 hover:border-primary/20 transition-all duration-300 overflow-hidden"
               >
-                <div className="p-4 md:p-6">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-bold text-slate-900">
+                <div className="p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                           {assessment.title}
                         </h3>
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${assessment.status === "active"
-                              ? "bg-emerald-100 text-emerald-700"
+                        <div className="flex gap-2">
+                          <span
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${assessment.status === "active"
+                              ? "bg-emerald-50 text-emerald-600"
                               : assessment.status === "draft"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-slate-100 text-slate-700"
-                            }`}
-                        >
-                          {assessment.status || "active"}
-                        </span>
-                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                          {activeTab === "assignments" ? "Assignment" : "Quiz"}
-                        </span>
+                                ? "bg-amber-50 text-amber-600"
+                                : "bg-slate-50 text-slate-500"
+                              }`}
+                          >
+                            {assessment.status || "active"}
+                          </span>
+                          <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary/5 text-primary">
+                            {activeTab === "assignments" ? "Assignment" : "Quiz"}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-slate-600 text-sm mb-3">
+                      <p className="text-slate-500 text-sm leading-relaxed max-w-2xl">
                         {assessment.description}
                       </p>
-                      <div className="flex flex-wrap gap-4 text-xs text-slate-600">
-                        <span>
-                          Due:{" "}
-                          {new Date(assessment.dueDate).toLocaleDateString()}
-                        </span>
-                        <span>Marks: {assessment.totalMarks}</span>
-                        {activeTab === "assignments" && (
+
+                      <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-400">
+                        <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                          <Clock className="w-3.5 h-3.5" />
                           <span>
-                            Type: {assessment.submissionType || "PDF"}
+                            Due: {new Date(assessment.dueDate).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>{assessment.totalMarks} Marks</span>
+                        </div>
+                        {activeTab === "assignments" && (
+                          <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 uppercase tracking-tighter">
+                            <span>Format: {assessment.submissionType || "PDF"}</span>
+                          </div>
                         )}
                         {activeTab === "quizzes" && (
-                          <span>Duration: {assessment.duration || 0} mins</span>
+                          <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                            <span>{assessment.duration || 0} mins</span>
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex gap-2 md:gap-3">
+                    <div className="flex flex-row md:flex-col gap-3">
                       <Button
                         onClick={() => handleViewSubmissions(assessment)}
                         variant="outline"
-                        size="sm"
-                        className="whitespace-nowrap"
+                        className="rounded-xl border-slate-200 hover:bg-primary/5 hover:border-primary/30 hover:text-primary transition-all font-bold h-11 px-6 shadow-sm"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
+                        <Eye className="w-4 h-4 mr-2" />
+                        Submissions
                       </Button>
                       <Button
                         onClick={() => handleDelete(assessment._id)}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50 whitespace-nowrap"
+                        variant="ghost"
+                        className="rounded-xl text-red-500 hover:bg-red-50 transition-all font-bold h-11 px-6"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
                       </Button>
                     </div>
                   </div>
 
                   {/* Submissions Stats */}
                   {activeTab === "assignments" && (
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex gap-6 text-xs">
-                      <div>
-                        <p className="text-slate-600">Submitted</p>
-                        <p className="text-lg font-bold text-emerald-600">
+                    <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+                      <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/50">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600/70 mb-1">Submitted</p>
+                        <p className="text-2xl font-black text-emerald-600">
                           {assessment.submissionStats?.submitted || 0}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-slate-600">Pending</p>
-                        <p className="text-lg font-bold text-yellow-600">
+                      <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-100/50">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-600/70 mb-1">Pending</p>
+                        <p className="text-2xl font-black text-amber-600">
                           {assessment.submissionStats?.pending || 0}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-slate-600">Evaluated</p>
-                        <p className="text-lg font-bold text-blue-600">
+                      <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-blue-600/70 mb-1">Evaluated</p>
+                        <p className="text-2xl font-black text-blue-600">
                           {assessment.submissionStats?.evaluated || 0}
                         </p>
                       </div>
@@ -393,22 +435,22 @@ const TeacherAssessmentManagement = () => {
 
                   {/* Quiz Stats */}
                   {activeTab === "quizzes" && (
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex gap-6 text-xs">
-                      <div>
-                        <p className="text-slate-600">Attempts</p>
-                        <p className="text-lg font-bold">
+                    <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Attempts</p>
+                        <p className="text-2xl font-black text-slate-900">
                           {assessment.attempts || 0}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-slate-600">Avg Score</p>
-                        <p className="text-lg font-bold">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Avg Score</p>
+                        <p className="text-2xl font-black text-slate-900">
                           {assessment.averageScore?.toFixed(1) || "N/A"}%
                         </p>
                       </div>
-                      <div>
-                        <p className="text-slate-600">Questions</p>
-                        <p className="text-lg font-bold">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Questions</p>
+                        <p className="text-2xl font-black text-slate-900">
                           {assessment.questions?.length || 0}
                         </p>
                       </div>
@@ -422,58 +464,70 @@ const TeacherAssessmentManagement = () => {
       )}
 
       {/* Note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-900">
-          <strong>Note:</strong> Quiz creation and management is available in
-          the Quiz Management section.
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        className="bg-[#0F4C5C]/5 border border-[#0F4C5C]/10 rounded-2xl p-6 flex items-start gap-4"
+      >
+        <div className="p-2 bg-[#0F4C5C] rounded-lg text-white">
+          <FileText className="w-5 h-5" />
+        </div>
+        <div>
+          <p className="text-sm text-[#0F4C5C] leading-relaxed">
+            <strong className="font-bold">Pro Tip:</strong> Use Assessment Management for file-based submissions.
+            For interactive testing, visit the <span className="font-bold underline cursor-pointer">Quiz Management</span> section to create automated lesson-based quizzes.
+          </p>
+        </div>
+      </motion.div>
 
       {/* Create Assessment Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              Create New {activeTab === "assignments" ? "Assignment" : "Quiz"}
+        <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-premium rounded-3xl">
+          <DialogHeader className="px-8 py-6 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] text-white">
+            <DialogTitle className="text-2xl font-bold font-heading">
+              New {activeTab === "assignments" ? "Assignment" : "Quiz"}
             </DialogTitle>
+            <p className="text-teal-50/70 text-sm mt-1">Set up clear objectives and deadlines for your students</p>
           </DialogHeader>
-          <form onSubmit={handleCreateAssessment} className="space-y-4">
+          <form onSubmit={handleCreateAssessment} className="p-8 space-y-6 bg-white overflow-y-auto max-h-[75vh]">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Title</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Assignment Title</label>
               <Input
                 required
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                placeholder="Assessment title"
+                className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium"
+                placeholder="e.g. Introduction to React Fundamentals"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Description</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Detailed Instructions</label>
               <Textarea
                 required
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Instructions for students"
+                className="bg-slate-50 border-none rounded-xl focus:ring-primary min-h-[120px] resize-none"
+                placeholder="What exactly should students do? Mention submission requirements..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Batch</label>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Target Batch</label>
                 <Select
                   onValueChange={(val) =>
                     setFormData({ ...formData, batch: val })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium">
                     <SelectValue placeholder="Select Batch" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border-slate-100 shadow-xl">
                     {batches.map((b) => (
-                      <SelectItem key={b._id} value={b._id}>
+                      <SelectItem key={b._id} value={b._id} className="rounded-lg">
                         {b.name}
                       </SelectItem>
                     ))}
@@ -481,7 +535,7 @@ const TeacherAssessmentManagement = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Due Date</label>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Due Date</label>
                 <Input
                   type="date"
                   required
@@ -489,12 +543,13 @@ const TeacherAssessmentManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, dueDate: e.target.value })
                   }
+                  className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Total Marks</label>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Maximum Marks</label>
                 <Input
                   type="number"
                   required
@@ -502,83 +557,107 @@ const TeacherAssessmentManagement = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, totalMarks: e.target.value })
                   }
+                  className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-bold text-primary"
                 />
               </div>
               {activeTab === "assignments" && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Allowed File Type
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                    Submission Format
                   </label>
                   <Select
                     onValueChange={(val) =>
                       setFormData({ ...formData, submissionType: val })
                     }
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any" />
+                    <SelectTrigger className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium">
+                      <SelectValue placeholder="PDF Default" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PDF">PDF Only</SelectItem>
-                      <SelectItem value="Image">Image Only</SelectItem>
-                      <SelectItem value="Any">Any File</SelectItem>
+                    <SelectContent className="rounded-xl border-slate-100 shadow-xl">
+                      <SelectItem value="PDF" className="rounded-lg">PDF Document</SelectItem>
+                      <SelectItem value="Image" className="rounded-lg">Image File</SelectItem>
+                      <SelectItem value="Any" className="rounded-lg">Any Attachment</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
             </div>
-            {/* Optional lesson metadata */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Lesson (optional)</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-900">Module & Lesson Info</label>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">(For organization)</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   value={formData.moduleName}
                   onChange={(e) =>
                     setFormData({ ...formData, moduleName: e.target.value })
                   }
-                  placeholder="Module / Unit"
+                  className="h-11 bg-slate-50 border-none rounded-xl focus:ring-primary text-sm font-medium"
+                  placeholder="Module Name"
                 />
                 <Input
                   value={formData.lessonName}
                   onChange={(e) =>
                     setFormData({ ...formData, lessonName: e.target.value })
                   }
-                  placeholder="Lesson name"
+                  className="h-11 bg-slate-50 border-none rounded-xl focus:ring-primary text-sm font-medium"
+                  placeholder="Lesson Name"
                 />
                 <Input
                   value={formData.lessonId}
                   onChange={(e) =>
                     setFormData({ ...formData, lessonId: e.target.value })
                   }
-                  placeholder="Lesson ID (optional)"
+                  className="h-11 bg-slate-50 border-none rounded-xl focus:ring-primary text-sm font-medium"
+                  placeholder="Lesson ID"
                 />
               </div>
             </div>
+
             {/* Cover Image Upload */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-slate-400" />
-                Cover Image (Optional)
+            <div className="space-y-2 bg-primary/5 p-4 rounded-2xl border border-primary/10">
+              <label className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <ImageIcon className="w-4 h-4" />
+                Cover Image (Recommended)
               </label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              />
-              {imageFile && (
-                <p className="text-xs text-slate-500">
-                  Selected: {imageFile.name}
-                </p>
-              )}
+              <div className="mt-2 text-center">
+                <Input
+                  type="file"
+                  id="imageUpload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                />
+                <label
+                  htmlFor="imageUpload"
+                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/20 rounded-xl cursor-pointer hover:bg-primary/5 transition-all"
+                >
+                  <Download className="w-8 h-8 text-primary/40 mb-2" />
+                  <span className="text-sm font-bold text-primary/60">
+                    {imageFile ? imageFile.name : "Click to upload banner image"}
+                  </span>
+                  <span className="text-[10px] text-slate-400 mt-1 uppercase">Supports JPG, PNG (Max 5MB)</span>
+                </label>
+              </div>
             </div>
-            <DialogFooter>
+
+            <DialogFooter className="pt-4 border-t border-slate-100 flex items-center gap-4">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setShowForm(false)}
+                className="h-12 rounded-xl px-8 font-bold text-slate-500 hover:bg-slate-100 transition-all"
               >
-                Cancel
+                Discard
               </Button>
-              <Button type="submit">Create Assessment</Button>
+              <Button
+                type="submit"
+                className="h-12 rounded-xl px-10 bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white font-black shadow-lg shadow-[#0F4C5C]/20 transition-all"
+              >
+                Publish Assessment
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
