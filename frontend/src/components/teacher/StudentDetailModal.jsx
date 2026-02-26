@@ -194,13 +194,12 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 </Badge>
                 {attPct > 0 && (
                   <Badge
-                    className={`${
-                      attPct >= 75
+                    className={`${attPct >= 75
                         ? "bg-emerald-100 text-emerald-700"
                         : attPct >= 50
                           ? "bg-yellow-100 text-yellow-700"
                           : "bg-red-100 text-red-700"
-                    }`}
+                      }`}
                   >
                     {attPct}% Attendance
                   </Badge>
@@ -211,16 +210,16 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
         </DialogHeader>
 
         <Tabs defaultValue="progress" className="mt-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="info">Course Info</TabsTrigger>
-            <TabsTrigger value="progress">Academic Progress</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-2">
+            <TabsTrigger value="info" className="w-full">Course Info</TabsTrigger>
+            <TabsTrigger value="progress" className="w-full">Academic Progress</TabsTrigger>
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
           </TabsList>
 
           {/* ── Course Info Tab (#5, #11) ── */}
           <TabsContent value="info" className="space-y-4">
             {/* Batch / Course grid */}
-            <div className="grid grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg">
               <div>
                 <p className="text-sm text-slate-500">Batch Name</p>
                 <p className="font-semibold">{batch?.name || "N/A"}</p>
@@ -352,7 +351,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
             ) : (
               <>
                 {/* Top 3 stat cards */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-4 border rounded-lg bg-blue-50">
                     <p className="text-xs text-blue-600 font-bold uppercase">
                       Overall OGI
@@ -417,7 +416,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 </div>
 
                 {/* Submission Statistics */}
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
                     {
                       label: "Total Submitted",
@@ -528,7 +527,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                     <h4 className="text-sm font-semibold text-slate-700">
                       Week-over-Week Comparison
                     </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                       <div className="p-3 bg-white rounded-lg border">
                         <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1">
                           Previous Week
@@ -671,13 +670,12 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <div
-                            className={`w-2 h-2 rounded-full shrink-0 ${
-                              record.status === "present"
+                            className={`w-2 h-2 rounded-full shrink-0 ${record.status === "present"
                                 ? "bg-emerald-500"
                                 : record.status === "absent"
                                   ? "bg-red-500"
                                   : "bg-yellow-500"
-                            }`}
+                              }`}
                           />
                           <span className="text-slate-700">
                             {new Date(record.date).toLocaleDateString("en-US", {
@@ -687,13 +685,12 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                             })}
                           </span>
                           <Badge
-                            className={`capitalize text-[10px] px-1.5 py-0 ${
-                              record.status === "present"
+                            className={`capitalize text-[10px] px-1.5 py-0 ${record.status === "present"
                                 ? "bg-emerald-50 text-emerald-600"
                                 : record.status === "absent"
                                   ? "bg-red-50 text-red-600"
                                   : "bg-yellow-50 text-yellow-600"
-                            }`}
+                              }`}
                           >
                             {record.status}
                           </Badge>

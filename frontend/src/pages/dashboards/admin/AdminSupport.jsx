@@ -264,7 +264,7 @@ const SupportRequests = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
           <div className="space-y-2">
-            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-full max-w-xs" />
             <Skeleton className="h-4 w-96" />
           </div>
           <Skeleton className="h-10 w-40" />
@@ -430,7 +430,7 @@ const SupportRequests = () => {
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
             placeholder="Filter by course..."
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white min-w-[140px]"
           />
 
           {/* Topic Filter */}
@@ -439,7 +439,7 @@ const SupportRequests = () => {
             value={filterTopic}
             onChange={(e) => setFilterTopic(e.target.value)}
             placeholder="Filter by topic..."
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white min-w-[140px]"
           />
         </div>
       </div>

@@ -285,7 +285,7 @@ const TeacherAssessmentManagement = () => {
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-64 rounded-lg" />
+                    <Skeleton className="h-8 w-full max-w-[16rem] rounded-lg" />
                     <div className="flex gap-2">
                       <Skeleton className="h-6 w-20 rounded-full" />
                       <Skeleton className="h-6 w-20 rounded-full" />
@@ -306,7 +306,7 @@ const TeacherAssessmentManagement = () => {
                   <Skeleton className="h-11 w-32 rounded-xl" />
                 </div>
               </div>
-              <div className="pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+              <div className="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {[1, 2, 3].map((j) => (
                   <div key={j} className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                     <Skeleton className="h-3 w-16 mb-2" />
@@ -411,7 +411,7 @@ const TeacherAssessmentManagement = () => {
 
                   {/* Submissions Stats */}
                   {activeTab === "assignments" && (
-                    <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+                    <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-6">
                       <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/50">
                         <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600/70 mb-1">Submitted</p>
                         <p className="text-2xl font-black text-emerald-600">
@@ -435,7 +435,7 @@ const TeacherAssessmentManagement = () => {
 
                   {/* Quiz Stats */}
                   {activeTab === "quizzes" && (
-                    <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-3 gap-6">
+                    <div className="mt-8 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-6">
                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Attempts</p>
                         <p className="text-2xl font-black text-slate-900">
@@ -514,7 +514,7 @@ const TeacherAssessmentManagement = () => {
                 placeholder="What exactly should students do? Mention submission requirements..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Target Batch</label>
                 <Select
@@ -547,7 +547,7 @@ const TeacherAssessmentManagement = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Maximum Marks</label>
                 <Input

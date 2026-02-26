@@ -374,7 +374,7 @@ const TeacherManagement = () => {
             {/* TABLE */}
             <Card className="bg-white shadow-sm rounded-xl">
               <CardContent className="p-0">
-                <div className="grid grid-cols-12 px-6 py-4 text-sm font-semibold text-slate-500 border-b">
+                <div className="hidden lg:grid grid-cols-12 px-6 py-4 text-sm font-semibold text-slate-500 border-b">
                   <div className="col-span-5">TEACHER DETAILS</div>
                   <div className="col-span-3">EMPLOYEE ID</div>
                   <div className="col-span-2">STATUS</div>
@@ -390,62 +390,118 @@ const TeacherManagement = () => {
                 {filteredTeachers.map((teacher) => (
                   <div
                     key={teacher.id}
-                    className="grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition"
+                    className="border-b last:border-0 hover:bg-slate-50 transition"
                   >
-                    <div className="col-span-5 flex items-center gap-4">
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          teacher.name || "T"
-                        )}&background=random`}
-                        alt={teacher.name}
-                        className="w-12 h-12 rounded-full"
-                      />
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          {teacher.name}
-                        </p>
-                        <div className="flex gap-4 text-sm text-slate-500">
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-4 h-4" />
-                            {teacher.email}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-4 h-4" />
-                            {teacher.phone}
-                          </span>
+                    {/* Desktop Row */}
+                    <div className="hidden lg:grid grid-cols-12 px-6 py-5 items-center">
+                      <div className="col-span-5 flex items-center gap-4">
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            teacher.name || "T"
+                          )}&background=random`}
+                          alt={teacher.name}
+                          className="w-12 h-12 rounded-full"
+                        />
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {teacher.name}
+                          </p>
+                          <div className="flex gap-4 text-sm text-slate-500">
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-4 h-4" />
+                              {teacher.email}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-4 h-4" />
+                              {teacher.phone}
+                            </span>
+                          </div>
                         </div>
+                      </div>
+
+                      <div className="col-span-3">
+                        <p className="font-medium text-slate-700">
+                          {teacher.employeeId}
+                        </p>
+                      </div>
+
+                      <div className="col-span-2">
+                        <Badge
+                          className={`${getStatusColor(teacher.status)} px-3 py-1 capitalize`}
+                        >
+                          {teacher.status}
+                        </Badge>
+                      </div>
+
+                      <div className="col-span-2 text-right flex items-center justify-end gap-2">
+                        <button
+                          className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
+                          onClick={() => openEditModal(teacher)}
+                          title="Edit Teacher"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
+                          onClick={() => openDeleteDialog(teacher)}
+                          title="Delete Teacher"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="col-span-3">
-                      <p className="font-medium text-slate-700">
-                        {teacher.employeeId}
-                      </p>
-                    </div>
+                    {/* Mobile Card Row */}
+                    <div className="lg:hidden p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            teacher.name || "T"
+                          )}&background=random`}
+                          alt={teacher.name}
+                          className="w-12 h-12 rounded-full"
+                        />
+                        <div>
+                          <p className="font-semibold text-slate-900">{teacher.name}</p>
+                          <Badge
+                            className={`${getStatusColor(teacher.status)} px-2 py-0.5 capitalize text-xs mt-1`}
+                          >
+                            {teacher.status}
+                          </Badge>
+                        </div>
+                      </div>
 
-                    <div className="col-span-2">
-                      <Badge
-                        className={`${getStatusColor(teacher.status)} px-3 py-1 capitalize`}
-                      >
-                        {teacher.status}
-                      </Badge>
-                    </div>
+                      <div className="text-sm text-slate-600 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-slate-400" />
+                          <span className="truncate">{teacher.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-slate-400" />
+                          <span>{teacher.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-slate-500 w-4 inline-block text-center">ID</span>
+                          <span>{teacher.employeeId}</span>
+                        </div>
+                      </div>
 
-                    <div className="col-span-2 text-right flex items-center justify-end gap-2">
-                      <button
-                        className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
-                        onClick={() => openEditModal(teacher)}
-                        title="Edit Teacher"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
-                        onClick={() => openDeleteDialog(teacher)}
-                        title="Delete Teacher"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 font-medium text-sm flex items-center gap-1.5"
+                          onClick={() => openEditModal(teacher)}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          Edit
+                        </button>
+                        <button
+                          className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-medium text-sm flex items-center gap-1.5"
+                          onClick={() => openDeleteDialog(teacher)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
