@@ -15,45 +15,44 @@ const PageLoader = () => {
         <div className="relative flex items-center justify-center">
           {/* Outer ring pulse */}
           <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.3, 0.15] }}
+            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.25, 0.1] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute w-24 h-24 rounded-3xl"
-            style={{ backgroundColor: "var(--primary)" }}
+            className="absolute w-32 h-32 rounded-full border-2 border-primary/20"
           />
-          {/* Logo box */}
+          {/* Logo container */}
           <motion.div
-            className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
-            style={{ backgroundColor: "var(--primary)" }}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="relative flex items-center justify-center"
           >
-            <span
-              className="text-2xl font-bold tracking-tight select-none"
-              style={{
-                color: "var(--primary-foreground)",
-                fontFamily: "'Outfit', sans-serif",
-              }}
-            >
-              MR
-            </span>
+            <img
+              src="/logo.png"
+              alt="MindRise Logo"
+              className="w-24 h-24 object-contain shadow-2xl"
+            />
           </motion.div>
         </div>
 
         {/* Brand name */}
         <div className="text-center">
-          <h1
-            className="text-xl font-bold tracking-wide"
-            style={{
-              color: "var(--foreground)",
-              fontFamily: "'Outfit', sans-serif",
-            }}
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent"
+            style={{ fontFamily: "'Outfit', sans-serif" }}
           >
             MindRise
-          </h1>
-          <p
-            className="text-sm mt-0.5"
-            style={{ color: "var(--muted-foreground)" }}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="text-sm font-medium mt-1 text-muted-foreground"
           >
             Classroom Intelligence Platform
-          </p>
+          </motion.p>
         </div>
 
         {/* Loading bar */}

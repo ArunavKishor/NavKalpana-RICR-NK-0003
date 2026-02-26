@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, BarChart2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 import api from "@/config/Api";
 import { Button } from "@/components/ui/button";
 import {
@@ -231,7 +232,7 @@ const QuizManagement = () => {
           </div>
           <Button
             onClick={() => setShowForm(true)}
-            className="py-3 px-6 bg-gradient-to-r from-orange-400 to-pink-500 hover:shadow-lg text-white font-semibold rounded-lg flex items-center gap-2 transition-all duration-200"
+            className="py-3 px-6 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] hover:shadow-lg text-white font-semibold rounded-xl flex items-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5"
           >
             <Plus className="w-4 h-4" />
             Create New Quiz
@@ -239,54 +240,63 @@ const QuizManagement = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-2xl shadow-premium p-6 border border-slate-100/50"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">
+                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">
                   Total Quizzes
                 </p>
                 <p className="text-3xl font-bold text-slate-900">
                   {totalQuizzes}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
                 <span className="text-2xl">📋</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-2xl shadow-premium p-6 border border-slate-100/50"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">
+                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">
                   Active Quizzes
                 </p>
-                <p className="text-3xl font-bold text-green-600">
+                <p className="text-3xl font-bold text-emerald-600">
                   {activeQuizzes}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
                 <span className="text-2xl">✅</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-2xl shadow-premium p-6 border border-slate-100/50"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">
+                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">
                   Total Attempts
                 </p>
                 <p className="text-3xl font-bold text-orange-600">
                   {totalAttempts}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
                 <span className="text-2xl">❓</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Quizzes List */}
@@ -320,25 +330,28 @@ const QuizManagement = () => {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-slate-900 mb-1">
-                        {quiz.title}
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        Batch: {quiz.batch?.name || "N/A"} • Course:{" "}
-                        {quiz.batch?.course || "N/A"}
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="text-xl font-bold text-slate-900">
+                          {quiz.title}
+                        </h3>
+                        <div className="flex gap-2">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${quiz.status === "published"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : quiz.status === "draft"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-slate-100 text-slate-700"
+                              }`}
+                          >
+                            {quiz.status || "published"}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-slate-500 font-medium">
+                        Batch: <span className="text-slate-700">{quiz.batch?.name || "N/A"}</span> • Course:{" "}
+                        <span className="text-slate-700">{quiz.batch?.course || "N/A"}</span>
                       </p>
                     </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        quiz.status === "published"
-                          ? "bg-green-100 text-green-700"
-                          : quiz.status === "draft"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {quiz.status || "published"}
-                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 text-sm">
@@ -376,17 +389,17 @@ const QuizManagement = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-4 border-t border-slate-200">
+                  <div className="flex gap-3 pt-4 border-t border-slate-100">
                     <Button
                       variant="outline"
-                      className="flex-1"
+                      className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-medium rounded-xl h-11 transition-all"
                       onClick={() => openQuestionEditor(quiz)}
                     >
                       Manage Questions
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex-1 text-blue-700 border-blue-200 hover:bg-blue-50"
+                      className="flex-1 text-blue-600 border-blue-100 hover:bg-blue-50 font-medium rounded-xl h-11 transition-all"
                       onClick={() => openScoresPanel(quiz)}
                     >
                       <BarChart2 className="w-4 h-4 mr-2" />
@@ -394,7 +407,7 @@ const QuizManagement = () => {
                     </Button>
                     <Button
                       onClick={() => handleDeleteQuiz(quiz._id)}
-                      className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200"
+                      className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 font-medium rounded-xl h-11 transition-all"
                       variant="ghost"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
@@ -409,11 +422,12 @@ const QuizManagement = () => {
 
         {/* Create Quiz Modal */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Create New Quiz</DialogTitle>
+          <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-premium rounded-2xl">
+            <DialogHeader className="px-6 py-5 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] text-white">
+              <DialogTitle className="text-xl font-bold">Create New Quiz</DialogTitle>
+              <p className="text-teal-50/80 text-xs mt-1">Set up a new assessment for your students</p>
             </DialogHeader>
-            <form onSubmit={handleCreateQuiz} className="space-y-4">
+            <form onSubmit={handleCreateQuiz} className="p-6 space-y-5 bg-white">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Title</label>
                 <Input
@@ -534,15 +548,21 @@ const QuizManagement = () => {
                   />
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="pt-2">
                 <Button
                   type="button"
                   variant="ghost"
+                  className="rounded-xl hover:bg-slate-100 font-medium h-11"
                   onClick={() => setShowForm(false)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Create Quiz</Button>
+                <Button
+                  type="submit"
+                  className="bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white font-semibold rounded-xl px-8 h-11 shadow-md transition-all"
+                >
+                  Create Quiz
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -613,13 +633,15 @@ const QuizManagement = () => {
             }
           }}
         >
-          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                Manage Questions • {questionEditorQuiz?.title}
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden border-none shadow-premium rounded-2xl">
+            <DialogHeader className="px-6 py-5 bg-slate-900 text-white">
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <span className="p-2 bg-slate-800 rounded-lg">✍️</span>
+                Manage Questions
               </DialogTitle>
+              <p className="text-slate-400 text-sm mt-1">{questionEditorQuiz?.title}</p>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] bg-slate-50/50">
               {questions.length === 0 && (
                 <p className="text-sm text-slate-500">
                   No questions yet. Start by adding a question.
@@ -628,38 +650,49 @@ const QuizManagement = () => {
               {questions.map((q, index) => (
                 <div
                   key={q._id || index}
-                  className="border border-slate-200 rounded-lg p-4 space-y-3"
+                  className="bg-white border border-slate-200/60 rounded-2xl p-6 space-y-5 shadow-sm hover:shadow-md transition-shadow mt-4"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
-                      Question {index + 1}
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-xs font-bold shadow-sm">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm font-bold text-slate-800 uppercase tracking-tight">
+                        Question Prompt
+                      </span>
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-red-500 hover:text-red-600"
+                      className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                       onClick={() =>
                         setQuestions((prev) =>
                           prev.filter((_, i) => i !== index),
                         )
                       }
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-5 h-5" />
                     </Button>
                   </div>
-                  <Input
-                    value={q.prompt}
-                    onChange={(e) =>
-                      handleQuestionChange(index, { prompt: e.target.value })
-                    }
-                    placeholder="Question text"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
+
+                  <div className="space-y-2">
+                    <Input
+                      value={q.prompt}
+                      onChange={(e) =>
+                        handleQuestionChange(index, { prompt: e.target.value })
+                      }
+                      className="h-12 bg-white rounded-xl border-slate-200 focus:ring-slate-900"
+                      placeholder="Enter the question text here..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {(q.options || []).map((opt, optIdx) => (
-                      <div key={optIdx} className="flex items-center gap-2">
+                      <div key={optIdx} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <input
                           type="checkbox"
                           checked={!!opt.isCorrect}
+                          className="w-5 h-5 rounded border-slate-300 text-[#0F4C5C] focus:ring-[#0F4C5C]"
                           onChange={(e) => {
                             const newOptions = [...(q.options || [])];
                             newOptions[optIdx] = {
@@ -683,15 +716,18 @@ const QuizManagement = () => {
                               options: newOptions,
                             });
                           }}
+                          className="h-10 border-none bg-transparent focus:ring-0 text-sm font-medium"
                           placeholder={`Option ${optIdx + 1}`}
                         />
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between">
+
+                  <div className="flex items-center justify-between pt-2">
                     <Button
-                      variant="ghost"
+                      variant="link"
                       size="sm"
+                      className="text-[#0F4C5C] font-bold p-0 flex items-center gap-1"
                       onClick={() => {
                         const newOptions = [
                           ...(q.options || []),
@@ -700,13 +736,14 @@ const QuizManagement = () => {
                         handleQuestionChange(index, { options: newOptions });
                       }}
                     >
+                      <Plus className="w-4 h-4" />
                       Add Option
                     </Button>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500">Marks:</span>
+                    <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Points</span>
                       <Input
                         type="number"
-                        className="w-20"
+                        className="w-16 h-8 border-none bg-transparent focus:ring-0 text-center font-bold"
                         value={q.marks ?? 1}
                         onChange={(e) =>
                           handleQuestionChange(index, {
@@ -716,10 +753,11 @@ const QuizManagement = () => {
                       />
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-500">
-                      Explanation (shown after submission)
-                    </label>
+
+                  <div className="space-y-1.5 pt-2">
+                    <div className="flex items-center gap-2 text-slate-500 mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Explanation for students</span>
+                    </div>
                     <Textarea
                       rows={2}
                       value={q.explanation ?? ""}
@@ -728,23 +766,42 @@ const QuizManagement = () => {
                           explanation: e.target.value,
                         })
                       }
-                      placeholder="Optional: explain why the correct answer is correct"
-                      className="text-sm"
+                      placeholder="Explain why the correct answer is correct..."
+                      className="text-sm bg-white rounded-xl border-slate-200"
                     />
                   </div>
                 </div>
               ))}
-              <div className="flex justify-between items-center pt-2">
-                <Button variant="outline" onClick={addEmptyQuestion}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Question
-                </Button>
+              <div className="flex justify-between items-center bg-white border-t border-slate-100 p-6 sticky bottom-0">
                 <Button
-                  onClick={handleSaveQuestions}
-                  disabled={isSavingQuestions}
+                  variant="outline"
+                  onClick={addEmptyQuestion}
+                  className="rounded-xl border-slate-200 font-bold h-11 text-slate-700 hover:bg-slate-50"
                 >
-                  {isSavingQuestions ? "Saving..." : "Save Questions"}
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Question
                 </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setQuestionEditorQuiz(null)}
+                    className="rounded-xl font-medium h-11"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveQuestions}
+                    disabled={isSavingQuestions}
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-bold h-11 rounded-xl px-8 shadow-md"
+                  >
+                    {isSavingQuestions ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Saving...
+                      </span>
+                    ) : "Publish Changes"}
+                  </Button>
+                </div>
               </div>
             </div>
           </DialogContent>
