@@ -8,7 +8,7 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
 
 const Login = () => {
-  const { setUser, setIsLogin, setRole } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -20,10 +20,10 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    const sessionMessage = sessionStorage.getItem("sessionExpiredMessage");
+    const sessionMessage = localStorage.getItem("sessionExpiredMessage");
     if (sessionMessage) {
       toast.error(sessionMessage);
-      sessionStorage.removeItem("sessionExpiredMessage");
+      localStorage.removeItem("sessionExpiredMessage");
     }
   }, []);
 
@@ -61,19 +61,12 @@ const Login = () => {
 
       if (role !== "admin" && role !== "teacher") {
         toast.error("Access denied.");
-        sessionStorage.removeItem("Token");
         return;
       }
 
       toast.success(`Welcome ${role === "admin" ? "Admin" : "Teacher"}`);
 
-      setUser(user);
-      setIsLogin(true);
-      setRole(role);
-
-      sessionStorage.setItem("user", JSON.stringify(user));
-      sessionStorage.setItem("token", user.token);
-      sessionStorage.setItem("Token", JSON.stringify(user));
+      login(user);
 
       if (role === "admin") {
         navigate("/admin/dashboard");
@@ -104,10 +97,12 @@ const Login = () => {
             transition={{ duration: 0.4 }}
             className="flex flex-col items-center mb-8"
           >
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-premium mb-3 bg-white"
-            >
-              <img src="/logo.png" alt="MindRise Logo" className="w-16 h-16 object-contain" />
+            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-premium mb-3 bg-white">
+              <img
+                src="/logo.png"
+                alt="MindRise Logo"
+                className="w-16 h-16 object-contain"
+              />
             </div>
             <h1
               className="text-2xl font-bold text-foreground tracking-tight"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   BarChart,
   Bar,
@@ -11,7 +11,14 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
-import { Trophy, Users, Activity, Flame, FileText, Download } from "lucide-react";
+import {
+  Trophy,
+  Users,
+  Activity,
+  Flame,
+  FileText,
+  Download,
+} from "lucide-react";
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
@@ -51,6 +58,7 @@ const StatCard = ({ icon, label, value, suffix = "" }) => (
 
 const TeacherAnalytics = () => {
   const [loading, setLoading] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [analytics, setAnalytics] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [batches, setBatches] = useState([]);
@@ -62,44 +70,55 @@ const TeacherAnalytics = () => {
   const [courseFilter, setCourseFilter] = useState("ALL");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedBatch, setSelectedBatch] = useState(null);
-  const leaderboardInterval = useRef(null);
+  // Skip filter-triggered leaderboard re-fetch on the very first render
+  const filtersInitialized = useRef(false);
+  // Store latest filters in a ref so loadLeaderboard never has a stale closure
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
 
   useEffect(() => {
     loadInitialData();
-    return () => {
-      if (leaderboardInterval.current) clearInterval(leaderboardInterval.current);
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Re-fetch leaderboard whenever filters change (skip initial mount)
   useEffect(() => {
-    if (!loading) {
-      loadLeaderboard();
-
-      // Auto-refresh leaderboard every 60 seconds
-      if (leaderboardInterval.current) clearInterval(leaderboardInterval.current);
-      leaderboardInterval.current = setInterval(() => {
-        loadLeaderboard();
-      }, 60000);
+    if (!filtersInitialized.current) {
+      filtersInitialized.current = true;
+      return;
     }
-    return () => {
-      if (leaderboardInterval.current) clearInterval(leaderboardInterval.current);
-    };
+    loadLeaderboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.batchId, filters.sortBy, filters.order]);
+
+  const buildLeaderboardParams = (f) => {
+    const params = { sortBy: f.sortBy, order: f.order };
+    if (f.batchId && f.batchId !== "ALL") params.batchId = f.batchId;
+    return params;
+  };
 
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      const [batchRes, analyticsRes] = await Promise.all([
-        api.get("/api/batches"),
-        api.get("/api/dashboard/teacher/analytics"),
-      ]);
+      // All 3 requests fire in parallel — no waterfall
+      const [batchRes, analyticsRes, leaderboardRes] = await Promise.allSettled(
+        [
+          api.get("/api/batches"),
+          api.get("/api/dashboard/teacher/analytics"),
+          api.get("/api/dashboard/teacher/leaderboard", {
+            params: buildLeaderboardParams(filtersRef.current),
+          }),
+        ],
+      );
 
-      const batchList = batchRes?.data?.data?.batches || [];
-      setBatches(batchList);
-
-      setAnalytics(analyticsRes?.data?.data || null);
-      await loadLeaderboard(batchList, analyticsRes?.data?.data);
+      if (batchRes.status === "fulfilled")
+        setBatches(batchRes.value?.data?.data?.batches || []);
+      if (analyticsRes.status === "fulfilled")
+        setAnalytics(analyticsRes.value?.data?.data || null);
+      if (leaderboardRes.status === "fulfilled")
+        setLeaderboard(leaderboardRes.value?.data?.data?.leaderboard || []);
     } catch (err) {
       console.error("Load analytics failed:", err);
       toast.error("Failed to load analytics");
@@ -108,30 +127,18 @@ const TeacherAnalytics = () => {
     }
   };
 
-  const loadLeaderboard = async (existingBatches, existingAnalytics) => {
+  const loadLeaderboard = async () => {
     try {
-      const params = {};
-      if (filters.batchId && filters.batchId !== "ALL") {
-        params.batchId = filters.batchId;
-      }
-      params.sortBy = filters.sortBy;
-      params.order = filters.order;
-
+      setLeaderboardLoading(true);
       const { data } = await api.get("/api/dashboard/teacher/leaderboard", {
-        params,
+        params: buildLeaderboardParams(filtersRef.current),
       });
-      const list = data?.data?.leaderboard || [];
-      setLeaderboard(list);
-
-      if (!analytics && existingAnalytics) {
-        setAnalytics(existingAnalytics);
-      }
-      if (!batches.length && existingBatches) {
-        setBatches(existingBatches);
-      }
+      setLeaderboard(data?.data?.leaderboard || []);
     } catch (err) {
       console.error("Load leaderboard failed:", err);
       toast.error("Failed to load leaderboard");
+    } finally {
+      setLeaderboardLoading(false);
     }
   };
 
@@ -143,7 +150,16 @@ const TeacherAnalytics = () => {
 
   const handleExportCSV = () => {
     const rows = [
-      ["Name", "Email", "OGI (%)", "Growth", "Attendance (%)", "Weekly Hours", "Skills", "Streak (weeks)"],
+      [
+        "Name",
+        "Email",
+        "OGI (%)",
+        "Growth",
+        "Attendance (%)",
+        "Weekly Hours",
+        "Skills",
+        "Streak (weeks)",
+      ],
     ];
     students.forEach((s) => {
       rows.push([
@@ -182,7 +198,10 @@ const TeacherAnalytics = () => {
         {/* Top metrics skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-xl px-5 py-4 flex items-center gap-3 border border-slate-100">
+            <div
+              key={i}
+              className="bg-white rounded-xl px-5 py-4 flex items-center gap-3 border border-slate-100"
+            >
               <Skeleton className="w-11 h-11 rounded-xl" />
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-3 w-16" />
@@ -378,9 +397,7 @@ const TeacherAnalytics = () => {
                 <Download className="w-3.5 h-3.5" />
                 Export CSV
               </Button>
-              <p className="text-xs text-slate-500">
-                Click a row for details
-              </p>
+              <p className="text-xs text-slate-500">Click a row for details</p>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -547,50 +564,67 @@ const TeacherAnalytics = () => {
           })()}
 
           <div className="space-y-2 flex-1 overflow-y-auto">
-            {leaderboard.length === 0 && (
+            {leaderboardLoading ? (
+              <div className="space-y-3 animate-pulse">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100"
+                  >
+                    <Skeleton className="w-7 h-7 rounded-full" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3 w-28" />
+                      <Skeleton className="h-2.5 w-20" />
+                    </div>
+                    <Skeleton className="h-4 w-10" />
+                  </div>
+                ))}
+              </div>
+            ) : leaderboard.length === 0 ? (
               <div className="text-center py-10 text-slate-500 border-2 border-dashed border-slate-100 rounded-xl">
                 No leaderboard data yet.
               </div>
+            ) : (
+              leaderboard.slice(0, 10).map((row, idx) => (
+                <div
+                  key={row.id}
+                  className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer"
+                  onClick={() => {
+                    setSelectedStudent({
+                      _id: row.id,
+                      user: { fullName: row.name, email: row.email },
+                    });
+                    setSelectedBatch(
+                      batches.find((b) =>
+                        (b.students || []).some(
+                          (stId) => stId.toString() === row.id,
+                        ),
+                      ) || null,
+                    );
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-700">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-900 line-clamp-1">
+                        {row.name}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        OGI {Math.round(row.ogi || 0)}% • Att{" "}
+                        {Math.round(row.attendance || 0)}%
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold text-amber-600">
+                      {Math.round(row.assignmentScore || 0)}%
+                    </p>
+                  </div>
+                </div>
+              ))
             )}
-            {leaderboard.slice(0, 10).map((row, idx) => (
-              <div
-                key={row.id}
-                className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer"
-                onClick={() => {
-                  setSelectedStudent({
-                    _id: row.id,
-                    user: { fullName: row.name, email: row.email },
-                  });
-                  setSelectedBatch(
-                    batches.find((b) =>
-                      (b.students || []).some(
-                        (stId) => stId.toString() === row.id,
-                      ),
-                    ) || null,
-                  );
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-700">
-                    {idx + 1}
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-900 line-clamp-1">
-                      {row.name}
-                    </p>
-                    <p className="text-[11px] text-slate-500">
-                      OGI {Math.round(row.ogi || 0)}% • Att{" "}
-                      {Math.round(row.attendance || 0)}%
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold text-amber-600">
-                    {Math.round(row.assignmentScore || 0)}%
-                  </p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
