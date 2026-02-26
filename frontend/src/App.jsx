@@ -1,30 +1,34 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import PageLoader from "@/components/common/PageLoader";
-import DashboardLayout from "./components/dashboard/DashboardMainLayout";
-import DashboardHome from "./pages/dashboards/admin/AdminDashboardHome";
-import Login from "./pages/Login";
-import {
-  BatchManagement,
-  StudentManagement,
-  SupportRequests,
-  BatchDetail,
-  TeacherManagement,
-} from "./pages/dashboards/admin/AdminHome";
-
-import TeacherDashboardLayout from "./pages/teacher/TeacherDashboardLayout";
-import TeacherDashboardHome from "./pages/teacher/TeacherDashboardHome";
-import TeacherBatchManagement from "./pages/teacher/TeacherBatchManagement";
-import TeacherBatchDetail from "./pages/teacher/TeacherBatchDetail";
-import TeacherStudentManagement from "./pages/teacher/TeacherStudentManagement";
-import TeacherAssessmentManagement from "./pages/teacher/TeacherAssessmentManagement";
-import TeacherAnalytics from "./pages/teacher/TeacherAnalytics";
-import QuizManagement from "./pages/teacher/QuizManagement";
-import TeacherSupport from "./pages/teacher/TeacherSupport";
-import TeacherAccount from "./pages/teacher/TeacherAccount";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+const DashboardLayout = lazy(() => import("./components/dashboard/DashboardMainLayout"));
+const DashboardHome = lazy(() => import("./pages/dashboards/admin/AdminDashboardHome"));
+const Login = lazy(() => import("./pages/Login"));
+const BatchManagement = lazy(() => import("./pages/dashboards/admin/AdminBatches"));
+const StudentManagement = lazy(() => import("./pages/dashboards/admin/AdminStudents"));
+const SupportRequests = lazy(() => import("./pages/dashboards/admin/AdminSupport"));
+const BatchDetail = lazy(() => import("./pages/dashboards/admin/BatchDetail"));
+const TeacherManagement = lazy(() => import("./pages/dashboards/admin/AdminTeachers"));
+const TeacherDashboardLayout = lazy(() => import("./pages/teacher/TeacherDashboardLayout"));
+const TeacherDashboardHome = lazy(() => import("./pages/teacher/TeacherDashboardHome"));
+const TeacherBatchManagement = lazy(() => import("./pages/teacher/TeacherBatchManagement"));
+const TeacherBatchDetail = lazy(() => import("./pages/teacher/TeacherBatchDetail"));
+const TeacherStudentManagement = lazy(() => import("./pages/teacher/TeacherStudentManagement"));
+const TeacherAssessmentManagement = lazy(() => import("./pages/teacher/TeacherAssessmentManagement"));
+const TeacherAnalytics = lazy(() => import("./pages/teacher/TeacherAnalytics"));
+const QuizManagement = lazy(() => import("./pages/teacher/QuizManagement"));
+const TeacherSupport = lazy(() => import("./pages/teacher/TeacherSupport"));
+const TeacherAccount = lazy(() => import("./pages/teacher/TeacherAccount"));
+
+const withSuspense = (element) => (
+  <Suspense fallback={<PageLoader />}>
+    {element}
+  </Suspense>
+);
 
 const App = () => {
   return (
@@ -32,7 +36,7 @@ const App = () => {
       <AuthProvider>
         <Toaster />
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={withSuspense(<Login />)} />
 
           {/* Legacy route catch-all */}
           <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
@@ -42,17 +46,17 @@ const App = () => {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <DashboardLayout />
+                {withSuspense(<DashboardLayout />)}
               </ProtectedRoute>
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardHome />} />
-            <Route path="batches" element={<BatchManagement />} />
-            <Route path="batches/:batchId" element={<BatchDetail />} />
-            <Route path="teachers" element={<TeacherManagement />} />
-            <Route path="students" element={<StudentManagement />} />
-            <Route path="support" element={<SupportRequests />} />
+            <Route path="dashboard" element={withSuspense(<DashboardHome />)} />
+            <Route path="batches" element={withSuspense(<BatchManagement />)} />
+            <Route path="batches/:batchId" element={withSuspense(<BatchDetail />)} />
+            <Route path="teachers" element={withSuspense(<TeacherManagement />)} />
+            <Route path="students" element={withSuspense(<StudentManagement />)} />
+            <Route path="support" element={withSuspense(<SupportRequests />)} />
           </Route>
 
           {/* Teacher Dashboard Routes (Admin can view too) */}
@@ -60,22 +64,22 @@ const App = () => {
             path="/teacher-dashboard"
             element={
               <ProtectedRoute allowedRoles={["teacher", "admin"]}>
-                <TeacherDashboardLayout />
+                {withSuspense(<TeacherDashboardLayout />)}
               </ProtectedRoute>
             }
           >
-            <Route index element={<TeacherDashboardHome />} />
-            <Route path="batches" element={<TeacherBatchManagement />} />
-            <Route path="batches/:batchId" element={<TeacherBatchDetail />} />
-            <Route path="students" element={<TeacherStudentManagement />} />
+            <Route index element={withSuspense(<TeacherDashboardHome />)} />
+            <Route path="batches" element={withSuspense(<TeacherBatchManagement />)} />
+            <Route path="batches/:batchId" element={withSuspense(<TeacherBatchDetail />)} />
+            <Route path="students" element={withSuspense(<TeacherStudentManagement />)} />
             <Route
               path="assessments"
-              element={<TeacherAssessmentManagement />}
+              element={withSuspense(<TeacherAssessmentManagement />)}
             />
-            <Route path="analytics" element={<TeacherAnalytics />} />
-            <Route path="quizzes" element={<QuizManagement />} />
-            <Route path="support" element={<TeacherSupport />} />
-            <Route path="account" element={<TeacherAccount />} />
+            <Route path="analytics" element={withSuspense(<TeacherAnalytics />)} />
+            <Route path="quizzes" element={withSuspense(<QuizManagement />)} />
+            <Route path="support" element={withSuspense(<TeacherSupport />)} />
+            <Route path="account" element={withSuspense(<TeacherAccount />)} />
           </Route>
         </Routes>
       </AuthProvider>
