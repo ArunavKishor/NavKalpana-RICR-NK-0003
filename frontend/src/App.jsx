@@ -53,7 +53,6 @@ const App = () => {
             <Route path="batches/:batchId" element={<BatchDetail />} />
             <Route path="teachers" element={<TeacherManagement />} />
             <Route path="students" element={<StudentManagement />} />
-            <Route path="assessments" element={<AssessmentManagement />} />
             <Route path="support" element={<SupportRequests />} />
           </Route>
 

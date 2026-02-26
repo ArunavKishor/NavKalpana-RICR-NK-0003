@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
   { icon: Users, label: "Batch Management", href: "/admin/batches" },
-  { icon: FileText, label: "Assessments", href: "/admin/assessments" },
   { icon: GraduationCap, label: "Students", href: "/admin/students" },
   { icon: Users, label: "Teachers", href: "/admin/teachers" },
 ];
