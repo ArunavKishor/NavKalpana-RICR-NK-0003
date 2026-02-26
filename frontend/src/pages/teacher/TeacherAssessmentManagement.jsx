@@ -4,10 +4,9 @@ import {
   Search,
   Trash2,
   Eye,
-  Edit,
-  X,
   FileText,
   Download,
+  Upload,
   CheckCircle,
   Clock,
   ImageIcon,
@@ -481,46 +480,70 @@ const TeacherAssessmentManagement = () => {
       </motion.div>
 
       {/* Create Assessment Modal */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-premium rounded-3xl">
-          <DialogHeader className="px-8 py-6 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] text-white">
+      <Dialog
+        open={showForm}
+        onOpenChange={(open) => {
+          setShowForm(open);
+          if (!open) {
+            setFormData({
+              title: "",
+              description: "",
+              type: "assignment",
+              batch: "",
+              dueDate: "",
+              totalMarks: 100,
+              submissionType: "PDF",
+              moduleName: "",
+              lessonName: "",
+              lessonId: "",
+            });
+            setImageFile(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[90vh]">
+          {/* Sticky Header */}
+          <DialogHeader className="px-8 py-6 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] text-white shrink-0">
             <DialogTitle className="text-2xl font-bold font-heading">
               New {activeTab === "assignments" ? "Assignment" : "Quiz"}
             </DialogTitle>
             <p className="text-teal-50/70 text-sm mt-1">Set up clear objectives and deadlines for your students</p>
           </DialogHeader>
-          <form onSubmit={handleCreateAssessment} className="p-8 space-y-6 bg-white overflow-y-auto max-h-[75vh]">
+
+          {/* Scrollable Body */}
+          <form
+            id="createAssessmentForm"
+            onSubmit={handleCreateAssessment}
+            className="flex-1 overflow-y-auto px-8 py-6 space-y-6 bg-white"
+          >
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">Assignment Title</label>
               <Input
                 required
                 value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium"
                 placeholder="e.g. Introduction to React Fundamentals"
               />
             </div>
+
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">Detailed Instructions</label>
               <Textarea
                 required
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="bg-slate-50 border-none rounded-xl focus:ring-primary min-h-[120px] resize-none"
                 placeholder="What exactly should students do? Mention submission requirements..."
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Target Batch</label>
                 <Select
-                  onValueChange={(val) =>
-                    setFormData({ ...formData, batch: val })
-                  }
+                  value={formData.batch}
+                  onValueChange={(val) => setFormData({ ...formData, batch: val })}
                 >
                   <SelectTrigger className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium">
                     <SelectValue placeholder="Select Batch" />
@@ -540,23 +563,21 @@ const TeacherAssessmentManagement = () => {
                   type="date"
                   required
                   value={formData.dueDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, dueDate: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                   className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Maximum Marks</label>
                 <Input
                   type="number"
                   required
+                  min={1}
                   value={formData.totalMarks}
-                  onChange={(e) =>
-                    setFormData({ ...formData, totalMarks: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, totalMarks: e.target.value })}
                   className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-bold text-primary"
                 />
               </div>
@@ -566,9 +587,8 @@ const TeacherAssessmentManagement = () => {
                     Submission Format
                   </label>
                   <Select
-                    onValueChange={(val) =>
-                      setFormData({ ...formData, submissionType: val })
-                    }
+                    value={formData.submissionType}
+                    onValueChange={(val) => setFormData({ ...formData, submissionType: val })}
                   >
                     <SelectTrigger className="h-12 bg-slate-50 border-none rounded-xl focus:ring-primary font-medium">
                       <SelectValue placeholder="PDF Default" />
@@ -586,30 +606,24 @@ const TeacherAssessmentManagement = () => {
             <div className="space-y-4 pt-4 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-900">Module & Lesson Info</label>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">(For organization)</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">(Optional — for organization)</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Input
                   value={formData.moduleName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, moduleName: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, moduleName: e.target.value })}
                   className="h-11 bg-slate-50 border-none rounded-xl focus:ring-primary text-sm font-medium"
                   placeholder="Module Name"
                 />
                 <Input
                   value={formData.lessonName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lessonName: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, lessonName: e.target.value })}
                   className="h-11 bg-slate-50 border-none rounded-xl focus:ring-primary text-sm font-medium"
                   placeholder="Lesson Name"
                 />
                 <Input
                   value={formData.lessonId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lessonId: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, lessonId: e.target.value })}
                   className="h-11 bg-slate-50 border-none rounded-xl focus:ring-primary text-sm font-medium"
                   placeholder="Lesson ID"
                 />
@@ -622,7 +636,7 @@ const TeacherAssessmentManagement = () => {
                 <ImageIcon className="w-4 h-4" />
                 Cover Image (Recommended)
               </label>
-              <div className="mt-2 text-center">
+              <div className="mt-2">
                 <Input
                   type="file"
                   id="imageUpload"
@@ -634,7 +648,7 @@ const TeacherAssessmentManagement = () => {
                   htmlFor="imageUpload"
                   className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-primary/20 rounded-xl cursor-pointer hover:bg-primary/5 transition-all"
                 >
-                  <Download className="w-8 h-8 text-primary/40 mb-2" />
+                  <Upload className="w-8 h-8 text-primary/40 mb-2" />
                   <span className="text-sm font-bold text-primary/60">
                     {imageFile ? imageFile.name : "Click to upload banner image"}
                   </span>
@@ -642,53 +656,74 @@ const TeacherAssessmentManagement = () => {
                 </label>
               </div>
             </div>
-
-            <DialogFooter className="pt-4 border-t border-slate-100 flex items-center gap-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowForm(false)}
-                className="h-12 rounded-xl px-8 font-bold text-slate-500 hover:bg-slate-100 transition-all"
-              >
-                Discard
-              </Button>
-              <Button
-                type="submit"
-                className="h-12 rounded-xl px-10 bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white font-black shadow-lg shadow-[#0F4C5C]/20 transition-all"
-              >
-                Publish Assessment
-              </Button>
-            </DialogFooter>
           </form>
+
+          {/* Sticky Footer — always visible, outside scroll area */}
+          <div className="shrink-0 px-8 py-4 border-t border-slate-100 bg-white flex items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowForm(false)}
+              className="h-12 rounded-xl px-8 font-bold text-slate-500 hover:bg-slate-100 transition-all"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="createAssessmentForm"
+              className="h-12 rounded-xl px-10 bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white font-black shadow-lg shadow-[#0F4C5C]/20 transition-all"
+            >
+              Publish Assessment
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Submissions/Evaluation Modal */}
-      <Dialog open={showEvaluation} onOpenChange={setShowEvaluation}>
-        <DialogContent className="max-w-5xl h-[85vh] p-0 overflow-hidden">
-          <DialogHeader className="px-6 py-4 border-b bg-white">
-            <DialogTitle className="text-lg font-semibold">
-              Submissions • {selectedAssessment?.title}
+      <Dialog
+        open={showEvaluation}
+        onOpenChange={(open) => {
+          setShowEvaluation(open);
+          if (!open) setEvalData({ marks: "", feedback: "", currentSubmission: null });
+        }}
+      >
+        <DialogContent className="max-w-5xl p-0 overflow-hidden border-none shadow-2xl rounded-2xl flex flex-col" style={{ maxHeight: '88vh' }}>
+          {/* Fixed Header */}
+          <DialogHeader className="px-6 py-4 border-b bg-white shrink-0">
+            <DialogTitle className="text-lg font-bold text-slate-900">
+              Submissions
             </DialogTitle>
+            <p className="text-sm text-slate-500 mt-0.5 truncate">{selectedAssessment?.title}</p>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 h-full">
-            {/* ================= SUBMISSION LIST ================= */}
-            <div className="border-r bg-slate-50/40 h-full overflow-y-auto">
-              <div className="p-5 space-y-4">
-                <h4 className="text-sm font-semibold text-slate-700">
+          {/* Two-panel body — both panels scroll independently */}
+          <div className="flex flex-col md:flex-row flex-1 min-h-0">
+            {/* ===== SUBMISSION LIST ===== */}
+            <div className="md:w-[44%] border-r border-slate-100 bg-slate-50/60 flex flex-col min-h-0">
+              <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">
                   Student Submissions
+                  {submissions.length > 0 && (
+                    <span className="ml-2 bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px] normal-case font-bold">
+                      {submissions.length}
+                    </span>
+                  )}
                 </h4>
-
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {submissions.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                    <FileText className="w-10 h-10 mb-3 opacity-40" />
-                    <p className="text-sm">No submissions yet</p>
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                    <FileText className="w-10 h-10 mb-3 opacity-30" />
+                    <p className="text-sm font-medium">No submissions yet</p>
+                    <p className="text-xs mt-1">Students haven't submitted anything</p>
                   </div>
                 ) : (
                   submissions.map((sub) => {
-                    const isActive =
-                      evalData.currentSubmission?._id === sub._id;
+                    const isActive = evalData.currentSubmission?._id === sub._id;
+                    const isLate =
+                      selectedAssessment?.dueDate &&
+                      sub.submittedAt &&
+                      new Date(sub.submittedAt) > new Date(selectedAssessment.dueDate);
 
                     return (
                       <div
@@ -697,52 +732,43 @@ const TeacherAssessmentManagement = () => {
                           setEvalData({
                             ...evalData,
                             currentSubmission: sub,
-                            marks: sub.marksObtained || "",
+                            marks: sub.marksObtained ?? "",
                             feedback: sub.feedback || "",
                           })
                         }
-                        className={`group p-4 rounded-xl border cursor-pointer transition-all bg-white
-                    ${isActive
-                            ? "border-blue-500 shadow-sm ring-2 ring-blue-100"
-                            : "hover:border-slate-300 hover:shadow-sm"
+                        className={`p-4 rounded-xl border cursor-pointer transition-all bg-white ${isActive
+                            ? "border-[#0F4C5C] shadow-md ring-2 ring-[#0F4C5C]/10"
+                            : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
                           }`}
                       >
-                        <div className="flex justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-slate-800">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-800 truncate">
                               {sub.student?.user?.fullName || "Student"}
                             </p>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-slate-400 mt-0.5">
                               {new Date(sub.submittedAt).toLocaleString()}
                             </p>
                           </div>
-
-                          <div className="flex flex-col items-end gap-1">
+                          <div className="flex flex-col items-end gap-1 shrink-0">
                             <Badge
-                              className={
-                                sub.status === "evaluated"
+                              className={`text-[10px] ${sub.status === "evaluated"
                                   ? "bg-emerald-100 text-emerald-700"
                                   : "bg-amber-100 text-amber-700"
-                              }
+                                }`}
                             >
                               {sub.status}
                             </Badge>
-                            {selectedAssessment?.dueDate &&
-                              sub.submittedAt &&
-                              new Date(sub.submittedAt) >
-                              new Date(selectedAssessment.dueDate) && (
-                                <Badge className="bg-red-100 text-red-700 text-[10px]">
-                                  Late
-                                </Badge>
-                              )}
+                            {isLate && (
+                              <Badge className="bg-red-100 text-red-700 text-[10px]">Late</Badge>
+                            )}
                           </div>
                         </div>
-
                         {sub.marksObtained !== undefined && (
                           <p className="text-xs text-slate-500 mt-2">
-                            Marks:{" "}
-                            <span className="font-medium">
-                              {sub.marksObtained}
+                            Score:{" "}
+                            <span className="font-bold text-slate-700">
+                              {sub.marksObtained} / {selectedAssessment?.totalMarks}
                             </span>
                           </p>
                         )}
@@ -753,87 +779,95 @@ const TeacherAssessmentManagement = () => {
               </div>
             </div>
 
-            {/* ================= EVALUATION PANEL ================= */}
-            <div className="h-full overflow-y-auto bg-white">
-              <div className="p-6 space-y-5">
-                <h4 className="text-sm font-semibold text-slate-700">
-                  Evaluation Panel
-                </h4>
-
+            {/* ===== EVALUATION PANEL ===== */}
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">Evaluation Panel</h4>
+              </div>
+              <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 {evalData.currentSubmission ? (
                   <>
+                    {/* Student Info Banner */}
+                    <div className="rounded-xl bg-[#0F4C5C]/5 border border-[#0F4C5C]/10 px-4 py-3 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-[#0F4C5C] text-white flex items-center justify-center font-bold text-sm shrink-0">
+                        {(evalData.currentSubmission.student?.user?.fullName || "S").charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">
+                          {evalData.currentSubmission.student?.user?.fullName || "Student"}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Submitted: {new Date(evalData.currentSubmission.submittedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+
                     {/* File Card */}
-                    <div className="rounded-xl border bg-slate-50 p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2.5 bg-blue-100 rounded-lg shrink-0">
                           <FileText className="w-5 h-5 text-blue-600" />
                         </div>
-
-                        <div>
-                          <p className="text-sm font-medium">Submission File</p>
-                          <p className="text-xs text-slate-500 uppercase">
-                            {evalData.currentSubmission.fileType || "File"}
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 truncate">Submission File</p>
+                          <p className="text-xs text-slate-400 uppercase">
+                            {evalData.currentSubmission.fileType || "Attached File"}
                           </p>
                         </div>
                       </div>
-
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          window.open(
-                            evalData.currentSubmission.fileUrl,
-                            "_blank",
-                          )
-                        }
+                        className="shrink-0 rounded-lg"
+                        onClick={() => window.open(evalData.currentSubmission.fileUrl, "_blank")}
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        View
+                        <Download className="w-4 h-4 mr-1.5" />
+                        Open
                       </Button>
                     </div>
 
                     {/* Marks */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Marks (Max: {selectedAssessment.totalMarks})
+                      <label className="text-sm font-semibold text-slate-700">
+                        Marks Awarded
+                        <span className="ml-1 text-slate-400 font-normal">(Max: {selectedAssessment?.totalMarks})</span>
                       </label>
                       <Input
                         type="number"
-                        max={selectedAssessment.totalMarks}
+                        min={0}
+                        max={selectedAssessment?.totalMarks}
                         value={evalData.marks}
-                        onChange={(e) =>
-                          setEvalData({
-                            ...evalData,
-                            marks: e.target.value,
-                          })
-                        }
-                        className="h-11"
+                        onChange={(e) => setEvalData({ ...evalData, marks: e.target.value })}
+                        className="h-11 bg-slate-50 border-slate-200 rounded-xl font-bold text-primary"
+                        placeholder={`0 – ${selectedAssessment?.totalMarks}`}
                       />
                     </div>
 
                     {/* Feedback */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Feedback</label>
+                      <label className="text-sm font-semibold text-slate-700">Feedback</label>
                       <Textarea
                         rows={5}
                         value={evalData.feedback}
-                        onChange={(e) =>
-                          setEvalData({
-                            ...evalData,
-                            feedback: e.target.value,
-                          })
-                        }
-                        placeholder="Provide constructive feedback..."
+                        onChange={(e) => setEvalData({ ...evalData, feedback: e.target.value })}
+                        className="bg-slate-50 border-slate-200 rounded-xl resize-none"
+                        placeholder="Provide constructive feedback for the student..."
                       />
                     </div>
 
-                    <Button className="w-full" onClick={handleEvaluate}>
+                    <Button
+                      className="w-full h-11 rounded-xl bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white font-bold shadow-md shadow-[#0F4C5C]/20 transition-all"
+                      onClick={handleEvaluate}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
                       Submit Evaluation
                     </Button>
                   </>
                 ) : (
-                  <div className="h-full flex items-center justify-center border-2 border-dashed rounded-lg p-12 text-slate-400">
-                    Select a submission to evaluate
+                  <div className="h-full flex flex-col items-center justify-center text-center py-16 border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
+                    <Eye className="w-10 h-10 mb-3 opacity-30" />
+                    <p className="text-sm font-medium">No submission selected</p>
+                    <p className="text-xs mt-1">Click a student on the left to evaluate</p>
                   </div>
                 )}
               </div>
