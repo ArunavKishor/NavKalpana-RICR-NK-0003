@@ -424,54 +424,61 @@ const TeacherSupport = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+        <div className="flex items-center gap-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-2xl p-4">
+          <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            Support Requests
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm sm:text-base">
-            Review doubts, respond to students, and schedule backup classes.
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Support Requests</h1>
+          <p className="text-slate-500 mt-1 text-sm">
+            l
           </p>
         </div>
         <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
+          className="w-full sm:w-auto bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] hover:shadow-lg text-white px-7 py-6 rounded-2xl font-bold flex items-center gap-2 transition-all hover:-translate-y-0.5"
           onClick={openCreateDialog}
         >
           <MessageSquare className="w-4 h-4" />
-          <span>New Request</span>
+          New Request
         </Button>
       </div>
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
-          icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
-          label="Total (filtered)"
+          icon={<MessageSquare className="w-6 h-6 text-white" />}
+          iconBg="from-blue-500 to-blue-600"
+          shadowColor="shadow-blue-200"
+          label="Total Requests"
           value={stats.total}
           loading={loading}
         />
         <StatsCard
-          icon={<AlertCircle className="w-5 h-5 text-red-600" />}
+          icon={<AlertCircle className="w-6 h-6 text-white" />}
+          iconBg="from-red-500 to-red-600"
+          shadowColor="shadow-red-200"
           label="Urgent"
           value={stats.urgent}
           loading={loading}
         />
         <StatsCard
-          icon={<Clock className="w-5 h-5 text-yellow-600" />}
+          icon={<Clock className="w-6 h-6 text-white" />}
+          iconBg="from-amber-500 to-amber-600"
+          shadowColor="shadow-amber-200"
           label="Avg Response"
           value={supportStats.avgResponseTime}
           loading={loading}
         />
         <StatsCard
-          icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
+          icon={<CheckCircle className="w-6 h-6 text-white" />}
+          iconBg="from-emerald-500 to-emerald-600"
+          shadowColor="shadow-emerald-200"
           label="Resolution Rate"
           value={`${supportStats.resolutionRate}%`}
           loading={loading}
@@ -479,82 +486,70 @@ const TeacherSupport = () => {
       </div>
 
       {/* Filters Section */}
-      <div className="space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
             type="text"
             placeholder="Search by subject, student name, or request ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm max-w-lg"
+            className="w-full pl-10 h-11 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#0F4C5C]/30"
           />
         </div>
 
-        {/* Filter Tabs */}
+        {/* Filter Row */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 bg-white rounded-lg p-1.5 shadow-sm border border-slate-200 flex-wrap">
+          {/* Status Tabs */}
+          <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1">
             {filters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${activeFilter === filter
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-50"
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${activeFilter === filter
+                  ? "bg-[#0F4C5C] text-white shadow-sm"
+                  : "text-slate-500 hover:bg-white hover:text-slate-900"
                   }`}
               >
-                {filter}
+                {filter === "IN_PROGRESS" ? "IN PROGRESS" : filter}
               </button>
             ))}
           </div>
 
-          {/* Priority Filter */}
           <select
             value={selectedPriority}
             onChange={(e) => setSelectedPriority(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+            className="h-9 px-3 border border-slate-200 rounded-xl text-xs font-semibold bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30"
           >
-            {priorities.map((priority) => (
-              <option key={priority} value={priority}>
-                {priority === "All"
-                  ? "All Priorities"
-                  : `Priority: ${priority}`}
-              </option>
+            {priorities.map((p) => (
+              <option key={p} value={p}>{p === "All" ? "All Priorities" : p}</option>
             ))}
           </select>
 
-          {/* Category Filter */}
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+            className="h-9 px-3 border border-slate-200 rounded-xl text-xs font-semibold bg-white text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30"
           >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category === "All"
-                  ? "All Categories"
-                  : `Category: ${category}`}
-              </option>
+            {categories.map((c) => (
+              <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>
             ))}
           </select>
 
-          {/* Course Filter */}
           <input
             type="text"
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
-            placeholder="Filter by course..."
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+            placeholder="Course..."
+            className="h-9 px-3 border border-slate-200 rounded-xl text-xs bg-white w-32 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30"
           />
-
-          {/* Topic Filter */}
           <input
             type="text"
             value={filterTopic}
             onChange={(e) => setFilterTopic(e.target.value)}
-            placeholder="Filter by topic..."
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white w-40"
+            placeholder="Topic..."
+            className="h-9 px-3 border border-slate-200 rounded-xl text-xs bg-white w-32 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30"
           />
         </div>
       </div>
@@ -563,443 +558,321 @@ const TeacherSupport = () => {
       <div className="space-y-4">
         {loading ? (
           [1, 2, 3].map((i) => (
-            <Card key={i} className="border-none shadow-sm">
-              <CardContent className="p-5 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+            <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="h-1 bg-slate-100" />
+              <div className="p-6 space-y-4">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="w-11 h-11 rounded-2xl shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="flex gap-2">
-                      <Skeleton className="h-5 w-20" />
-                      <Skeleton className="h-5 w-24" />
-                    </div>
-                    <Skeleton className="h-7 w-3/4" />
+                    <Skeleton className="h-5 w-3/4 rounded-lg" />
+                    <Skeleton className="h-3.5 w-1/2 rounded" />
                   </div>
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
                 </div>
-                <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-                  <Skeleton className="w-10 h-10 rounded-full" />
-                  <div className="space-y-1">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-48" />
-                  </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
                 </div>
-                <div className="space-y-2 mb-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                </div>
-                <div className="flex justify-between items-center">
-                  <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-4 w-4/5 rounded" />
+                <div className="flex justify-between pt-3 border-t border-slate-100">
+                  <Skeleton className="h-4 w-32 rounded" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-9 w-20" />
-                    <Skeleton className="h-9 w-28" />
+                    <Skeleton className="h-9 w-20 rounded-xl" />
+                    <Skeleton className="h-9 w-28 rounded-xl" />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))
         ) : filteredRequests.length === 0 ? (
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-12 text-center">
-              <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                No requests found
-              </h3>
-              <p className="text-slate-500">
-                Try adjusting your filters or search terms.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">No requests found</h3>
+            <p className="text-slate-500 text-sm">Try adjusting your filters or search terms.</p>
+          </div>
         ) : (
-          filteredRequests.map((request) => (
-            <Card
-              key={request._id}
-              className="border-none shadow-sm hover:shadow-md transition-all duration-300"
-            >
-              <CardContent className="p-5 sm:p-6">
-                {/* Header Row */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge
-                        className={`${getPriorityColor(
-                          request.priority?.toUpperCase(),
-                        )} px-2.5 py-1 text-xs font-semibold`}
-                      >
-                        {request.priority?.toUpperCase()}
-                      </Badge>
-                      {request.category && (
-                        <Badge className="bg-slate-100 text-slate-700 px-2 py-1 text-xs font-semibold">
-                          {request.category.toUpperCase()}
-                        </Badge>
-                      )}
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">
-                      {request.subject}
-                    </h3>
-                  </div>
-                  <Badge
-                    className={`${getStatusColor(
-                      normalizeStatus(request.status),
-                    )} border px-3 py-1 font-semibold text-xs flex items-center gap-1 shrink-0`}
-                  >
-                    {getStatusIcon(normalizeStatus(request.status))}
-                    {normalizeStatus(request.status)}
-                  </Badge>
-                </div>
+          filteredRequests.map((request) => {
+            const statusNorm = normalizeStatus(request.status);
+            const priorityUp = request.priority?.toUpperCase();
+            return (
+              <div
+                key={request._id}
+                className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#0F4C5C]/20 transition-all duration-300 overflow-hidden"
+              >
+                {/* Accent bar keyed to priority */}
+                <div className={`h-1 w-full ${priorityUp === "URGENT" ? "bg-red-500" :
+                  priorityUp === "HIGH" ? "bg-orange-400" :
+                    priorityUp === "MEDIUM" ? "bg-amber-400" :
+                      "bg-slate-300"
+                  }`} />
 
-                {/* Student Info */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-4 pb-4 border-b border-slate-100">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                      <User className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 text-sm">
-                        {request.student?.user?.fullName || "Unknown"}
-                      </p>
-                      <p className="text-xs text-slate-500 truncate">
-                        {request.student?.user?.email || "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-600 text-sm">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>{request.responses?.length || 0} replies</span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="text-slate-600 mb-2 text-sm line-clamp-2">
-                  {request.description}
-                </p>
-
-                {/* Latest Reply Preview */}
-                {request.responses && request.responses.length > 0 && (() => {
-                  const lastReply =
-                    request.responses[request.responses.length - 1];
-                  return (
-                    <div className="mb-4 rounded-md bg-slate-50 border border-slate-200 px-3 py-2 text-xs">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-slate-700">
-                          Latest teacher reply
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {lastReply.createdAt
-                            ? new Date(lastReply.createdAt).toLocaleString(
-                              "en-US",
-                              {
-                                dateStyle: "short",
-                                timeStyle: "short",
-                              },
-                            )
-                            : ""}
-                        </span>
+                <div className="p-5 sm:p-6">
+                  {/* Title row */}
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0F4C5C] to-[#1a7a8f] flex items-center justify-center shrink-0 shadow-md shadow-[#0F4C5C]/20">
+                        <MessageSquare className="w-5 h-5 text-white" />
                       </div>
-                      <p className="text-[11px] text-slate-700 line-clamp-2">
-                        {lastReply.message}
-                      </p>
+                      <div className="min-w-0">
+                        <h3 className="text-base font-bold text-slate-900 truncate">{request.subject}</h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          <span className="font-medium text-slate-700">{request.student?.user?.fullName || "Unknown"}</span>
+                          {request.student?.user?.email && (
+                            <span className="text-slate-400"> · {request.student.user.email}</span>
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })()}
+                    <Badge className={`${getStatusColor(statusNorm)} border px-3 py-1 font-bold text-[11px] flex items-center gap-1 shrink-0 uppercase`}>
+                      {getStatusIcon(statusNorm)}
+                      {statusNorm.replace("_", " ")}
+                    </Badge>
+                  </div>
 
-
-                {/* Footer */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      Created:{" "}
-                      {new Date(request.createdAt).toLocaleDateString("en-US")}
+                  {/* Pill badges row */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Badge className={`${getPriorityColor(priorityUp)} px-2.5 py-1 text-[11px] font-black uppercase`}>
+                      {priorityUp}
+                    </Badge>
+                    {request.category && (
+                      <Badge className="bg-slate-100 text-slate-600 px-2.5 py-1 text-[11px] font-bold uppercase">
+                        {request.category}
+                      </Badge>
+                    )}
+                    <span className="flex items-center gap-1 bg-blue-50 border border-blue-100 rounded-full px-2.5 py-1 text-[11px] font-semibold text-blue-600">
+                      <MessageSquare className="w-3 h-3 text-blue-500" />
+                      {request.responses?.length || 0} replies
+                    </span>
+                    <span className="flex items-center gap-1 bg-violet-50 border border-violet-100 rounded-full px-2.5 py-1 text-[11px] font-semibold text-violet-600">
+                      <Calendar className="w-3 h-3 text-violet-500" />
+                      {new Date(request.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </span>
                     {request.backupClassSchedule && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        Backup:{" "}
-                        {new Date(
-                          request.backupClassSchedule.date,
-                        ).toLocaleDateString("en-US")}
+                      <span className="flex items-center gap-1 bg-emerald-50 border border-emerald-100 rounded-full px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+                        <Clock className="w-3 h-3 text-emerald-500" />
+                        Backup: {new Date(request.backupClassSchedule.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+
+                  {/* Description */}
+                  <p className="text-slate-600 text-sm line-clamp-2 mb-3">{request.description}</p>
+
+                  {/* Latest Reply Preview */}
+                  {request.responses?.length > 0 && (() => {
+                    const lastReply = request.responses[request.responses.length - 1];
+                    return (
+                      <div className="mb-4 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Latest reply</span>
+                          <span className="text-[10px] text-slate-400">
+                            {lastReply.createdAt ? new Date(lastReply.createdAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }) : ""}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-700 line-clamp-2">{lastReply.message}</p>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Action buttons */}
+                  <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100">
                     <Button
-                      variant="outline"
                       size="sm"
+                      variant="outline"
+                      className="rounded-xl border-slate-200 text-slate-700 hover:bg-[#0F4C5C] hover:text-white hover:border-[#0F4C5C] font-semibold transition-all"
                       onClick={() => openReplyDialog(request)}
                     >
+                      <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
                       Reply
                     </Button>
                     <Button
-                      variant="outline"
                       size="sm"
+                      variant="outline"
+                      className="rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 font-semibold transition-all"
                       onClick={() => openResolveDialog(request)}
                     >
+                      <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
                       Mark Resolved
                     </Button>
                     <Button
-                      variant="outline"
                       size="sm"
+                      variant="outline"
+                      className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-semibold transition-all"
                       onClick={() => openBackupDialog(request)}
                     >
-                      Schedule Backup Class
+                      <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                      Schedule Backup
                     </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
+              </div>
+            );
+          })
         )}
       </div>
 
       {/* Reply Dialog */}
       <Dialog open={replyDialogOpen} onOpenChange={setReplyDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reply to Student</DialogTitle>
+        <DialogContent className="max-w-lg p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          <DialogHeader className="px-7 py-6 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] text-white">
+            <DialogTitle className="text-xl font-bold">Reply to Student</DialogTitle>
+            <p className="text-teal-50/70 text-sm mt-0.5 truncate">{activeRequest?.subject}</p>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-slate-600 font-medium">
-              {activeRequest?.subject}
-            </p>
-
+          <div className="p-6 space-y-4 bg-white">
             {activeRequest?.responses?.length > 0 && (
-              <div className="max-h-48 overflow-y-auto rounded-md border border-slate-200 bg-slate-50/80 p-3 space-y-2">
+              <div className="max-h-44 overflow-y-auto rounded-2xl border border-slate-100 bg-slate-50 p-3 space-y-2">
                 {activeRequest.responses.map((resp, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-md bg-white px-3 py-2 border border-slate-200"
-                  >
+                  <div key={idx} className="rounded-xl bg-white px-4 py-3 border border-slate-100">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-semibold text-slate-700">
-                        Teacher reply
-                      </span>
+                      <span className="text-[11px] font-bold text-[#0F4C5C] uppercase tracking-wide">Teacher reply</span>
                       <span className="text-[10px] text-slate-400">
-                        {resp.createdAt
-                          ? new Date(resp.createdAt).toLocaleString("en-US", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })
-                          : ""}
+                        {resp.createdAt ? new Date(resp.createdAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }) : ""}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-700">{resp.message}</p>
+                    <p className="text-xs text-slate-700">{resp.message}</p>
                   </div>
                 ))}
               </div>
             )}
-
             <Textarea
               rows={4}
               placeholder="Type your response..."
               value={replyMessage}
               onChange={(e) => setReplyMessage(e.target.value)}
+              className="bg-slate-50 border-none rounded-xl resize-none focus:ring-2 focus:ring-[#0F4C5C]/30"
             />
           </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => setReplyDialogOpen(false)}
-            >
-              Cancel
+          <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end gap-3">
+            <Button variant="ghost" type="button" className="rounded-xl font-bold text-slate-500" onClick={() => setReplyDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleReply} disabled={dialogSubmitting} className="bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white rounded-xl px-8 font-bold">
+              {dialogSubmitting ? "Sending..." : "Send Reply"}
             </Button>
-            <Button
-              type="button"
-              onClick={handleReply}
-              disabled={dialogSubmitting}
-            >
-              Send Reply
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Resolve Dialog */}
       <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Mark as Resolved</DialogTitle>
+        <DialogContent className="max-w-lg p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          <DialogHeader className="px-7 py-6 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white">
+            <DialogTitle className="text-xl font-bold">Mark as Resolved</DialogTitle>
+            <p className="text-emerald-50/70 text-sm mt-0.5">Attach a solution or simply confirm resolution</p>
           </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-slate-600">
-              Attach a solution file or paste a link (Drive, GitHub, etc.)
-            </p>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Upload File</label>
+          <div className="p-6 bg-white space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Upload Solution File</label>
               <Input
                 type="file"
                 onChange={(e) => {
                   setSolutionFile(e.target.files?.[0] || null);
                   if (e.target.files?.[0]) setSolutionUrl("");
                 }}
+                className="bg-slate-50 border-none rounded-xl h-11"
               />
               {solutionFile && (
-                <p className="text-xs text-slate-500">
-                  Selected: {solutionFile.name}
-                </p>
+                <p className="text-xs text-slate-500 pl-1">Selected: {solutionFile.name}</p>
               )}
             </div>
-            <div className="relative flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="flex-1 border-t border-slate-200" />
-              <span className="text-xs text-slate-400">OR</span>
+              <span className="text-xs font-bold text-slate-400">OR</span>
               <div className="flex-1 border-t border-slate-200" />
             </div>
-            <Input
-              placeholder="Solution file URL (optional)"
-              value={solutionUrl}
-              onChange={(e) => {
-                setSolutionUrl(e.target.value);
-                if (e.target.value) setSolutionFile(null);
-              }}
-              disabled={!!solutionFile}
-            />
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Solution URL</label>
+              <Input
+                placeholder="Paste a Drive, GitHub, or other link"
+                value={solutionUrl}
+                onChange={(e) => { setSolutionUrl(e.target.value); if (e.target.value) setSolutionFile(null); }}
+                disabled={!!solutionFile}
+                className="bg-slate-50 border-none rounded-xl h-11"
+              />
+            </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => setResolveDialogOpen(false)}
-            >
-              Cancel
+          <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end gap-3">
+            <Button variant="ghost" type="button" className="rounded-xl font-bold text-slate-500" onClick={() => setResolveDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleResolve} disabled={dialogSubmitting} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 font-bold">
+              {dialogSubmitting ? "Resolving..." : "Mark Resolved"}
             </Button>
-            <Button
-              type="button"
-              onClick={handleResolve}
-              disabled={dialogSubmitting}
-            >
-              Mark Resolved
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Backup Class Dialog */}
       <Dialog open={backupDialogOpen} onOpenChange={setBackupDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Schedule Backup Class</DialogTitle>
+        <DialogContent className="max-w-lg p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+          <DialogHeader className="px-7 py-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+            <DialogTitle className="text-xl font-bold">Schedule Backup Class</DialogTitle>
+            <p className="text-blue-50/70 text-sm mt-0.5 truncate">{activeRequest?.subject}</p>
           </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              type="date"
-              value={backupData.date}
-              onChange={(e) =>
-                setBackupData({ ...backupData, date: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Topic"
-              value={backupData.topic}
-              onChange={(e) =>
-                setBackupData({ ...backupData, topic: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Meeting link (optional)"
-              value={backupData.meetingLink}
-              onChange={(e) =>
-                setBackupData({
-                  ...backupData,
-                  meetingLink: e.target.value,
-                })
-              }
-            />
+          <div className="p-6 bg-white space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Date</label>
+              <Input type="date" value={backupData.date} onChange={(e) => setBackupData({ ...backupData, date: e.target.value })} className="bg-slate-50 border-none rounded-xl h-11" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Topic</label>
+              <Input placeholder="e.g. React Hooks, Chapter 5" value={backupData.topic} onChange={(e) => setBackupData({ ...backupData, topic: e.target.value })} className="bg-slate-50 border-none rounded-xl h-11" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Meeting Link <span className="text-slate-300 font-normal">(optional)</span></label>
+              <Input placeholder="Zoom / Meet link" value={backupData.meetingLink} onChange={(e) => setBackupData({ ...backupData, meetingLink: e.target.value })} className="bg-slate-50 border-none rounded-xl h-11" />
+            </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => setBackupDialogOpen(false)}
-            >
-              Cancel
+          <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end gap-3">
+            <Button variant="ghost" type="button" className="rounded-xl font-bold text-slate-500" onClick={() => setBackupDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleScheduleBackup} disabled={dialogSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 font-bold">
+              {dialogSubmitting ? "Scheduling..." : "Schedule Class"}
             </Button>
-            <Button
-              type="button"
-              onClick={handleScheduleBackup}
-              disabled={dialogSubmitting}
-            >
-              Schedule
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Create Request Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create Support Request</DialogTitle>
-            <DialogDescription>
-              Log a new support ticket on behalf of a student.
-            </DialogDescription>
+        <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl rounded-3xl flex flex-col max-h-[90vh]">
+          <DialogHeader className="px-7 py-6 bg-gradient-to-r from-[#0F4C5C] to-[#1a7a8f] text-white shrink-0">
+            <DialogTitle className="text-xl font-bold">Create Support Request</DialogTitle>
+            <p className="text-teal-50/70 text-sm mt-0.5">Log a new support ticket on behalf of a student.</p>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Student</label>
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Student</label>
               <select
-                className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                className="w-full h-11 bg-slate-50 border-none rounded-xl px-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30"
                 value={createForm.studentId}
-                onChange={(e) =>
-                  setCreateForm({ ...createForm, studentId: e.target.value })
-                }
+                onChange={(e) => setCreateForm({ ...createForm, studentId: e.target.value })}
               >
                 <option value="">Select student</option>
                 {students.map((s) => (
-                  <option key={s._id} value={s._id}>
-                    {s.user?.fullName || "Unnamed"} ({s.user?.email})
-                  </option>
+                  <option key={s._id} value={s._id}>{s.user?.fullName || "Unnamed"} ({s.user?.email})</option>
                 ))}
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Subject <span className="text-slate-400 font-normal">(min 5 chars)</span></label>
-              <Input
-                value={createForm.subject}
-                onChange={(e) =>
-                  setCreateForm({ ...createForm, subject: e.target.value })
-                }
-                placeholder="Short summary of the issue"
-                minLength={5}
-                maxLength={200}
-              />
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Subject <span className="text-slate-300 font-normal normal-case">(min 5 chars)</span></label>
+              <Input value={createForm.subject} onChange={(e) => setCreateForm({ ...createForm, subject: e.target.value })} placeholder="Short summary of the issue" minLength={5} maxLength={200} className="bg-slate-50 border-none rounded-xl h-11" />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Description <span className="text-slate-400 font-normal">(min 10 chars)</span></label>
-              <Textarea
-                rows={4}
-                value={createForm.description}
-                onChange={(e) =>
-                  setCreateForm({ ...createForm, description: e.target.value })
-                }
-                placeholder="Detailed description of the doubt or issue"
-                minLength={10}
-                maxLength={2000}
-              />
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Description <span className="text-slate-300 font-normal normal-case">(min 10 chars)</span></label>
+              <Textarea rows={4} value={createForm.description} onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })} placeholder="Detailed description of the doubt or issue" minLength={10} maxLength={2000} className="bg-slate-50 border-none rounded-xl resize-none" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Category</label>
-                <select
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  value={createForm.category}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, category: e.target.value })
-                  }
-                >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Category</label>
+                <select className="w-full h-11 bg-slate-50 border-none rounded-xl px-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30" value={createForm.category} onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}>
                   <option value="technical">Technical</option>
                   <option value="academic">Academic</option>
                   <option value="administrative">Administrative</option>
                   <option value="other">Other</option>
                 </select>
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Priority</label>
-                <select
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  value={createForm.priority}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, priority: e.target.value })
-                  }
-                >
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Priority</label>
+                <select className="w-full h-11 bg-slate-50 border-none rounded-xl px-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]/30" value={createForm.priority} onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}>
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
@@ -1007,73 +880,43 @@ const TeacherSupport = () => {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">
-                  Course{" "}
-                  <span className="text-slate-400 font-normal">(optional)</span>
-                </label>
-                <Input
-                  value={createForm.course}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, course: e.target.value })
-                  }
-                  placeholder="e.g. Full Stack Web"
-                />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Course <span className="text-slate-300 font-normal normal-case">(optional)</span></label>
+                <Input value={createForm.course} onChange={(e) => setCreateForm({ ...createForm, course: e.target.value })} placeholder="e.g. Full Stack Web" className="bg-slate-50 border-none rounded-xl h-11" />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">
-                  Topic{" "}
-                  <span className="text-slate-400 font-normal">(optional)</span>
-                </label>
-                <Input
-                  value={createForm.topic}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, topic: e.target.value })
-                  }
-                  placeholder="e.g. React Hooks"
-                />
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Topic <span className="text-slate-300 font-normal normal-case">(optional)</span></label>
+                <Input value={createForm.topic} onChange={(e) => setCreateForm({ ...createForm, topic: e.target.value })} placeholder="e.g. React Hooks" className="bg-slate-50 border-none rounded-xl h-11" />
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setCreateDialogOpen(false)}
-            >
-              Cancel
+          <div className="shrink-0 px-6 py-4 border-t border-slate-100 bg-white flex justify-end gap-3">
+            <Button type="button" variant="ghost" className="rounded-xl font-bold text-slate-500" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleCreate} disabled={dialogSubmitting} className="bg-[#0F4C5C] hover:bg-[#1a7a8f] text-white rounded-xl px-10 font-bold shadow-md shadow-[#0F4C5C]/20">
+              {dialogSubmitting ? "Creating..." : "Create Request"}
             </Button>
-            <Button
-              type="button"
-              onClick={handleCreate}
-              disabled={dialogSubmitting}
-            >
-              Create
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
   );
 };
 
-const StatsCard = ({ icon, label, value, loading }) => (
-  <Card className="border-none shadow-sm">
-    <CardContent className="p-4 sm:p-5 flex items-center gap-4">
-      <div className="p-2.5 bg-slate-100 rounded-lg shrink-0">{icon}</div>
-      <div className="flex-1">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-          {label}
-        </p>
-        {loading ? (
-          <Skeleton className="h-8 w-16 mt-1" />
-        ) : (
-          <p className="text-2xl font-bold text-slate-900">{value}</p>
-        )}
-      </div>
-    </CardContent>
-  </Card>
+const StatsCard = ({ icon, iconBg, shadowColor, label, value, loading }) => (
+  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+    <div className={`w-13 h-13 rounded-2xl bg-gradient-to-br ${iconBg || "from-slate-400 to-slate-500"} flex items-center justify-center shrink-0 shadow-md ${shadowColor || ""} p-3`}>
+      {icon}
+    </div>
+    <div>
+      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{label}</p>
+      {loading ? (
+        <Skeleton className="h-8 w-16 mt-1" />
+      ) : (
+        <p className="text-2xl font-black text-slate-900">{value}</p>
+      )}
+    </div>
+  </div>
 );
 
 export default TeacherSupport;
