@@ -37,10 +37,8 @@ const TeacherBatchDetail = () => {
   const [attendanceRemarks, setAttendanceRemarks] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
-  const [editingRecord, setEditingRecord] = useState(null);
-  const [editStatus, setEditStatus] = useState("present");
-  const [editRemarks, setEditRemarks] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [attendancePagination, setAttendancePagination] = useState({ page: 1, totalPages: 1, total: 0 });
+  const [isAttendanceLoading, setIsAttendanceLoading] = useState(false);
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [contentList, setContentList] = useState([]);
   const [isSavingContent, setIsSavingContent] = useState(false);
@@ -55,18 +53,17 @@ const TeacherBatchDetail = () => {
   const loadBatchData = async () => {
     try {
       setLoading(true);
-      const [batchRes, studentsRes, attendanceRes] = await Promise.all([
+      const [batchRes, studentsRes] = await Promise.all([
         api.get(`/api/batches/${batchId}`),
         api.get(`/api/batches/${batchId}/students`),
-        api.get(`/api/attendance?batch=${batchId}`),
       ]);
+
+      await fetchAttendanceHistory(1);
 
       const batchData = batchRes?.data?.data;
       setBatch(batchData);
       const studentsList = studentsRes?.data?.data?.students || [];
       setStudents(studentsList);
-      // API returns { data: { records, pagination } }
-      setAttendanceHistory(attendanceRes?.data?.data?.records || []);
       setContentList(batchData?.content || []);
 
       // Initialize attendance form with "present" for all students
@@ -203,41 +200,17 @@ const TeacherBatchDetail = () => {
     return { sessionCount, attendanceRate };
   };
 
-  const startEditRecord = (record) => {
-    setEditingRecord(record);
-    setEditStatus(record.status);
-    setEditRemarks(record.remarks || "");
-  };
-
-  const cancelEdit = () => {
-    setEditingRecord(null);
-    setEditStatus("present");
-    setEditRemarks("");
-  };
-
-  const handleUpdateAttendance = async () => {
-    if (!editingRecord) return;
-    if (!editRemarks.trim()) {
-      toast.error("Remarks are mandatory when editing attendance");
-      return;
-    }
+  const fetchAttendanceHistory = async (page = 1) => {
     try {
-      setIsUpdating(true);
-      await api.put(`/api/attendance/${editingRecord._id}`, {
-        status: editStatus,
-        remarks: editRemarks,
-      });
-      toast.success("Attendance updated");
-      cancelEdit();
-      await loadBatchData();
+      setIsAttendanceLoading(true);
+      const { data } = await api.get(`/api/attendance?batch=${batchId}&page=${page}&limit=10`);
+      setAttendanceHistory(data?.data?.records || []);
+      setAttendancePagination(data?.data?.pagination || { page: 1, totalPages: 1, total: 0 });
     } catch (err) {
-      console.error("Update attendance failed:", err);
-      toast.error(
-        err.response?.data?.message ||
-        "Failed to update attendance. Note: records can only be edited same day within 10 minutes.",
-      );
+      console.error("Fetch attendance history failed:", err);
+      toast.error("Failed to load attendance history");
     } finally {
-      setIsUpdating(false);
+      setIsAttendanceLoading(false);
     }
   };
 
@@ -616,7 +589,12 @@ const TeacherBatchDetail = () => {
               No attendance records yet
             </p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className={`overflow-x-auto relative ${isAttendanceLoading ? "opacity-50" : ""}`}>
+              {isAttendanceLoading && (
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              )}
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
@@ -631,9 +609,6 @@ const TeacherBatchDetail = () => {
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-900">
                       Remarks
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -662,15 +637,6 @@ const TeacherBatchDetail = () => {
                       <td className="px-4 py-3 text-slate-600">
                         {record.remarks || "-"}
                       </td>
-                      <td className="px-4 py-3">
-                        <Button
-                          variant="outline"
-                          size="xs"
-                          onClick={() => startEditRecord(record)}
-                        >
-                          Edit
-                        </Button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -678,63 +644,30 @@ const TeacherBatchDetail = () => {
             </div>
           )}
 
-          {editingRecord && (
-            <div className="mt-6 border-t border-slate-200 pt-4 space-y-3">
-              <h4 className="font-semibold text-slate-900 text-sm">
-                Edit Attendance – {editingRecord.student?.user?.fullName} on{" "}
-                {new Date(editingRecord.date).toLocaleDateString()}
-              </h4>
-              <div className="flex flex-wrap gap-3 items-center">
-                <div className="flex gap-2">
-                  {["present", "absent", "late"].map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => setEditStatus(status)}
-                      className={`px-3 py-1 rounded text-xs font-medium transition-all ${editStatus === status
-                        ? status === "present"
-                          ? "bg-emerald-500 text-white"
-                          : status === "absent"
-                            ? "bg-red-500 text-white"
-                            : "bg-yellow-500 text-white"
-                        : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-                        }`}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex-1 min-w-[200px]">
-                  <textarea
-                    value={editRemarks}
-                    onChange={(e) => setEditRemarks(e.target.value)}
-                    rows="2"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Update remarks (mandatory)..."
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleUpdateAttendance}
-                    disabled={isUpdating}
-                  >
-                    {isUpdating ? "Saving..." : "Save"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={cancelEdit}
-                    disabled={isUpdating}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-500">
-                Attendance can only be edited on the same day it was recorded
-                and within 10 minutes of submission. If this window has passed,
-                the server will reject the update.
+          {/* Pagination Controls */}
+          {attendancePagination.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+              <p className="text-xs text-slate-500">
+                Showing page {attendancePagination.page} of {attendancePagination.totalPages} ({attendancePagination.total} records)
               </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={attendancePagination.page === 1 || isAttendanceLoading}
+                  onClick={() => fetchAttendanceHistory(attendancePagination.page - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={attendancePagination.page === attendancePagination.totalPages || isAttendanceLoading}
+                  onClick={() => fetchAttendanceHistory(attendancePagination.page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </div>

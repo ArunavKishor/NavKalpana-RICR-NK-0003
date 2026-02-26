@@ -128,9 +128,27 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
   };
 
   const modifierStyles = {
-    present: { color: "white", backgroundColor: "#10b981" },
-    absent: { color: "white", backgroundColor: "#ef4444" },
-    late: { color: "white", backgroundColor: "#f59e0b" },
+    present: {
+      color: "#ffffff",
+      backgroundColor: "#10b981",
+      borderRadius: "0.5rem",
+      fontWeight: "bold",
+      fontSize: "0.8rem"
+    },
+    absent: {
+      color: "#ffffff",
+      backgroundColor: "#ef4444",
+      borderRadius: "0.5rem",
+      fontWeight: "bold",
+      fontSize: "0.8rem"
+    },
+    late: {
+      color: "#ffffff",
+      backgroundColor: "#f59e0b",
+      borderRadius: "0.5rem",
+      fontWeight: "bold",
+      fontSize: "0.8rem"
+    },
   };
 
   const attPct = progressData?.attendance?.percentage || 0;
@@ -195,10 +213,10 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 {attPct > 0 && (
                   <Badge
                     className={`${attPct >= 75
-                        ? "bg-emerald-100 text-emerald-700"
-                        : attPct >= 50
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : attPct >= 50
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
                       }`}
                   >
                     {attPct}% Attendance
@@ -584,25 +602,19 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                   Attendance Calendar
                 </h4>
                 <Calendar
-                  mode="multiple"
-                  selected={[
-                    ...modifiers.present,
-                    ...modifiers.absent,
-                    ...modifiers.late,
-                  ]}
                   modifiers={modifiers}
                   modifiersStyles={modifierStyles}
-                  className="border rounded-md shadow-sm"
+                  className="border rounded-2xl shadow-premium bg-white p-4"
                 />
-                <div className="flex gap-4 mt-4 text-xs">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-emerald-500 rounded" /> Present
+                <div className="flex gap-4 mt-4 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3.5 h-3.5 bg-[#10b981] rounded-sm shadow-sm" /> Present
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-red-500 rounded" /> Absent
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3.5 h-3.5 bg-[#ef4444] rounded-sm shadow-sm" /> Absent
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-yellow-500 rounded" /> Late
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3.5 h-3.5 bg-[#f59e0b] rounded-sm shadow-sm" /> Late
                   </div>
                 </div>
               </div>
@@ -614,20 +626,20 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                     {
                       label: "Present Days",
                       count: progressData?.attendance?.present,
-                      color: "bg-emerald-500",
-                      textColor: "text-emerald-600",
+                      color: "bg-[#10b981]",
+                      textColor: "text-[#10b981]",
                     },
                     {
                       label: "Absent Days",
                       count: progressData?.attendance?.absent,
-                      color: "bg-red-500",
-                      textColor: "text-red-600",
+                      color: "bg-[#ef4444]",
+                      textColor: "text-[#ef4444]",
                     },
                     {
                       label: "Late Arrivals",
                       count: progressData?.attendance?.late,
-                      color: "bg-yellow-500",
-                      textColor: "text-yellow-600",
+                      color: "bg-[#f59e0b]",
+                      textColor: "text-[#f59e0b]",
                     },
                   ].map(({ label, count, color, textColor }) => {
                     const total = progressData?.attendance?.total || 0;
@@ -671,10 +683,10 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                         <div className="flex items-center gap-2 min-w-0">
                           <div
                             className={`w-2 h-2 rounded-full shrink-0 ${record.status === "present"
-                                ? "bg-emerald-500"
-                                : record.status === "absent"
-                                  ? "bg-red-500"
-                                  : "bg-yellow-500"
+                              ? "bg-[#10b981]"
+                              : record.status === "absent"
+                                ? "bg-[#ef4444]"
+                                : "bg-[#f59e0b]"
                               }`}
                           />
                           <span className="text-slate-700">
@@ -686,10 +698,10 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                           </span>
                           <Badge
                             className={`capitalize text-[10px] px-1.5 py-0 ${record.status === "present"
-                                ? "bg-emerald-50 text-emerald-600"
-                                : record.status === "absent"
-                                  ? "bg-red-50 text-red-600"
-                                  : "bg-yellow-50 text-yellow-600"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : record.status === "absent"
+                                ? "bg-red-50 text-red-600"
+                                : "bg-yellow-50 text-yellow-600"
                               }`}
                           >
                             {record.status}

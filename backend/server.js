@@ -6,8 +6,8 @@ import dotenv from "dotenv";
 
 import cloudinary from "./src/config/cloudinary.js";
 import connectDB from "./src/config/db.js";
+import { createRateLimiter } from "./src/middleware/rateLimit.js";
 
-import ContactRouter from "./src/routers/contactRoutes.js";
 import AuthRouter from "./src/routers/authRouter.js";
 import StudentRouter from "./src/routers/studentRoutes.js";
 import BatchRouter from "./src/routers/batchRoutes.js";
@@ -50,9 +50,21 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
+// ✅ Rate Limiting (data-fetching APIs only)
+const dataFetchLimiter = createRateLimiter({
+  windowMs: 60_000,
+  max: 120,
+  message: "Too many requests. Please slow down.",
+});
+
 // ✅ Routes
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET") {
+    return dataFetchLimiter(req, res, next);
+  }
+  return next();
+});
 app.use("/api/auth", AuthRouter);
-app.use("/api/contact", ContactRouter);
 app.use("/api/students", StudentRouter);
 app.use("/api/batches", BatchRouter);
 app.use("/api/attendance", AttendanceRouter);
