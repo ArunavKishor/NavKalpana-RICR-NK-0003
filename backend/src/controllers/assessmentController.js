@@ -106,7 +106,7 @@ export const getAssessments = async (req, res) => {
     const assessments = await Assessment.find(filter)
       .populate("batch", "name course")
       .populate("createdBy", "fullName email")
-      .sort({ dueDate: 1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
