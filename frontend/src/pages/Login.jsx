@@ -110,18 +110,9 @@ const Login = () => {
             className="flex flex-col items-center mb-8"
           >
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium mb-3"
-              style={{ backgroundColor: "var(--primary)" }}
+              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-premium mb-3 bg-white"
             >
-              <span
-                className="text-xl font-bold tracking-tight select-none"
-                style={{
-                  color: "var(--primary-foreground)",
-                  fontFamily: "'Outfit', sans-serif",
-                }}
-              >
-                MR
-              </span>
+              <img src="/logo.png" alt="MindRise Logo" className="w-16 h-16 object-contain" />
             </div>
             <h1
               className="text-2xl font-bold text-foreground tracking-tight"

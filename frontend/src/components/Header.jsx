@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import tranparentLogo from "../assets/tranparentLogo.png";
 import { Menu, X } from "lucide-react";
 
 const Header = () => {
@@ -28,21 +27,19 @@ const Header = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "py-2" : "py-4 pt-6"
-      }`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "py-2" : "py-4 pt-6"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
-        
-        {/* Logo */}
+
         <Link to="/" className="flex items-center gap-2">
           <motion.img
             whileHover={{ scale: 1.05, rotate: -2 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            src={tranparentLogo}
+            src="/logo.png"
             alt="Logo"
-            className="h-9 sm:h-11 lg:h-12 w-auto object-contain"
+            className="h-10 sm:h-12 w-auto object-contain"
           />
         </Link>
 

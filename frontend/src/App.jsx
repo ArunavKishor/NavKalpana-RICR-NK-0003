@@ -1,13 +1,13 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "@/context/AuthContext";
+import PageLoader from "@/components/common/PageLoader";
 import DashboardLayout from "./components/dashboard/DashboardMainLayout";
 import DashboardHome from "./pages/dashboards/admin/AdminDashboardHome";
 import Login from "./pages/Login";
 import {
   BatchManagement,
-  AssessmentManagement,
   StudentManagement,
   SupportRequests,
   BatchDetail,
@@ -26,62 +26,80 @@ import TeacherSupport from "./pages/teacher/TeacherSupport";
 import TeacherAccount from "./pages/teacher/TeacherAccount";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+const RouteChangeLoader = ({ children }) => {
+  const location = useLocation();
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setIsRouteLoading(true);
+    const timeoutId = setTimeout(() => {
+      setIsRouteLoading(false);
+    }, 350);
+    return () => clearTimeout(timeoutId);
+  }, [location.pathname, location.search, location.hash]);
+
+  return isRouteLoading ? <PageLoader /> : children;
+};
 
 const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Toaster />
-        <Routes>
-          <Route path="/" element={<Login />} />
+        <RouteChangeLoader>
+          <Routes>
+            <Route path="/" element={<Login />} />
 
-          {/* Legacy route catch-all */}
-          <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+            {/* Legacy route catch-all */}
+            <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardHome />} />
-            <Route path="batches" element={<BatchManagement />} />
-            <Route path="batches/:batchId" element={<BatchDetail />} />
-            <Route path="teachers" element={<TeacherManagement />} />
-            <Route path="students" element={<StudentManagement />} />
-            <Route path="support" element={<SupportRequests />} />
-          </Route>
-
-
-          {/* Teacher Dashboard Routes (Admin can view too) */}
-          <Route
-            path="/teacher-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["teacher", "admin"]}>
-                <TeacherDashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<TeacherDashboardHome />} />
-            <Route path="batches" element={<TeacherBatchManagement />} />
-            <Route path="batches/:batchId" element={<TeacherBatchDetail />} />
-            <Route path="students" element={<TeacherStudentManagement />} />
+            {/* Admin Routes */}
             <Route
-              path="assessments"
-              element={<TeacherAssessmentManagement />}
-            />
-            <Route path="analytics" element={<TeacherAnalytics />} />
-            <Route path="quizzes" element={<QuizManagement />} />
-            <Route path="support" element={<TeacherSupport />} />
-            <Route path="account" element={<TeacherAccount />} />
-          </Route>
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardHome />} />
+              <Route path="batches" element={<BatchManagement />} />
+              <Route path="batches/:batchId" element={<BatchDetail />} />
+              <Route path="teachers" element={<TeacherManagement />} />
+              <Route path="students" element={<StudentManagement />} />
+              <Route path="support" element={<SupportRequests />} />
+            </Route>
 
-
-        </Routes>
+            {/* Teacher Dashboard Routes (Admin can view too) */}
+            <Route
+              path="/teacher-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["teacher", "admin"]}>
+                  <TeacherDashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<TeacherDashboardHome />} />
+              <Route path="batches" element={<TeacherBatchManagement />} />
+              <Route path="batches/:batchId" element={<TeacherBatchDetail />} />
+              <Route path="students" element={<TeacherStudentManagement />} />
+              <Route
+                path="assessments"
+                element={<TeacherAssessmentManagement />}
+              />
+              <Route path="analytics" element={<TeacherAnalytics />} />
+              <Route path="quizzes" element={<QuizManagement />} />
+              <Route path="support" element={<TeacherSupport />} />
+              <Route path="account" element={<TeacherAccount />} />
+            </Route>
+          </Routes>
+        </RouteChangeLoader>
       </AuthProvider>
     </BrowserRouter>
   );

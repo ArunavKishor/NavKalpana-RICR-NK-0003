@@ -33,8 +33,11 @@ const TeacherBatchManagement = () => {
 
   useEffect(() => {
     loadBatches();
-    loadAllBatchesForCounts();
   }, [activeFilter, searchQuery]);
+
+  useEffect(() => {
+    loadAllBatchesForCounts();
+  }, []);
 
   const loadBatches = async () => {
     try {
@@ -49,6 +52,9 @@ const TeacherBatchManagement = () => {
       const { data } = await api.get("/api/batches", { params: payload });
       const batchesList = data?.data?.batches || [];
       setBatches(batchesList);
+      if (activeFilter === "All" && !searchQuery) {
+        setAllBatches(batchesList);
+      }
     } catch (err) {
       console.error("Load batches failed:", err);
       setError("Failed to load batches. Please try again.");

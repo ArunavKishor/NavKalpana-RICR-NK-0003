@@ -3,12 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  FileText,
   GraduationCap,
   ChevronRight,
+  Menu,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
@@ -17,63 +27,75 @@ const sidebarItems = [
   { icon: Users, label: "Teachers", href: "/admin/teachers" },
 ];
 
-const Sidebar = ({ isOpen }) => {
-  const location = useLocation();
-
-  return (
-    <motion.aside
-      initial={false}
-      animate={{ x: isOpen ? 0 : -285 }}
-      transition={{
-        type: "spring",
-        stiffness: 110,
-        damping: 18,
-        mass: 0.8,
-      }}
+const NavItem = ({ item, isActive, onClick }) => (
+  <motion.div
+    whileHover={{ x: 4 }}
+    transition={{ type: "tween", duration: 0.2 }}
+  >
+    <Link
+      to={item.href}
+      onClick={onClick}
       className={cn(
-        "fixed top-3 left-3 z-50 h-[calc(100vh-24px)] w-64 rounded-3xl",
-        "bg-card border border-border shadow-premium flex flex-col overflow-hidden",
+        "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group",
+        isActive
+          ? "text-white bg-primary shadow-lg shadow-primary/20"
+          : "text-slate-600 hover:text-primary hover:bg-primary/5"
       )}
     >
-      {/* LOGO */}
-      <div className="h-20 px-5 flex items-center border-b border-border">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.2 }}
-          className="flex items-center gap-3 cursor-pointer"
-        >
-          {/* MR Text Logo */}
-          <motion.div
-            whileHover={{ rotate: -3 }}
-            transition={{ type: "spring", stiffness: 200, damping: 10 }}
-            className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            <span
-              className="text-sm font-bold tracking-tight select-none"
-              style={{
-                color: "var(--primary-foreground)",
-                fontFamily: "'Outfit', sans-serif",
-              }}
-            >
-              MR
-            </span>
-          </motion.div>
-
-          <div className="leading-tight">
-            <p
-              className="font-semibold text-foreground tracking-wide"
-              style={{ fontFamily: "'Outfit', sans-serif" }}
-            >
-              MindRise
-            </p>
-            <p className="text-xs text-muted-foreground">Admin Panel</p>
-          </div>
-        </motion.div>
+      <div
+        className={cn(
+          "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300",
+          isActive
+            ? "bg-white/20 rotate-0"
+            : "bg-slate-100 group-hover:bg-primary/10 group-hover:rotate-6"
+        )}
+      >
+        <item.icon
+          className={cn(
+            "w-4 h-4 transition-colors duration-200",
+            isActive ? "text-white" : "text-slate-500 group-hover:text-primary"
+          )}
+        />
       </div>
 
-      {/* NAVIGATION */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <span className="flex-1 tracking-tight">{item.label}</span>
+
+      <ChevronRight
+        className={cn(
+          "w-4 h-4 transition-all duration-300",
+          isActive
+            ? "text-white opacity-100 rotate-90"
+            : "text-slate-300 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+        )}
+      />
+    </Link>
+  </motion.div>
+);
+
+const SidebarContent = ({ location, onNavItemClick }) => (
+  <div className="flex flex-col h-full bg-white">
+    {/* LOGO SECTION */}
+    <div className="h-24 px-8 flex items-center border-b border-slate-50">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-premium bg-white border border-slate-100">
+          <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+        </div>
+        <div className="leading-tight">
+          <p className="font-black text-[#0F4C5C] tracking-tighter text-xl">
+            MindRise
+          </p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Admin Panel
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <ScrollArea className="flex-1 px-4 py-8">
+      <div className="space-y-2">
+        <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">
+          Core Management
+        </p>
         {sidebarItems.map((item) => {
           const isActive =
             item.href === "/admin/dashboard"
@@ -81,74 +103,56 @@ const Sidebar = ({ isOpen }) => {
               : location.pathname.startsWith(item.href);
 
           return (
-            <motion.div
+            <NavItem
               key={item.href}
-              whileHover={{ x: 3 }}
-              transition={{ type: "tween", duration: 0.18 }}
-            >
-              <Link
-                to={item.href}
-                className={cn(
-                  "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium",
-                  "transition-colors duration-200 group",
-                )}
-              >
-                {/* Active Background */}
-                {isActive && (
-                  <motion.div
-                    layoutId="adminSidebarActive"
-                    className="absolute inset-0 rounded-xl"
-                    style={{ backgroundColor: "var(--primary)" }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 120,
-                      damping: 20,
-                    }}
-                  />
-                )}
-
-                {/* Icon Container */}
-                <div
-                  className={cn(
-                    "relative z-10 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
-                    isActive
-                      ? "bg-white/20"
-                      : "bg-secondary group-hover:bg-secondary/80",
-                  )}
-                >
-                  <item.icon
-                    className={cn(
-                      "w-4 h-4 transition-colors duration-200",
-                      isActive ? "text-white" : "text-muted-foreground",
-                    )}
-                  />
-                </div>
-
-                {/* Label */}
-                <span
-                  className={cn(
-                    "relative z-10 flex-1 transition-colors duration-200",
-                    isActive ? "text-white" : "text-foreground",
-                  )}
-                >
-                  {item.label}
-                </span>
-
-                {/* Arrow Animation */}
-                <ChevronRight
-                  className={cn(
-                    "relative z-10 w-4 h-4 transition-all duration-200",
-                    isActive
-                      ? "text-white opacity-100"
-                      : "text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0",
-                  )}
-                />
-              </Link>
-            </motion.div>
+              item={item}
+              isActive={isActive}
+              onClick={onNavItemClick}
+            />
           );
         })}
-      </nav>
-    </motion.aside>
+      </div>
+    </ScrollArea>
+
+    <div className="p-4 border-t border-slate-50">
+      <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <GraduationCap className="w-5 h-5" />
+        </div>
+        <div>
+          <p className="text-xs font-black text-slate-900 tracking-tight">System v2.4</p>
+          <p className="text-[10px] font-bold text-slate-400">Premium License</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+export const MobileSidebar = () => {
+  const location = useLocation();
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="w-6 h-6" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="p-0 w-72 border-none rounded-r-3xl overflow-hidden shadow-2xl">
+        <SidebarContent location={location} onNavItemClick={() => setOpen(false)} />
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+const Sidebar = () => {
+  const location = useLocation();
+
+  return (
+    <aside className="hidden md:flex flex-col w-72 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-white border border-slate-100 shadow-premium rounded-[2.5rem] overflow-hidden">
+      <SidebarContent location={location} />
+    </aside>
   );
 };
 
