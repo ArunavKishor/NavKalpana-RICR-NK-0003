@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Users,
   Calendar,
@@ -20,6 +19,7 @@ import toast from "react-hot-toast";
 import Modal from "@/components/admin/AdminModal";
 import BatchForm from "@/components/admin/AdminBatchForm";
 import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmationDialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // -------------------- Component --------------------
 
@@ -58,7 +58,7 @@ const BatchManagement = () => {
       console.error("Load batches failed:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to load batches. Please try again.",
+        "Failed to load batches. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -189,7 +189,7 @@ const BatchManagement = () => {
       }
       toast.error(
         err.response?.data?.message ||
-          "Failed to save batch. Please try again.",
+        "Failed to save batch. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -216,7 +216,7 @@ const BatchManagement = () => {
       console.error("Delete batch failed:", err);
       toast.error(
         err.response?.data?.message ||
-          "Failed to delete batch. Please try again.",
+        "Failed to delete batch. Please try again.",
         { duration: 5000 },
       );
     } finally {
@@ -236,12 +236,28 @@ const BatchManagement = () => {
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
+
+  if (loading && batches.length === 0) {
+    return (
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-12 py-6 max-w-[1600px] mx-auto space-y-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-96 font-medium" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <Skeleton key={i} className="h-[430px] w-full rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-12 py-6 max-w-[1600px] mx-auto space-y-8">
-      {loading && (
-        <div className="text-sm text-slate-500">Loading batches...</div>
-      )}
-
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
           {error}
@@ -270,24 +286,21 @@ const BatchManagement = () => {
 
       {/* Filters & Search */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        {/* Filters */}
         <div className="flex gap-2 bg-white rounded-lg p-1.5 shadow-sm border overflow-x-auto whitespace-nowrap scrollbar-thin">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${
-                activeFilter === filter
+              className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition shrink-0 ${activeFilter === filter
                   ? "bg-blue-600 text-white"
                   : "text-slate-600 hover:bg-slate-100"
-              }`}
+                }`}
             >
               {filter}
             </button>
           ))}
         </div>
 
-        {/* Search */}
         <div className="relative w-full sm:w-full md:w-72 lg:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -349,9 +362,9 @@ const BatchManagement = () => {
                   <Calendar className="w-4 h-4" />
                   {batch.startDate
                     ? new Date(batch.startDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      })
+                      month: "short",
+                      year: "numeric",
+                    })
                     : "N/A"}
                 </div>
               </div>

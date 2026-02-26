@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "@/config/Api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AttendanceManagement = () => {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ const AttendanceManagement = () => {
         console.error("Load attendance data failed:", err);
         setError(
           err.response?.data?.message ||
-            "Failed to load batch attendance data.",
+          "Failed to load batch attendance data.",
         );
       } finally {
         setLoading(false);
@@ -124,17 +125,80 @@ const AttendanceManagement = () => {
       console.error("Submit attendance failed:", err);
       alert(
         err.response?.data?.message ||
-          "Failed to submit attendance. Please try again.",
+        "Failed to submit attendance. Please try again.",
       );
     }
   };
 
+  if (loading && students.length === 0) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-64" />
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div className="xl:col-span-2">
+            <Card className="shadow-sm p-6 space-y-6">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-10 w-72" />
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+          <div className="space-y-6">
+            <Card className="p-6 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-28 w-full" />
+              <div className="flex justify-between border-t pt-4">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-10 w-full" />
+            </Card>
+            <Card className="bg-blue-50 p-6 space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-16" />
+              <Skeleton className="h-2 w-full" />
+              <Skeleton className="h-4 w-48" />
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
-      {loading && (
-        <div className="text-sm text-slate-500">Loading attendance...</div>
-      )}
-
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
           {error}
@@ -241,15 +305,14 @@ const AttendanceManagement = () => {
                         <button
                           key={type}
                           onClick={() => markAttendance(student.id, type)}
-                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                            student.status === type
-                              ? type === "present"
-                                ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
-                                : type === "absent"
-                                  ? "bg-red-100 text-red-700 border-2 border-red-500"
-                                  : "bg-orange-100 text-orange-700 border-2 border-orange-500"
-                              : "bg-white border border-slate-200 text-slate-600"
-                          }`}
+                          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${student.status === type
+                            ? type === "present"
+                              ? "bg-emerald-100 text-emerald-700 border-2 border-emerald-500"
+                              : type === "absent"
+                                ? "bg-red-100 text-red-700 border-2 border-red-500"
+                                : "bg-orange-100 text-orange-700 border-2 border-orange-500"
+                            : "bg-white border border-slate-200 text-slate-600"
+                            }`}
                         >
                           {type === "present" && (
                             <CheckCircle2 className="w-4 h-4" />
@@ -326,6 +389,7 @@ const AttendanceManagement = () => {
       </div>
     </div>
   );
+
 };
 
 export default AttendanceManagement;

@@ -15,6 +15,7 @@ import { Trophy, Users, Activity, Flame, FileText, Download } from "lucide-react
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -172,10 +173,62 @@ const TeacherAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
-          <p className="mt-4 text-slate-600">Loading analytics...</p>
+      <div className="w-full space-y-8 animate-pulse">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-3/4 max-w-md" />
+          <Skeleton className="h-4 w-1/2 max-w-sm" />
+        </div>
+
+        {/* Top metrics skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-xl px-5 py-4 flex items-center gap-3 border border-slate-100">
+              <Skeleton className="w-11 h-11 rounded-xl" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-6 w-12" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts row skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 h-[320px]">
+            <Skeleton className="h-5 w-40 mb-6" />
+            <Skeleton className="h-full w-full rounded-lg" />
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 h-[320px]">
+            <Skeleton className="h-5 w-40 mb-6" />
+            <Skeleton className="h-full w-full rounded-lg" />
+          </div>
+        </div>
+
+        {/* Table & Leaderboard skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
+            <div className="flex justify-between items-center mb-6">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+            <Skeleton className="h-5 w-40 mb-2" />
+            <div className="flex gap-2">
+              <Skeleton className="h-8 flex-1" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -33,7 +33,7 @@ const DashboardHeader = ({ toggleSidebar, isSidebarOpen }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   // Debounced search effect

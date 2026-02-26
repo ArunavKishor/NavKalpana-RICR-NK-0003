@@ -20,6 +20,8 @@ import DeleteConfirmationDialog from "@/components/admin/AdminDeleteConfirmation
 import api from "@/config/Api";
 import toast from "react-hot-toast";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 const TeacherManagement = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("ACTIVE");
@@ -240,195 +242,247 @@ const TeacherManagement = () => {
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="p-8 space-y-6">
-        {loading && (
-          <div className="text-sm text-slate-500">Loading teachers...</div>
-        )}
-
-        {error && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
-            {error}
-          </div>
-        )}
-
-        {/* Title + Stats */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">
-              Teacher Management
-            </h1>
-            <p className="text-slate-500">
-              Manage instructors and their credentials
-            </p>
-          </div>
-
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2"
-            onClick={openCreateModal}
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Teacher</span>
-          </Button>
-
-          <div className="flex gap-4">
-            <StatCard
-              icon={<Users className="w-5 h-5 text-blue-600" />}
-              label="TOTAL"
-              value={total}
-            />
-            <StatCard
-              icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
-              label="ACTIVE"
-              value={activeCount}
-            />
-            <StatCard
-              icon={<Clock className="w-5 h-5 text-slate-600" />}
-              label="INACTIVE"
-              value={inactiveCount}
-            />
-          </div>
-        </div>
-
-        {/* FILTER SECTION */}
-        <Card className="bg-white shadow-sm rounded-xl">
-          <CardContent className="p-6 flex gap-4 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-              <input
-                placeholder="Search by Name, ID, or Email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 w-full border rounded-lg bg-slate-50 text-sm focus:outline-none"
-              />
+        {loading && teachers.length === 0 ? (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-64" />
+                <Skeleton className="h-4 w-96" />
+              </div>
+              <Skeleton className="h-12 w-40" />
+              <div className="flex gap-4">
+                <Skeleton className="h-20 w-32 rounded-xl" />
+                <Skeleton className="h-20 w-32 rounded-xl" />
+                <Skeleton className="h-20 w-32 rounded-xl" />
+              </div>
             </div>
+            <Card className="p-6">
+              <div className="flex gap-4">
+                <Skeleton className="h-10 flex-1" />
+                <div className="flex gap-3">
+                  <Skeleton className="h-10 w-32" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </div>
+            </Card>
+            <Card>
+              <div className="p-0">
+                <div className="grid grid-cols-12 px-6 py-4 border-b">
+                  <Skeleton className="col-span-5 h-4 w-32" />
+                  <Skeleton className="col-span-3 h-4 w-24" />
+                  <Skeleton className="col-span-2 h-4 w-16" />
+                  <Skeleton className="col-span-2 h-4 w-16 ml-auto" />
+                </div>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="grid grid-cols-12 px-6 py-5 items-center border-b last:border-0">
+                    <div className="col-span-5 flex items-center gap-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                    </div>
+                    <Skeleton className="col-span-3 h-4 w-24" />
+                    <Skeleton className="col-span-2 h-6 w-20 rounded-full" />
+                    <div className="col-span-2 flex justify-end gap-2">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        ) : (
+          <>
 
-            <div className="flex gap-3">
-              <ToggleButton
-                active={activeTab === "ACTIVE"}
-                onClick={() => setActiveTab("ACTIVE")}
-              >
-                Active Teachers
-              </ToggleButton>
-
-              <ToggleButton
-                active={activeTab !== "ACTIVE"}
-                onClick={() => setActiveTab("INACTIVE")}
-              >
-                Inactive/Resigned
-              </ToggleButton>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* TABLE */}
-        <Card className="bg-white shadow-sm rounded-xl">
-          <CardContent className="p-0">
-            <div className="grid grid-cols-12 px-6 py-4 text-sm font-semibold text-slate-500 border-b">
-              <div className="col-span-5">TEACHER DETAILS</div>
-              <div className="col-span-3">EMPLOYEE ID</div>
-              <div className="col-span-2">STATUS</div>
-              <div className="col-span-2 text-right">ACTIONS</div>
-            </div>
-
-            {filteredTeachers.length === 0 && (
-              <div className="p-10 text-center text-slate-500">
-                No teachers found.
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+                {error}
               </div>
             )}
 
-            {filteredTeachers.map((teacher) => (
-              <div
-                key={teacher.id}
-                className="grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition"
+            {/* Title + Stats */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">
+                  Teacher Management
+                </h1>
+                <p className="text-slate-500">
+                  Manage instructors and their credentials
+                </p>
+              </div>
+
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2"
+                onClick={openCreateModal}
               >
-                <div className="col-span-5 flex items-center gap-4">
-                  <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      teacher.name || "T"
-                    )}&background=random`}
-                    alt={teacher.name}
-                    className="w-12 h-12 rounded-full"
+                <Plus className="w-5 h-5" />
+                <span>Add Teacher</span>
+              </Button>
+
+              <div className="flex gap-4">
+                <StatCard
+                  icon={<Users className="w-5 h-5 text-blue-600" />}
+                  label="TOTAL"
+                  value={total}
+                />
+                <StatCard
+                  icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
+                  label="ACTIVE"
+                  value={activeCount}
+                />
+                <StatCard
+                  icon={<Clock className="w-5 h-5 text-slate-600" />}
+                  label="INACTIVE"
+                  value={inactiveCount}
+                />
+              </div>
+            </div>
+
+            {/* FILTER SECTION */}
+            <Card className="bg-white shadow-sm rounded-xl">
+              <CardContent className="p-6 flex gap-4 items-center">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                  <input
+                    placeholder="Search by Name, ID, or Email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 pr-4 py-2 w-full border rounded-lg bg-slate-50 text-sm focus:outline-none"
                   />
-                  <div>
-                    <p className="font-semibold text-slate-900">
-                      {teacher.name}
-                    </p>
-                    <div className="flex gap-4 text-sm text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-4 h-4" />
-                        {teacher.email}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-4 h-4" />
-                        {teacher.phone}
-                      </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <ToggleButton
+                    active={activeTab === "ACTIVE"}
+                    onClick={() => setActiveTab("ACTIVE")}
+                  >
+                    Active Teachers
+                  </ToggleButton>
+
+                  <ToggleButton
+                    active={activeTab !== "ACTIVE"}
+                    onClick={() => setActiveTab("INACTIVE")}
+                  >
+                    Inactive/Resigned
+                  </ToggleButton>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* TABLE */}
+            <Card className="bg-white shadow-sm rounded-xl">
+              <CardContent className="p-0">
+                <div className="grid grid-cols-12 px-6 py-4 text-sm font-semibold text-slate-500 border-b">
+                  <div className="col-span-5">TEACHER DETAILS</div>
+                  <div className="col-span-3">EMPLOYEE ID</div>
+                  <div className="col-span-2">STATUS</div>
+                  <div className="col-span-2 text-right">ACTIONS</div>
+                </div>
+
+                {filteredTeachers.length === 0 && (
+                  <div className="p-10 text-center text-slate-500">
+                    No teachers found.
+                  </div>
+                )}
+
+                {filteredTeachers.map((teacher) => (
+                  <div
+                    key={teacher.id}
+                    className="grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition"
+                  >
+                    <div className="col-span-5 flex items-center gap-4">
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          teacher.name || "T"
+                        )}&background=random`}
+                        alt={teacher.name}
+                        className="w-12 h-12 rounded-full"
+                      />
+                      <div>
+                        <p className="font-semibold text-slate-900">
+                          {teacher.name}
+                        </p>
+                        <div className="flex gap-4 text-sm text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-4 h-4" />
+                            {teacher.email}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-4 h-4" />
+                            {teacher.phone}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-span-3">
+                      <p className="font-medium text-slate-700">
+                        {teacher.employeeId}
+                      </p>
+                    </div>
+
+                    <div className="col-span-2">
+                      <Badge
+                        className={`${getStatusColor(teacher.status)} px-3 py-1 capitalize`}
+                      >
+                        {teacher.status}
+                      </Badge>
+                    </div>
+
+                    <div className="col-span-2 text-right flex items-center justify-end gap-2">
+                      <button
+                        className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
+                        onClick={() => openEditModal(teacher)}
+                        title="Edit Teacher"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
+                        onClick={() => openDeleteDialog(teacher)}
+                        title="Delete Teacher"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                </div>
+                ))}
+              </CardContent>
+            </Card>
 
-                <div className="col-span-3">
-                  <p className="font-medium text-slate-700">
-                    {teacher.employeeId}
-                  </p>
-                </div>
+            {/* Create/Edit Modal */}
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              title={modalMode === "create" ? "Add New Teacher" : "Edit Teacher"}
+              description={
+                modalMode === "create"
+                  ? "Enter teacher details to create a new profile. They will use their email to log in."
+                  : "Update teacher profile information."
+              }
+            >
+              <TeacherForm
+                initialData={selectedTeacher}
+                onSubmit={handleTeacherFormSubmit}
+                onCancel={() => setIsModalOpen(false)}
+                isLoading={isSubmitting}
+                errors={formErrors}
+              />
+            </Modal>
 
-                <div className="col-span-2">
-                  <Badge
-                    className={`${getStatusColor(teacher.status)} px-3 py-1 capitalize`}
-                  >
-                    {teacher.status}
-                  </Badge>
-                </div>
-
-                <div className="col-span-2 text-right flex items-center justify-end gap-2">
-                  <button
-                    className="p-2 rounded-lg hover:bg-slate-100 text-blue-600"
-                    onClick={() => openEditModal(teacher)}
-                    title="Edit Teacher"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    className="p-2 rounded-lg hover:bg-slate-100 text-red-600"
-                    onClick={() => openDeleteDialog(teacher)}
-                    title="Delete Teacher"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Create/Edit Modal */}
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title={modalMode === "create" ? "Add New Teacher" : "Edit Teacher"}
-          description={
-            modalMode === "create"
-              ? "Enter teacher details to create a new profile. They will use their email to log in."
-              : "Update teacher profile information."
-          }
-        >
-          <TeacherForm
-            initialData={selectedTeacher}
-            onSubmit={handleTeacherFormSubmit}
-            onCancel={() => setIsModalOpen(false)}
-            isLoading={isSubmitting}
-            errors={formErrors}
-          />
-        </Modal>
-
-        {/* Delete Dialog */}
-        <DeleteConfirmationDialog
-          isOpen={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-          onConfirm={confirmDelete}
-          title="Delete Teacher"
-          description={`Are you sure you want to delete "${teacherToDelete?.name}"? This will deactivate their profile and they will lose dashboard access. This action cannot be undone.`}
-          isLoading={isDeleting}
-        />
+            {/* Delete Dialog */}
+            <DeleteConfirmationDialog
+              isOpen={deleteDialogOpen}
+              onClose={() => setDeleteDialogOpen(false)}
+              onConfirm={confirmDelete}
+              title="Delete Teacher"
+              description={`Are you sure you want to delete "${teacherToDelete?.name}"? This will deactivate their profile and they will lose dashboard access. This action cannot be undone.`}
+              isLoading={isDeleting}
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -56,7 +56,7 @@ const Header = () => {
               boxShadow: "0 0 20px rgba(139, 92, 246, 0.5)",
             }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
             className="relative px-5 lg:px-6 py-2 rounded-xl text-sm lg:text-base font-semibold text-white overflow-hidden
                        bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 shadow-lg"
           >
@@ -99,7 +99,7 @@ const Header = () => {
             <div className="flex flex-col p-4 gap-3">
               <button
                 onClick={() => {
-                  navigate("/login");
+                  navigate("/");
                   setOpen(false);
                 }}
                 className="w-full py-2.5 rounded-lg text-sm font-medium
