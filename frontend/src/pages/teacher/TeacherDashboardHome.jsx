@@ -426,29 +426,33 @@ const TeacherDashboardHome = () => {
               All students are performing well.
             </div>
           ) : (
-            <div className="space-y-4 flex-1">
+            <div className="space-y-3 flex-1">
               {lowPerformingStudents.map((student, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 rounded-lg border border-red-100 bg-red-50/50 hover:shadow-sm transition-shadow"
+                  className="p-3 rounded-lg border border-red-100 bg-red-50/50 hover:shadow-sm transition-shadow"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-xs shrink-0">
                       {student.name.charAt(0)}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900 line-clamp-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
                         {student.name}
                       </p>
-                      <p className="text-xs text-slate-500 line-clamp-1">
+                      <p className="text-xs text-slate-500 truncate">
                         {student.course}
                       </p>
                     </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-red-600">
+                    <span className="text-sm font-bold text-red-600 shrink-0">
                       {student.score}%
-                    </p>
+                    </span>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full bg-red-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-red-400 rounded-full"
+                      style={{ width: `${student.score}%` }}
+                    />
                   </div>
                 </div>
               ))}
