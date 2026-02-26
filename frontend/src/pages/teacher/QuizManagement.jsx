@@ -471,7 +471,7 @@ const QuizManagement = () => {
                   placeholder="Short description or instructions"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Batch</label>
                   <Select
@@ -503,7 +503,7 @@ const QuizManagement = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Total Marks</label>
                   <Input
@@ -606,7 +606,7 @@ const QuizManagement = () => {
               </p>
             ) : scoresData ? (
               <div className="space-y-4 py-2">
-                <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
                   <div className="bg-blue-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-blue-600 uppercase">
                       Attempts

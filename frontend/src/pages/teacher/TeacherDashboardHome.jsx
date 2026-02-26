@@ -42,8 +42,8 @@ const StatCard = ({ icon, label, value, color }) => (
 const DashboardSkeleton = () => (
   <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
     <div className="space-y-2">
-      <Skeleton className="h-10 w-64" />
-      <Skeleton className="h-4 w-96" />
+      <Skeleton className="h-10 w-full max-w-[16rem]" />
+      <Skeleton className="h-4 w-full max-w-[24rem]" />
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -464,7 +464,7 @@ const TeacherDashboardHome = () => {
               Quick Navigation
             </h3>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
                 href="/teacher-dashboard/batches"
                 className="w-full bg-slate-50 hover:bg-blue-50 hover:text-blue-600 p-4 rounded-xl flex flex-col items-center gap-3 transition-colors border border-transparent hover:border-blue-200"

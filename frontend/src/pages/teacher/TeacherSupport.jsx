@@ -451,7 +451,7 @@ const TeacherSupport = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
           icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
           label="Total (filtered)"
@@ -488,7 +488,7 @@ const TeacherSupport = () => {
             placeholder="Search by subject, student name, or request ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm max-w-lg"
           />
         </div>
 
