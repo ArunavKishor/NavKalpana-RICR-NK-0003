@@ -22,9 +22,19 @@ dotenv.config();
 const app = express();
 
 // ✅ Middleware
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, "")) // strip trailing slashes
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (Postman, server-to-server, health checks)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
     credentials: true,
   })
 );
