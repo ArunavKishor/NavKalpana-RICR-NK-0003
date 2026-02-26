@@ -32,7 +32,7 @@ const DashboardHeader = ({ toggleSidebar }) => {
         : "Staff";
 
   return (
-    <header className="h-16 sm:h-20 bg-white border-b border-slate-200 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
+    <header className="h-16 sm:h-20 bg-card border-b border-border flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 shadow-premium">
       {/* Left — Greeting */}
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <Button
@@ -47,7 +47,7 @@ const DashboardHeader = ({ toggleSidebar }) => {
         <div className="truncate">
           <h2 className="text-lg sm:text-2xl font-bold text-slate-800 truncate">
             {greeting},{" "}
-            <span className="text-blue-600 capitalize">
+            <span className="text-primary capitalize">
               {user?.fullName?.split(" ")[0] || user?.role || "User"}
             </span>
           </h2>
@@ -68,7 +68,7 @@ const DashboardHeader = ({ toggleSidebar }) => {
             <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-white shadow-sm cursor-pointer">
               <AvatarImage
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  user?.fullName || "Admin"
+                  user?.fullName || "Admin",
                 )}&background=2563eb&color=fff`}
                 alt="Profile"
               />

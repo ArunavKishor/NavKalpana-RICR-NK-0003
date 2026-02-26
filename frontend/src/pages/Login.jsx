@@ -48,9 +48,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      console.log("📤 Sending login request with:", formData);
       const res = await api.post("/api/auth/login", formData);
-      console.log("✅ Login response:", res.data);
       toast.success(res.data.message);
 
       const user = res?.data?.data;
@@ -84,9 +82,6 @@ const Login = () => {
       }
       handleClearForm();
     } catch (error) {
-      console.error("❌ Login error:", error);
-      console.error("❌ Error response:", error?.response?.data);
-      console.error("❌ Status code:", error?.response?.status);
       toast.error(error?.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
@@ -95,30 +90,76 @@ const Login = () => {
 
   return (
     <>
-      <div className="relative min-h-screen flex flex-col items-center justify-center bg-white px-3 sm:px-4 py-4 sm:py-6">
+      <div className="relative min-h-screen flex flex-col items-center justify-center bg-background px-3 sm:px-4 py-4 sm:py-6">
         {/* Background Grid Layer */}
-        <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"></div>
+        <div
+          className="absolute inset-0 -z-10 h-full w-full"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, oklch(0.90 0.01 255.4 / 0.5) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.90 0.01 255.4 / 0.5) 1px, transparent 1px)",
+            backgroundSize: "6rem 4rem",
+          }}
+        />
 
         <div className="w-full max-w-md flex-1 flex flex-col justify-center">
-          <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-lg sm:rounded-2xl p-6 sm:p-10 border border-gray-100">
-            <h1 className="text-2xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 text-center mb-1">
-              Sign in to mindrise
+          {/* Logo Mark */}
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center mb-8"
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-premium mb-3"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              <span
+                className="text-xl font-bold tracking-tight select-none"
+                style={{
+                  color: "var(--primary-foreground)",
+                  fontFamily: "'Outfit', sans-serif",
+                }}
+              >
+                MR
+              </span>
+            </div>
+            <h1
+              className="text-2xl font-bold text-foreground tracking-tight"
+              style={{ fontFamily: "'Outfit', sans-serif" }}
+            >
+              MindRise
             </h1>
-            <p className="text-slate-500 text-sm sm:text-base mt-2 text-center font-medium">
-              Access your account
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Classroom Intelligence Platform
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="bg-card shadow-premium rounded-2xl p-6 sm:p-10 border border-border/50"
+          >
+            <h2
+              className="text-xl sm:text-2xl font-bold text-foreground text-center mb-1"
+              style={{ fontFamily: "'Outfit', sans-serif" }}
+            >
+              Sign in to your account
+            </h2>
+            <p className="text-muted-foreground text-sm text-center mt-1 mb-6">
+              Enter your credentials to continue
             </p>
 
             <form
               onSubmit={handleSubmit}
               onReset={handleClearForm}
-              className="space-y-4 sm:space-y-5 md:space-y-6 mt-6 sm:mt-8"
+              className="space-y-4 sm:space-y-5"
             >
               {/* Email */}
               <div>
-                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                <label className="text-xs sm:text-sm font-medium text-foreground block mb-1.5">
                   Email Address
                 </label>
-
                 <input
                   type="email"
                   name="email"
@@ -126,19 +167,18 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
-                  placeholder="Enter email"
-                  className="w-full mt-1.5 sm:mt-2 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
-                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                             outline-none transition-all bg-white"
+                  placeholder="Enter your email"
+                  className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-border
+                             focus:ring-2 focus:ring-primary/40 focus:border-primary
+                             outline-none transition-all bg-background text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
               {/* Password */}
               <div className="relative">
-                <label className="text-xs sm:text-sm font-medium text-slate-700 block">
+                <label className="text-xs sm:text-sm font-medium text-foreground block mb-1.5">
                   Password
                 </label>
-
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -146,77 +186,85 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
-                  placeholder="Enter password"
-                  className="w-full mt-1.5 sm:mt-2 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
-                             focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                             outline-none transition-all bg-white"
+                  placeholder="Enter your password"
+                  className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-border
+                             focus:ring-2 focus:ring-primary/40 focus:border-primary
+                             outline-none transition-all bg-background text-foreground placeholder:text-muted-foreground"
                 />
-
-                <div
+                <button
+                  type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 sm:right-4 top-[42px] sm:top-[46px] cursor-pointer
-                             text-slate-400 hover:text-indigo-600 transition"
+                  className="absolute right-3 sm:right-4 bottom-3 text-muted-foreground hover:text-primary transition-colors"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </div>
+                </button>
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-3 sm:gap-4 pt-2 sm:pt-4">
+              <div className="flex gap-3 sm:gap-4 pt-2">
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   type="reset"
                   disabled={isLoading}
-                  className="flex-1 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border border-slate-200
-                             text-slate-600 hover:bg-slate-50 transition"
+                  className="flex-1 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl border border-border
+                             text-foreground hover:bg-secondary transition-colors"
                 >
                   Clear
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl bg-indigo-600 text-white font-medium
-                             shadow-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl font-semibold
+                             shadow-sm transition-all flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
                 >
                   {isLoading ? (
-                    <span className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    "Login"
+                    "Sign In"
                   )}
                 </motion.button>
               </div>
             </form>
-          </div>
+          </motion.div>
 
-          <p className="text-center text-slate-400 mt-6 sm:mt-8 text-xs font-medium">
-            © {new Date().getFullYear()} Mindrise. All rights reserved.
+          <p className="text-center text-muted-foreground mt-6 sm:mt-8 text-xs font-medium">
+            &copy; {new Date().getFullYear()} MindRise. All rights reserved.
           </p>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="w-full py-6 mt-auto border-t border-slate-100/50 bg-white/50 backdrop-blur-md">
+      <footer className="w-full py-6 mt-auto border-t border-border/50 bg-card/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-800 tracking-tight">
-              mindrise
+            <span
+              className="text-sm font-semibold text-foreground tracking-tight"
+              style={{ fontFamily: "'Outfit', sans-serif" }}
+            >
+              MindRise
             </span>
-            <span className="text-slate-300 text-sm">|</span>
-            <span className="text-xs text-slate-500">Empowering Education</span>
+            <span className="text-border text-sm">|</span>
+            <span className="text-xs text-muted-foreground">
+              Empowering Education
+            </span>
           </div>
 
-          <div className="flex items-center gap-6 text-xs font-medium text-slate-500">
-            <a href="#" className="hover:text-indigo-600 transition-colors">
+          <div className="flex items-center gap-6 text-xs font-medium text-muted-foreground">
+            <a href="#" className="hover:text-primary transition-colors">
               Privacy Policy
             </a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">
+            <a href="#" className="hover:text-primary transition-colors">
               Terms of Service
             </a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">
+            <a href="#" className="hover:text-primary transition-colors">
               Help Center
             </a>
           </div>

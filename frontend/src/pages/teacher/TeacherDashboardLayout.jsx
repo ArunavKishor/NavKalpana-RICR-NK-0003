@@ -5,7 +5,7 @@ import TeacherDashboardHeader from "../../components/dashboard/TeacherDashboardH
 
 const TeacherDashboardLayout = () => {
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className="flex min-h-screen bg-background font-sans">
       {/* Sidebar (Fixed) */}
       <TeacherSidebar isOpen={true} />
 
