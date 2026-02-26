@@ -19,8 +19,8 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("user");
-    const storedToken = sessionStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
 
     if (storedUser && storedToken) {
       try {
@@ -30,8 +30,8 @@ export const AuthProvider = ({ children }) => {
         setRole(parsedUser.role);
       } catch (error) {
         console.error("Failed to parse stored user", error);
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
       }
     }
     setIsLoading(false);
@@ -41,8 +41,8 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setIsLogin(true);
     setRole(userData.role);
-    sessionStorage.setItem("user", JSON.stringify(userData));
-    sessionStorage.setItem("token", userData.token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", userData.token);
   };
 
   const logout = async () => {
@@ -54,8 +54,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsLogin(false);
     setRole(null);
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     window.location.href = "/";
   };
 
