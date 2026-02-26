@@ -48,7 +48,10 @@ const DashboardSkeleton = () => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {[1, 2, 3, 4].map((i) => (
-        <Skeleton key={i} className="h-32 rounded-xl shadow-sm border border-slate-100" />
+        <Skeleton
+          key={i}
+          className="h-32 rounded-xl shadow-sm border border-slate-100"
+        />
       ))}
     </div>
 
@@ -248,39 +251,56 @@ const TeacherDashboardHome = () => {
             Average Class Performance
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold text-slate-500 uppercase">
-                Overall OGI
-              </p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">
-                {classSummary.averageOgi}%
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Blended attendance and academic scores
-              </p>
-            </div>
-            <div className="rounded-xl bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold text-slate-500 uppercase">
-                Avg Attendance
-              </p>
-              <p className="mt-2 text-2xl font-bold text-emerald-600">
-                {classSummary.averageAttendance}%
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Across your active batches
-              </p>
-            </div>
-            <div className="rounded-xl bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold text-slate-500 uppercase">
-                Avg Assignment Score
-              </p>
-              <p className="mt-2 text-2xl font-bold text-indigo-600">
-                {classSummary.averageAssignmentScore}%
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Evaluated assignments only
-              </p>
-            </div>
+            {loading ? (
+              <>
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl bg-slate-50 px-4 py-3 animate-pulse"
+                  >
+                    <div className="h-3 w-24 bg-slate-200 rounded mb-3" />
+                    <div className="h-8 w-16 bg-slate-200 rounded mb-2" />
+                    <div className="h-3 w-36 bg-slate-200 rounded" />
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">
+                    Overall OGI
+                  </p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">
+                    {classSummary.averageOgi}%
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Blended attendance and academic scores
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">
+                    Avg Attendance
+                  </p>
+                  <p className="mt-2 text-2xl font-bold text-emerald-600">
+                    {classSummary.averageAttendance}%
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Across your active batches
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase">
+                    Avg Assignment Score
+                  </p>
+                  <p className="mt-2 text-2xl font-bold text-indigo-600">
+                    {classSummary.averageAssignmentScore}%
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Evaluated assignments only
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
