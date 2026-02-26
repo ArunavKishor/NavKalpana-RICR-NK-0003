@@ -93,13 +93,12 @@ const DashboardHome = () => {
             name: trend.week || `Week ${index + 1}`,
             score: Number(Number(trend.averageScore || 0).toFixed(1)),
             attendance: Number(
-              Number(trend.attendancePercentage || 0).toFixed(1)
+              Number(trend.attendancePercentage || 0).toFixed(1),
             ),
-          }))
+          })),
         );
 
-        const deadlineItems =
-          deadlinesRes?.data?.data?.assessments || [];
+        const deadlineItems = deadlinesRes?.data?.data?.assessments || [];
 
         setDeadlines(
           deadlineItems.map((item) => ({
@@ -115,15 +114,14 @@ const DashboardHome = () => {
               item.type === "quiz"
                 ? "bg-orange-100 text-orange-600"
                 : "bg-rose-100 text-rose-600",
-          }))
+          })),
         );
 
         setError("");
       } catch (err) {
         console.error("Dashboard load failed:", err);
         setError(
-          err.response?.data?.message ||
-            "Failed to load dashboard data."
+          err.response?.data?.message || "Failed to load dashboard data.",
         );
       } finally {
         setLoading(false);
@@ -144,8 +142,7 @@ const DashboardHome = () => {
       {/* ---------------- HEADER ---------------- */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-semibold text-slate-900">
-          {greeting},{" "}
-          {user?.fullName?.split(" ")[0] || "Admin"} 👋
+          {greeting}, {user?.fullName?.split(" ")[0] || "Admin"} 👋
         </h1>
         <p className="text-sm text-slate-500 mt-1">
           Here's what's happening across your institution today.
@@ -153,9 +150,10 @@ const DashboardHome = () => {
       </div>
 
       {loading && (
-        <p className="text-sm text-slate-400 animate-pulse">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin inline-block" />
           Loading dashboard data...
-        </p>
+        </div>
       )}
 
       {error && (
@@ -169,7 +167,7 @@ const DashboardHome = () => {
         {stats.map((stat, index) => (
           <Card
             key={index}
-            className="border shadow-sm hover:shadow-md transition"
+            className="bg-card border border-border/50 shadow-premium hover:shadow-md transition-shadow"
           >
             <CardContent className="p-4 flex justify-between items-start">
               <div>
@@ -179,9 +177,7 @@ const DashboardHome = () => {
                 <p className="text-2xl font-bold text-slate-900 mt-1">
                   {stat.value}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {stat.change}
-                </p>
+                <p className="text-xs text-slate-500 mt-1">{stat.change}</p>
               </div>
 
               <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -196,7 +192,7 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* -------- CHART -------- */}
         <div className="lg:col-span-2">
-          <Card className="shadow-sm">
+          <Card className="bg-card shadow-premium border border-border/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold">
                 Class Performance Analytics
@@ -258,7 +254,7 @@ const DashboardHome = () => {
         {/* -------- RIGHT PANEL -------- */}
         <div className="flex flex-col gap-5">
           {/* Deadlines */}
-          <Card className="shadow-sm">
+          <Card className="bg-card shadow-premium border border-border/50">
             <CardHeader>
               <CardTitle className="text-sm font-semibold">
                 Upcoming Deadlines
@@ -274,16 +270,14 @@ const DashboardHome = () => {
                 deadlines.map((item, index) => (
                   <div
                     key={index}
-                    className="flex gap-3 p-2 rounded-lg hover:bg-slate-50"
+                    className="flex gap-3 p-2 rounded-lg hover:bg-secondary/60 transition-colors"
                   >
                     <div className={`p-1.5 rounded ${item.color}`}>
                       <item.icon className="w-3.5 h-3.5" />
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium">
-                        {item.title}
-                      </p>
+                      <p className="text-sm font-medium">{item.title}</p>
                       <p className="text-xs text-slate-500">
                         {item.date} · {item.type}
                       </p>
@@ -295,7 +289,7 @@ const DashboardHome = () => {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="shadow-sm">
+          <Card className="bg-card shadow-premium border border-border/50">
             <CardHeader>
               <CardTitle className="text-sm font-semibold">
                 Quick Actions
@@ -305,32 +299,26 @@ const DashboardHome = () => {
             <CardContent className="space-y-1">
               <Link
                 to="/admin/batches?action=create"
-                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/60 transition-colors"
               >
                 <PlusCircle className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium">
-                  Create New Batch
-                </span>
+                <span className="text-sm font-medium">Create New Batch</span>
               </Link>
 
               <Link
                 to="/admin/students?action=create"
-                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/60 transition-colors"
               >
                 <UserPlus className="w-4 h-4 text-emerald-600" />
-                <span className="text-sm font-medium">
-                  Add New Student
-                </span>
+                <span className="text-sm font-medium">Add New Student</span>
               </Link>
 
               <Link
                 to="/admin/support?action=create"
-                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition"
+                className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/60 transition-colors"
               >
                 <MessageSquarePlus className="w-4 h-4 text-orange-600" />
-                <span className="text-sm font-medium">
-                  New Support Ticket
-                </span>
+                <span className="text-sm font-medium">New Support Ticket</span>
               </Link>
             </CardContent>
           </Card>

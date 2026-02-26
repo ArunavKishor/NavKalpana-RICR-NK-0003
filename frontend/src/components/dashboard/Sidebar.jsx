@@ -32,31 +32,42 @@ const Sidebar = ({ isOpen }) => {
       }}
       className={cn(
         "fixed top-3 left-3 z-50 h-[calc(100vh-24px)] w-64 rounded-3xl",
-        "bg-white border border-slate-200 shadow-sm flex flex-col overflow-hidden"
+        "bg-card border border-border shadow-premium flex flex-col overflow-hidden",
       )}
     >
       {/* LOGO */}
-      <div className="h-20 px-5 flex items-center border-b border-slate-100">
+      <div className="h-20 px-5 flex items-center border-b border-border">
         <motion.div
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.2 }}
           className="flex items-center gap-3 cursor-pointer"
         >
+          {/* MR Text Logo */}
           <motion.div
-            whileHover={{ rotate: -5 }}
+            whileHover={{ rotate: -3 }}
             transition={{ type: "spring", stiffness: 200, damping: 10 }}
-            className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-sm"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm"
+            style={{ backgroundColor: "var(--primary)" }}
           >
-            <GraduationCap className="text-white w-5 h-5" />
+            <span
+              className="text-sm font-bold tracking-tight select-none"
+              style={{
+                color: "var(--primary-foreground)",
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
+              MR
+            </span>
           </motion.div>
 
           <div className="leading-tight">
-            <p className="font-semibold text-slate-900 tracking-wide">
+            <p
+              className="font-semibold text-foreground tracking-wide"
+              style={{ fontFamily: "'Outfit', sans-serif" }}
+            >
               MindRise
             </p>
-            <p className="text-xs text-slate-500">
-              Admin Panel
-            </p>
+            <p className="text-xs text-muted-foreground">Admin Panel</p>
           </div>
         </motion.div>
       </div>
@@ -79,14 +90,15 @@ const Sidebar = ({ isOpen }) => {
                 to={item.href}
                 className={cn(
                   "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium",
-                  "transition-colors duration-200 group"
+                  "transition-colors duration-200 group",
                 )}
               >
                 {/* Active Background */}
                 {isActive && (
                   <motion.div
                     layoutId="adminSidebarActive"
-                    className="absolute inset-0 rounded-xl bg-indigo-600"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ backgroundColor: "var(--primary)" }}
                     transition={{
                       type: "spring",
                       stiffness: 120,
@@ -101,13 +113,13 @@ const Sidebar = ({ isOpen }) => {
                     "relative z-10 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
                     isActive
                       ? "bg-white/20"
-                      : "bg-slate-100 group-hover:bg-slate-200"
+                      : "bg-secondary group-hover:bg-secondary/80",
                   )}
                 >
                   <item.icon
                     className={cn(
                       "w-4 h-4 transition-colors duration-200",
-                      isActive ? "text-white" : "text-slate-500"
+                      isActive ? "text-white" : "text-muted-foreground",
                     )}
                   />
                 </div>
@@ -116,7 +128,7 @@ const Sidebar = ({ isOpen }) => {
                 <span
                   className={cn(
                     "relative z-10 flex-1 transition-colors duration-200",
-                    isActive ? "text-white" : "text-slate-700"
+                    isActive ? "text-white" : "text-foreground",
                   )}
                 >
                   {item.label}
@@ -128,7 +140,7 @@ const Sidebar = ({ isOpen }) => {
                     "relative z-10 w-4 h-4 transition-all duration-200",
                     isActive
                       ? "text-white opacity-100"
-                      : "text-slate-400 opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0"
+                      : "text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0",
                   )}
                 />
               </Link>
@@ -136,7 +148,6 @@ const Sidebar = ({ isOpen }) => {
           );
         })}
       </nav>
-
     </motion.aside>
   );
 };

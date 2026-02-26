@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "@/config/Api";
+import PageLoader from "@/components/common/PageLoader";
 
 const AuthContext = createContext();
 
@@ -72,7 +73,7 @@ export const AuthProvider = ({ children }) => {
         isLoading,
       }}
     >
-      {!isLoading && children}
+      {isLoading ? <PageLoader /> : children}
     </AuthContext.Provider>
   );
 };
