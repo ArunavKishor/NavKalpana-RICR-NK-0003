@@ -542,7 +542,7 @@ MindRise is built and maintained by the **NavKalpana RICR-NK-0003** team.
 | Name              | Role                 | Responsibilities                                               |
 | ----------------- | -------------------- | -------------------------------------------------------------- |
 | **Arunav Kishor** | UI/UX Developer      | User interface design, component architecture, user experience |
-| **Pratik**        | Full Stack Developer | Frontend + backend features, API integration, database design  |
+| **Pratik**        | Full Stack @Developer | Frontend + backend features, API integration, database design  |
 | **Pradeep**       | Tester               | Quality assurance, bug reporting, testing workflows            |
 | **Punit**         | Frontend Developer   | React components, page implementation, responsive design       |
 
