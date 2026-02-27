@@ -18,15 +18,30 @@ import {
   getQuizAttempts,
 } from "../controllers/assessmentController.js";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
+import {
+  cacheMiddleware,
+  setHttpCacheHeaders,
+} from "../middlewares/cacheMiddleware.js";
 import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
 
 router.use(protect);
+router.use((req, res, next) => {
+  if (req.method === "GET") {
+    setHttpCacheHeaders(false, 300)(req, res, next);
+  } else {
+    next();
+  }
+});
 
 router
   .route("/")
-  .get(authorize("admin", "teacher"), getAssessments)
+  .get(
+    authorize("admin", "teacher"),
+    cacheMiddleware("assessments:list", 300),
+    getAssessments,
+  )
   .post(
     authorize("admin", "teacher"),
     upload.fields([
@@ -37,7 +52,11 @@ router
   );
 router
   .route("/:id")
-  .get(authorize("admin", "teacher"), getAssessmentById)
+  .get(
+    authorize("admin", "teacher"),
+    cacheMiddleware("assessments:detail", 300),
+    getAssessmentById,
+  )
   .put(
     authorize("admin", "teacher"),
     upload.fields([
@@ -49,21 +68,33 @@ router
   .delete(authorize("admin", "teacher"), deleteAssessment);
 router
   .route("/:id/submissions")
-  .get(authorize("admin", "teacher"), getAssessmentSubmissions);
+  .get(
+    authorize("admin", "teacher"),
+    cacheMiddleware("assessments:submissions", 300),
+    getAssessmentSubmissions,
+  );
 router
   .route("/:id/submit")
   .post(authorize("admin", "teacher"), upload.single("file"), submitAssessment);
 // Quiz-specific routes
 router
   .route("/:id/questions")
-  .get(authorize("admin", "teacher"), getQuizQuestions)
+  .get(
+    authorize("admin", "teacher"),
+    cacheMiddleware("assessments:questions", 300),
+    getQuizQuestions,
+  )
   .post(authorize("admin", "teacher"), upsertQuizQuestions);
 router
   .route("/:id/questions/:questionId")
   .delete(authorize("admin", "teacher"), deleteQuizQuestion);
 router
   .route("/:id/attempts")
-  .get(authorize("admin", "teacher"), getQuizAttempts)
+  .get(
+    authorize("admin", "teacher"),
+    cacheMiddleware("assessments:attempts", 300),
+    getQuizAttempts,
+  )
   .post(submitQuizAttempt);
 router.route("/:id/attempts/start").post(startQuizAttempt);
 router
@@ -74,6 +105,10 @@ router
   .post(authorize("admin", "teacher"), evaluateSubmission);
 router
   .route("/:id/statistics")
-  .get(authorize("admin", "teacher"), getAssessmentStatistics);
+  .get(
+    authorize("admin", "teacher"),
+    cacheMiddleware("assessments:statistics", 600),
+    getAssessmentStatistics,
+  );
 
 export default router;
