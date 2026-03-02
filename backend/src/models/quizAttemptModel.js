@@ -82,4 +82,3 @@ quizAttemptSchema.index({ assessment: 1, student: 1 });
 const QuizAttempt = mongoose.model("QuizAttempt", quizAttemptSchema);
 
 export default QuizAttempt;
-
