@@ -221,13 +221,13 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
   const avgMarks =
     evaluatedCount > 0
       ? Math.round(
-        submissions
-          .filter(
-            (s) => s.status === "evaluated" && s.marksObtained !== undefined,
-          )
-          .reduce((acc, s) => acc + (s.marksObtained || 0), 0) /
-        evaluatedCount,
-      )
+          submissions
+            .filter(
+              (s) => s.status === "evaluated" && s.marksObtained !== undefined,
+            )
+            .reduce((acc, s) => acc + (s.marksObtained || 0), 0) /
+            evaluatedCount,
+        )
       : 0;
 
   const DeltaBadge = ({ value }) => {
@@ -301,21 +301,23 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                 <div className="ml-auto flex items-center gap-2">
                   {overallAttPct > 0 && (
                     <Badge
-                      className={`text-xs ${overallAttPct >= 75
+                      className={`text-xs ${
+                        overallAttPct >= 75
                           ? "bg-emerald-100 text-emerald-700"
                           : overallAttPct >= 50
                             ? "bg-yellow-100 text-yellow-700"
                             : "bg-red-100 text-red-700"
-                        }`}
+                      }`}
                     >
                       {overallAttPct}% Att
                     </Badge>
                   )}
                   <Badge
-                    className={`uppercase text-xs ${student.status === "active"
+                    className={`uppercase text-xs ${
+                      student.status === "active"
                         ? "bg-emerald-100 text-emerald-700"
                         : "bg-slate-100 text-slate-600"
-                      }`}
+                    }`}
                   >
                     {student.status}
                   </Badge>
@@ -420,9 +422,9 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                               Enrolled:{" "}
                               {student?.enrollmentDate
                                 ? format(
-                                  new Date(student.enrollmentDate),
-                                  "PPP",
-                                )
+                                    new Date(student.enrollmentDate),
+                                    "PPP",
+                                  )
                                 : "N/A"}
                             </span>
                           </div>
@@ -504,10 +506,10 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                         ))}
                         {(!student?.batches ||
                           student.batches.length === 0) && (
-                            <p className="text-slate-400 text-sm italic">
-                              Not enrolled in any batches.
-                            </p>
-                          )}
+                          <p className="text-slate-400 text-sm italic">
+                            Not enrolled in any batches.
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -827,7 +829,7 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
                               {sub.marksObtained !== undefined &&
-                                sub.marksObtained !== null ? (
+                              sub.marksObtained !== null ? (
                                 <span className="text-sm font-semibold text-blue-600">
                                   {sub.marksObtained}/
                                   {sub.assessment?.totalMarks || "—"}
@@ -838,12 +840,13 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                                 </span>
                               )}
                               <Badge
-                                className={`capitalize text-xs ${sub.status === "evaluated"
+                                className={`capitalize text-xs ${
+                                  sub.status === "evaluated"
                                     ? "bg-emerald-100 text-emerald-700"
                                     : sub.status === "late-submitted"
                                       ? "bg-orange-100 text-orange-700"
                                       : "bg-blue-100 text-blue-700"
-                                  }`}
+                                }`}
                               >
                                 {sub.status}
                               </Badge>
@@ -917,12 +920,13 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                         >
                           <div className="flex items-center gap-3">
                             <div
-                              className={`p-2 rounded-full ${record.status === "present"
+                              className={`p-2 rounded-full ${
+                                record.status === "present"
                                   ? "bg-emerald-100 text-emerald-600"
                                   : record.status === "absent"
                                     ? "bg-red-100 text-red-500"
                                     : "bg-yellow-100 text-yellow-600"
-                                }`}
+                              }`}
                             >
                               {record.status === "present" && (
                                 <CheckCircle2 className="h-4 w-4" />
@@ -949,12 +953,13 @@ const StudentDetailModal = ({ studentId, isOpen, onClose }) => {
                             </div>
                           </div>
                           <Badge
-                            className={`capitalize text-xs ${record.status === "present"
+                            className={`capitalize text-xs ${
+                              record.status === "present"
                                 ? "bg-emerald-100 text-emerald-700"
                                 : record.status === "absent"
                                   ? "bg-red-100 text-red-700"
                                   : "bg-yellow-100 text-yellow-700"
-                              }`}
+                            }`}
                           >
                             {record.status}
                           </Badge>
