@@ -788,7 +788,7 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                           </Badge>
                         </div>
                         {record.remarks && (
-                          <span className="text-xs text-slate-400 italic ml-2 truncate max-w-[200px]">
+                          <span className="text-xs text-slate-400 italic ml-2 truncate max-w-50">
                             {record.remarks}
                           </span>
                         )}
