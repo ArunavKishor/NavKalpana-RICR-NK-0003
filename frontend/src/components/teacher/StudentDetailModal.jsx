@@ -22,7 +22,17 @@ import {
   Legend,
 } from "recharts";
 import api from "@/config/Api";
-import { TrendingUp, TrendingDown, Minus, User, Download, Github, Linkedin, Flame, Star } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  User,
+  Download,
+  Github,
+  Linkedin,
+  Flame,
+  Star,
+} from "lucide-react";
 
 const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
   const [loading, setLoading] = useState(true);
@@ -133,21 +143,21 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
       backgroundColor: "#10b981",
       borderRadius: "0.5rem",
       fontWeight: "bold",
-      fontSize: "0.8rem"
+      fontSize: "0.8rem",
     },
     absent: {
       color: "#ffffff",
       backgroundColor: "#ef4444",
       borderRadius: "0.5rem",
       fontWeight: "bold",
-      fontSize: "0.8rem"
+      fontSize: "0.8rem",
     },
     late: {
       color: "#ffffff",
       backgroundColor: "#f59e0b",
       borderRadius: "0.5rem",
       fontWeight: "bold",
-      fontSize: "0.8rem"
+      fontSize: "0.8rem",
     },
   };
 
@@ -161,7 +171,10 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
     (a, b) => new Date(a.weekStart) - new Date(b.weekStart),
   );
   const latestSnap = sortedSnapshots[sortedSnapshots.length - 1];
-  const prevSnap = sortedSnapshots.length >= 2 ? sortedSnapshots[sortedSnapshots.length - 2] : null;
+  const prevSnap =
+    sortedSnapshots.length >= 2
+      ? sortedSnapshots[sortedSnapshots.length - 2]
+      : null;
   const latestDelta = latestSnap?.delta || null;
 
   const DeltaIndicator = ({ value }) => {
@@ -212,12 +225,13 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 </Badge>
                 {attPct > 0 && (
                   <Badge
-                    className={`${attPct >= 75
-                      ? "bg-emerald-100 text-emerald-700"
-                      : attPct >= 50
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
-                      }`}
+                    className={`${
+                      attPct >= 75
+                        ? "bg-emerald-100 text-emerald-700"
+                        : attPct >= 50
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                    }`}
                   >
                     {attPct}% Attendance
                   </Badge>
@@ -229,8 +243,12 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
 
         <Tabs defaultValue="progress" className="mt-6">
           <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-2">
-            <TabsTrigger value="info" className="w-full">Course Info</TabsTrigger>
-            <TabsTrigger value="progress" className="w-full">Academic Progress</TabsTrigger>
+            <TabsTrigger value="info" className="w-full">
+              Course Info
+            </TabsTrigger>
+            <TabsTrigger value="progress" className="w-full">
+              Academic Progress
+            </TabsTrigger>
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
           </TabsList>
 
@@ -551,13 +569,36 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                           Previous Week
                         </p>
                         <p className="text-xs text-slate-400 mb-2">
-                          {new Date(prevSnap.weekStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          {new Date(prevSnap.weekStart).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric" },
+                          )}
                         </p>
                         <div className="space-y-1 text-xs">
-                          <div className="flex justify-between"><span>OGI</span><span className="font-bold">{Math.round(prevSnap.ogi || 0)}%</span></div>
-                          <div className="flex justify-between"><span>Attendance</span><span className="font-bold">{Math.round(prevSnap.attendancePercentage || 0)}%</span></div>
-                          <div className="flex justify-between"><span>Quiz Avg</span><span className="font-bold">{Math.round(prevSnap.quizAverage || 0)}%</span></div>
-                          <div className="flex justify-between"><span>Assignment Avg</span><span className="font-bold">{Math.round(prevSnap.assignmentAverage || 0)}%</span></div>
+                          <div className="flex justify-between">
+                            <span>OGI</span>
+                            <span className="font-bold">
+                              {Math.round(prevSnap.ogi || 0)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Attendance</span>
+                            <span className="font-bold">
+                              {Math.round(prevSnap.attendancePercentage || 0)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Quiz Avg</span>
+                            <span className="font-bold">
+                              {Math.round(prevSnap.quizAverage || 0)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Assignment Avg</span>
+                            <span className="font-bold">
+                              {Math.round(prevSnap.assignmentAverage || 0)}%
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="p-3 bg-white rounded-lg border">
@@ -565,13 +606,45 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                           Current Week
                         </p>
                         <p className="text-xs text-slate-400 mb-2">
-                          {new Date(latestSnap.weekStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          {new Date(latestSnap.weekStart).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric" },
+                          )}
                         </p>
                         <div className="space-y-1 text-xs">
-                          <div className="flex justify-between"><span>OGI</span><span className="font-bold">{Math.round(latestSnap.ogi || 0)}%</span> <DeltaIndicator value={latestDelta.ogi} /></div>
-                          <div className="flex justify-between"><span>Attendance</span><span className="font-bold">{Math.round(latestSnap.attendancePercentage || 0)}%</span> <DeltaIndicator value={latestDelta.attendancePercentage} /></div>
-                          <div className="flex justify-between"><span>Quiz Avg</span><span className="font-bold">{Math.round(latestSnap.quizAverage || 0)}%</span> <DeltaIndicator value={latestDelta.quizAverage} /></div>
-                          <div className="flex justify-between"><span>Assignment Avg</span><span className="font-bold">{Math.round(latestSnap.assignmentAverage || 0)}%</span> <DeltaIndicator value={latestDelta.assignmentAverage} /></div>
+                          <div className="flex justify-between">
+                            <span>OGI</span>
+                            <span className="font-bold">
+                              {Math.round(latestSnap.ogi || 0)}%
+                            </span>{" "}
+                            <DeltaIndicator value={latestDelta.ogi} />
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Attendance</span>
+                            <span className="font-bold">
+                              {Math.round(latestSnap.attendancePercentage || 0)}
+                              %
+                            </span>{" "}
+                            <DeltaIndicator
+                              value={latestDelta.attendancePercentage}
+                            />
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Quiz Avg</span>
+                            <span className="font-bold">
+                              {Math.round(latestSnap.quizAverage || 0)}%
+                            </span>{" "}
+                            <DeltaIndicator value={latestDelta.quizAverage} />
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Assignment Avg</span>
+                            <span className="font-bold">
+                              {Math.round(latestSnap.assignmentAverage || 0)}%
+                            </span>{" "}
+                            <DeltaIndicator
+                              value={latestDelta.assignmentAverage}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -608,13 +681,16 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                 />
                 <div className="flex gap-4 mt-4 text-xs font-semibold">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3.5 h-3.5 bg-[#10b981] rounded-sm shadow-sm" /> Present
+                    <div className="w-3.5 h-3.5 bg-[#10b981] rounded-sm shadow-sm" />{" "}
+                    Present
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3.5 h-3.5 bg-[#ef4444] rounded-sm shadow-sm" /> Absent
+                    <div className="w-3.5 h-3.5 bg-[#ef4444] rounded-sm shadow-sm" />{" "}
+                    Absent
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3.5 h-3.5 bg-[#f59e0b] rounded-sm shadow-sm" /> Late
+                    <div className="w-3.5 h-3.5 bg-[#f59e0b] rounded-sm shadow-sm" />{" "}
+                    Late
                   </div>
                 </div>
               </div>
@@ -671,7 +747,9 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
             {/* Date-wise Attendance Records with Remarks */}
             {attendanceRecords.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-3">Date-wise Records</h4>
+                <h4 className="text-sm font-semibold mb-3">
+                  Date-wise Records
+                </h4>
                 <div className="max-h-48 overflow-y-auto space-y-1.5">
                   {[...attendanceRecords]
                     .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -682,12 +760,13 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <div
-                            className={`w-2 h-2 rounded-full shrink-0 ${record.status === "present"
-                              ? "bg-[#10b981]"
-                              : record.status === "absent"
-                                ? "bg-[#ef4444]"
-                                : "bg-[#f59e0b]"
-                              }`}
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              record.status === "present"
+                                ? "bg-[#10b981]"
+                                : record.status === "absent"
+                                  ? "bg-[#ef4444]"
+                                  : "bg-[#f59e0b]"
+                            }`}
                           />
                           <span className="text-slate-700">
                             {new Date(record.date).toLocaleDateString("en-US", {
@@ -697,12 +776,13 @@ const StudentDetailModal = ({ student, batch, isOpen, onClose }) => {
                             })}
                           </span>
                           <Badge
-                            className={`capitalize text-[10px] px-1.5 py-0 ${record.status === "present"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : record.status === "absent"
-                                ? "bg-red-50 text-red-600"
-                                : "bg-yellow-50 text-yellow-600"
-                              }`}
+                            className={`capitalize text-[10px] px-1.5 py-0 ${
+                              record.status === "present"
+                                ? "bg-emerald-50 text-emerald-600"
+                                : record.status === "absent"
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-yellow-50 text-yellow-600"
+                            }`}
                           >
                             {record.status}
                           </Badge>
