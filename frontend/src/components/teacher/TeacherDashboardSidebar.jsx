@@ -16,18 +16,26 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import api from "@/config/Api";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const baseNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/teacher-dashboard" },
-  { icon: BookOpen, label: "Batch Management", href: "/teacher-dashboard/batches" },
-  { icon: Users, label: "Student Management", href: "/teacher-dashboard/students" },
-  { icon: FileText, label: "Assessments", href: "/teacher-dashboard/assessments" },
+  {
+    icon: BookOpen,
+    label: "Batch Management",
+    href: "/teacher-dashboard/batches",
+  },
+  {
+    icon: Users,
+    label: "Student Management",
+    href: "/teacher-dashboard/students",
+  },
+  {
+    icon: FileText,
+    label: "Assessments",
+    href: "/teacher-dashboard/assessments",
+  },
   { icon: CheckCircle, label: "Quizzes", href: "/teacher-dashboard/quizzes" },
   { icon: BarChart3, label: "Analytics", href: "/teacher-dashboard/analytics" },
   { icon: MessageSquare, label: "Support", href: "/teacher-dashboard/support" },
@@ -46,7 +54,7 @@ const NavItem = ({ item, isActive, onClick }) => (
         "relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group",
         isActive
           ? "text-white bg-primary shadow-lg shadow-primary/20"
-          : "text-slate-600 hover:text-primary hover:bg-primary/5"
+          : "text-slate-600 hover:text-primary hover:bg-primary/5",
       )}
     >
       <div
@@ -54,13 +62,13 @@ const NavItem = ({ item, isActive, onClick }) => (
           "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300",
           isActive
             ? "bg-white/20 rotate-0"
-            : "bg-slate-100 group-hover:bg-primary/10 group-hover:rotate-6"
+            : "bg-slate-100 group-hover:bg-primary/10 group-hover:rotate-6",
         )}
       >
         <item.icon
           className={cn(
             "w-4 h-4 transition-colors duration-200",
-            isActive ? "text-white" : "text-slate-500 group-hover:text-primary"
+            isActive ? "text-white" : "text-slate-500 group-hover:text-primary",
           )}
         />
       </div>
@@ -68,10 +76,12 @@ const NavItem = ({ item, isActive, onClick }) => (
       <span className="flex-1 tracking-tight">{item.label}</span>
 
       {item.badge && (
-        <span className={cn(
-          "px-2 py-0.5 rounded-full text-[10px] font-black tracking-tighter transition-colors duration-300",
-          isActive ? "bg-white text-primary" : "bg-primary/10 text-primary"
-        )}>
+        <span
+          className={cn(
+            "px-2 py-0.5 rounded-full text-[10px] font-black tracking-tighter transition-colors duration-300",
+            isActive ? "bg-white text-primary" : "bg-primary/10 text-primary",
+          )}
+        >
           {item.badge}
         </span>
       )}
@@ -81,7 +91,7 @@ const NavItem = ({ item, isActive, onClick }) => (
           "w-4 h-4 transition-all duration-300",
           isActive
             ? "text-white opacity-100 rotate-90"
-            : "text-slate-300 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+            : "text-slate-300 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0",
         )}
       />
     </Link>
@@ -129,8 +139,6 @@ const SidebarContent = ({ location, sidebarItems, onNavItemClick }) => (
         })}
       </div>
     </ScrollArea>
-
-
   </div>
 );
 
@@ -146,7 +154,9 @@ export const MobileTeacherSidebar = () => {
           params: { status: "open" },
         });
         setOpenSupportCount((data?.data?.requests || []).length);
-      } catch { /* fail silently */ }
+      } catch {
+        /* fail silently */
+      }
     };
     fetchOpenCount();
   }, []);
@@ -154,7 +164,7 @@ export const MobileTeacherSidebar = () => {
   const sidebarItems = baseNavItems.map((item) =>
     item.href === "/teacher-dashboard/support" && openSupportCount > 0
       ? { ...item, badge: openSupportCount }
-      : item
+      : item,
   );
 
   return (
@@ -164,7 +174,10 @@ export const MobileTeacherSidebar = () => {
           <Menu className="w-6 h-6 text-[#0F4C5C]" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-72 border-none rounded-r-3xl overflow-hidden shadow-2xl">
+      <SheetContent
+        side="left"
+        className="p-0 w-72 border-none rounded-r-3xl overflow-hidden shadow-2xl"
+      >
         <SidebarContent
           location={location}
           sidebarItems={sidebarItems}
@@ -186,7 +199,9 @@ const TeacherSidebar = () => {
           params: { status: "open" },
         });
         setOpenSupportCount((data?.data?.requests || []).length);
-      } catch { /* fail silently */ }
+      } catch {
+        /* fail silently */
+      }
     };
     fetchOpenCount();
   }, []);
@@ -194,7 +209,7 @@ const TeacherSidebar = () => {
   const sidebarItems = baseNavItems.map((item) =>
     item.href === "/teacher-dashboard/support" && openSupportCount > 0
       ? { ...item, badge: openSupportCount }
-      : item
+      : item,
   );
 
   return (
